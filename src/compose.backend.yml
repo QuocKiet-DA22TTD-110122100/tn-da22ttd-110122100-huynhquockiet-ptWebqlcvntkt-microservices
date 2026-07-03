@@ -258,14 +258,14 @@ services:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 15s
       timeout: 10s
-      retries: 10
-      start_period: 30s
+      retries: 20
+      start_period: 300s
     init: true
     networks:
       - microservices-network
     restart: unless-stopped
-    mem_limit: 256m
-    cpus: 0.4
+    mem_limit: 512m
+    cpus: 0.5
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq

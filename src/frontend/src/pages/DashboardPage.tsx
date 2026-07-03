@@ -25,7 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { usePermissions } from '@/hooks/usePermissions';
-import { resolveWorkspaceRole, roleProfiles, WorkspaceRole } from '@/config/roleExperience';
+import { resolveWorkspaceRole, roleProfiles, ROLE_GLOW, WorkspaceRole } from '@/config/roleExperience';
 import { formatDate, getPasswordExpiryWarning } from '@/utils/format';
 import { PERMISSIONS } from '@/utils/permissions';
 import { cn } from '@/utils/cn';
@@ -598,7 +598,7 @@ const PendingApprovalPanel = ({
   return (
     <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       {pendingCards.map((card) => (
-        <div key={card.title} className={cn('rounded-2xl border p-5 shadow-sm', card.className)}>
+        <div key={card.title} className={cn('card-hover rounded-2xl border p-5 shadow-sm', card.className)}>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h2 className="text-lg font-bold">{card.title}</h2>
@@ -625,6 +625,7 @@ export const DashboardPage = () => {
   const roleProfile = roleProfiles[workspaceRole];
   const experience = dashboardExperience[workspaceRole];
   const isPendingUser = workspaceRole === 'user';
+  const [heroGlowPrimary, heroGlowSecondary] = ROLE_GLOW[workspaceRole];
 
   const canViewEmployees = can(PERMISSIONS.EMPLOYEE_VIEW);
   const canViewProjects  = can(PERMISSIONS.PROJECT_VIEW);
@@ -662,8 +663,10 @@ export const DashboardPage = () => {
     <MainLayout>
       <div className="space-y-6">
         {!isPendingUser && (
-          <section className={`relative overflow-hidden rounded-xl bg-gradient-to-r ${roleProfile.toneClass} text-white shadow-[0_18px_38px_rgba(15,23,42,0.16)]`}>
+          <section className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${roleProfile.toneClass} text-white shadow-[0_18px_38px_rgba(15,23,42,0.16)]`}>
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(255,255,255,0.18),transparent_28rem)]" />
+          <div className={`pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full ${heroGlowPrimary} blur-3xl`} />
+          <div className={`pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full ${heroGlowSecondary} blur-2xl`} />
           <div className="relative grid gap-6 p-6 lg:grid-cols-[1fr_340px] lg:p-8">
             <div className="min-w-0">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-sm font-semibold text-cyan-50 ring-1 ring-white/20">

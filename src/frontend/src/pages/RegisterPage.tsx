@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, ArrowRight, CheckCircle2, UserPlus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { authApi } from '@/api/auth.api';
 import { AuthShell } from '@/components/Auth/AuthShell';
 import { Button } from '@/components/UI/Button';
 import { Input } from '@/components/UI/Input';
 import { useUIStore } from '@/store/uiStore';
+import { cn } from '@/utils/cn';
 import { getApiErrorMessage } from '@/utils/error';
 
 interface RegisterForm {
@@ -16,12 +17,14 @@ interface RegisterForm {
 }
 
 const passwordRuleClass = (passed: boolean) =>
-  `flex items-center gap-2 text-xs ${passed ? 'text-emerald-700' : 'text-slate-500'}`;
+  `flex items-center gap-2 text-xs transition-colors duration-200 ${passed ? 'text-emerald-700' : 'text-slate-500'}`;
 
 export const RegisterPage = () => {
   const { addNotification } = useUIStore();
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -102,69 +105,102 @@ export const RegisterPage = () => {
         </Link>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label="Tên đăng nhập"
-          type="text"
-          autoComplete="username"
-          placeholder="Nhập tên đăng nhập"
-          error={errors.username?.message}
-          {...register('username', {
-            required: 'Vui lòng nhập tên đăng nhập.',
-            minLength: {
-              value: 4,
-              message: 'Tên đăng nhập phải có ít nhất 4 ký tự.',
-            },
-          })}
-        />
+      <form onSubmit={handleSubmit(onSubmit)} className="stagger-children space-y-4">
+        <div className="animate-fade-up">
+          <Input
+            label="Tên đăng nhập"
+            type="text"
+            autoComplete="username"
+            placeholder="Nhập tên đăng nhập"
+            error={errors.username?.message}
+            {...register('username', {
+              required: 'Vui lòng nhập tên đăng nhập.',
+              minLength: {
+                value: 4,
+                message: 'Tên đăng nhập phải có ít nhất 4 ký tự.',
+              },
+            })}
+          />
+        </div>
 
-        <Input
-          label="Mật khẩu"
-          type="password"
-          autoComplete="new-password"
-          placeholder="Nhập mật khẩu"
-          error={errors.password?.message}
-          {...register('password', {
-            required: 'Vui lòng nhập mật khẩu.',
-            minLength: {
-              value: 8,
-              message: 'Mật khẩu phải có ít nhất 8 ký tự.',
-            },
-            pattern: {
-              value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-              message: 'Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt.',
-            },
-          })}
-        />
+        <div className="animate-fade-up">
+          <Input
+            label="Mật khẩu"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            placeholder="Nhập mật khẩu"
+            error={errors.password?.message}
+            rightElement={
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="text-slate-400 transition-colors hover:text-slate-600"
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            }
+            {...register('password', {
+              required: 'Vui lòng nhập mật khẩu.',
+              minLength: {
+                value: 8,
+                message: 'Mật khẩu phải có ít nhất 8 ký tự.',
+              },
+              pattern: {
+                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+                message: 'Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt.',
+              },
+            })}
+          />
+        </div>
 
-        <Input
-          label="Xác nhận mật khẩu"
-          type="password"
-          autoComplete="new-password"
-          placeholder="Nhập lại mật khẩu"
-          error={errors.confirmPassword?.message}
-          {...register('confirmPassword', {
-            required: 'Vui lòng xác nhận mật khẩu.',
-            validate: (value) => value === password || 'Mật khẩu xác nhận không khớp.',
-          })}
-        />
+        <div className="animate-fade-up">
+          <Input
+            label="Xác nhận mật khẩu"
+            type={showConfirmPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            placeholder="Nhập lại mật khẩu"
+            error={errors.confirmPassword?.message}
+            rightElement={
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="text-slate-400 transition-colors hover:text-slate-600"
+                aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            }
+            {...register('confirmPassword', {
+              required: 'Vui lòng xác nhận mật khẩu.',
+              validate: (value) => value === password || 'Mật khẩu xác nhận không khớp.',
+            })}
+          />
+        </div>
 
-        <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+        <div className="animate-fade-up rounded-md border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm font-semibold text-slate-800">Yêu cầu mật khẩu</p>
           <div className="mt-3 grid gap-2">
             {passwordRules.map((rule) => (
               <div key={rule.label} className={passwordRuleClass(rule.passed)}>
-                <CheckCircle2 size={15} className={rule.passed ? 'text-emerald-600' : 'text-slate-300'} />
+                <CheckCircle2
+                  size={15}
+                  className={cn('transition-colors duration-200', rule.passed ? 'text-emerald-600' : 'text-slate-300')}
+                />
                 <span>{rule.label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <Button type="submit" className="w-full" isLoading={isLoading}>
-          Tạo tài khoản
-          <ArrowRight size={16} />
-        </Button>
+        <div className="animate-fade-up">
+          <Button type="submit" className="w-full" isLoading={isLoading}>
+            Tạo tài khoản
+            <ArrowRight size={16} />
+          </Button>
+        </div>
       </form>
     </AuthShell>
   );

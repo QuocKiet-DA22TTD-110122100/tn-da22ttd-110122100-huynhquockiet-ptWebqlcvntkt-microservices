@@ -5,7 +5,6 @@ import { MainLayout } from '@/components/Layout/MainLayout';
 import { Input } from '@/components/UI/Input';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent } from '@/components/UI/Card';
-import { PageHeader } from '@/components/UI/PageHeader';
 import { useUIStore } from '@/store/uiStore';
 import { organizationApi } from '@/api/organization.api';
 import { departmentApi } from '@/api/department.api';
@@ -127,17 +126,41 @@ export const DepartmentFormPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <PageHeader
-          icon={Building2}
-          title={id ? 'Chỉnh sửa phòng ban' : 'Thêm phòng ban mới'}
-          description={id ? 'Cập nhật mã, tên và tổ chức quản lý của phòng ban.' : 'Tạo phòng ban mới và gắn vào đúng đơn vị tổ chức.'}
-          actions={
-            <Button type="button" variant="outline" onClick={() => navigate('/departments')}>
-              <ArrowLeft size={18} />
-              Quay lại
-            </Button>
-          }
-        />
+        {/* ── Hero header ──────────────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-800 via-indigo-900 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-violet-400/10 blur-2xl" />
+
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-400/20 ring-1 ring-indigo-300/30">
+                <Building2 size={22} className="text-indigo-200" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{id ? 'Chỉnh sửa phòng ban' : 'Thêm phòng ban mới'}</h1>
+                <p className="mt-0.5 text-sm text-indigo-300">
+                  {id ? 'Cập nhật mã, tên và tổ chức quản lý của phòng ban.' : 'Tạo phòng ban mới và gắn vào đúng đơn vị tổ chức.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
+                <div className="text-xs text-indigo-300/80">Chế độ</div>
+                <div className="text-base font-bold leading-none text-white mt-0.5">{id ? 'Chỉnh sửa' : 'Tạo mới'}</div>
+              </div>
+              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
+                <div className="text-xs text-indigo-300/80">Tổ chức</div>
+                <div className="text-base font-bold leading-none text-white mt-0.5">{organizations.length}</div>
+              </div>
+
+              <Button type="button" variant="secondary" onClick={() => navigate('/departments')} className="gap-1.5">
+                <ArrowLeft size={16} />
+                Quay lại
+              </Button>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>

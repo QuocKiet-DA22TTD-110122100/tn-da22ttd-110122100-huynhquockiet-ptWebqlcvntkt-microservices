@@ -62,25 +62,29 @@ export const ForgotPasswordPage = () => {
         </div>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label="Email"
-          type="email"
-          autoComplete="email"
-          placeholder="Nhập email đã đăng ký"
-          error={errors.email?.message}
-          {...register('email', {
-            required: 'Vui lòng nhập email.',
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: 'Email không hợp lệ.',
-            },
-          })}
-        />
+      <form onSubmit={handleSubmit(onSubmit)} className="stagger-children space-y-4">
+        <div className="animate-fade-up">
+          <Input
+            label="Email"
+            type="email"
+            autoComplete="email"
+            placeholder="Nhập email đã đăng ký"
+            error={errors.email?.message}
+            {...register('email', {
+              required: 'Vui lòng nhập email.',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Email không hợp lệ.',
+              },
+            })}
+          />
+        </div>
 
-        <Button type="submit" className="w-full" isLoading={isLoading}>
-          Gửi hướng dẫn khôi phục
-        </Button>
+        <div className="animate-fade-up">
+          <Button type="submit" className="w-full" isLoading={isLoading}>
+            Gửi hướng dẫn khôi phục
+          </Button>
+        </div>
       </form>
     </AuthShell>
   );

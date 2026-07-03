@@ -5,7 +5,6 @@ import { MainLayout } from '@/components/Layout/MainLayout';
 import { Input } from '@/components/UI/Input';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent } from '@/components/UI/Card';
-import { PageHeader } from '@/components/UI/PageHeader';
 import { useUIStore } from '@/store/uiStore';
 import { organizationApi } from '@/api/organization.api';
 import { OrganizationUnit, CreateOrganizationUnitRequest, UpdateOrganizationUnitRequest } from '@/types/organization';
@@ -174,17 +173,43 @@ export const OrganizationFormPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <PageHeader
-          icon={Layers}
-          title={id ? 'Chỉnh sửa tổ chức' : 'Thêm tổ chức mới'}
-          description={id ? 'Cập nhật tên, mã và quan hệ cha con của tổ chức.' : 'Tạo đơn vị mới trong cây tổ chức HR.'}
-          actions={
-            <Button type="button" variant="outline" onClick={() => navigate('/organizations')}>
-              <ArrowLeft size={18} />
-              Quay lại
-            </Button>
-          }
-        />
+        {/* ── Hero header ──────────────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-emerald-800 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full bg-emerald-400/10 blur-2xl" />
+
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-400/20 ring-1 ring-teal-300/30">
+                <Layers size={22} className="text-teal-200" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{id ? 'Chỉnh sửa tổ chức' : 'Thêm tổ chức mới'}</h1>
+                <p className="mt-0.5 text-sm text-teal-300">
+                  {id ? 'Cập nhật tên, mã và quan hệ cha con của tổ chức.' : 'Tạo đơn vị mới trong cây tổ chức HR.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
+                <div className="text-xs text-teal-300/80">Chế độ</div>
+                <div className="text-base font-bold leading-none text-white mt-0.5">{id ? 'Chỉnh sửa' : 'Tạo mới'}</div>
+              </div>
+              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
+                <div className="text-xs text-teal-300/80">Cấp</div>
+                <div className="text-base font-bold leading-none text-white mt-0.5">
+                  {ORG_LEVELS.find((l) => l.value === currentLevel)?.label ?? currentLevel}
+                </div>
+              </div>
+
+              <Button type="button" variant="secondary" onClick={() => navigate('/organizations')} className="gap-1.5">
+                <ArrowLeft size={16} />
+                Quay lại
+              </Button>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>

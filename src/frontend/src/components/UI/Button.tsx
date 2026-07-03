@@ -3,9 +3,8 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'ghost' | 'outline' | 'dark' | 'accent' | 'warm-light';
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg' | 'icon';
-  pill?: boolean;
   isLoading?: boolean;
   children: ReactNode;
 }
@@ -61,32 +60,6 @@ const variantStyles = {
     'active:bg-blue-100',
     'focus:ring-blue-600',
   ].join(' '),
-
-  /* ── Lumora-style variants ── */
-  dark: [
-    'border-transparent bg-[#0a0a0a] text-white',
-    'shadow-[0_1px_3px_rgba(0,0,0,0.3)]',
-    'hover:bg-[#1a1a1a]',
-    'active:bg-[#0a0a0a] active:shadow-none',
-    'focus:ring-[#0a0a0a]',
-  ].join(' '),
-
-  accent: [
-    'border-transparent text-white',
-    'bg-gradient-to-br from-[#cf8047] to-[#97501f]',
-    'shadow-[0_1px_3px_rgba(177,95,44,0.35)]',
-    'hover:from-[#bb7040] hover:to-[#7f4218]',
-    'active:shadow-none',
-    'focus:ring-[#b15f2c]',
-  ].join(' '),
-
-  'warm-light': [
-    'border border-[#e6e5e2] bg-[#f1f0ee] text-[#111]',
-    'shadow-none',
-    'hover:bg-[#e3e2df] hover:border-[#c0bfbb]',
-    'active:bg-[#d8d7d4]',
-    'focus:ring-[#b15f2c]',
-  ].join(' '),
 };
 
 const sizeStyles = {
@@ -96,17 +69,9 @@ const sizeStyles = {
   icon: 'h-10 w-10 p-0 rounded-lg',
 };
 
-const pillSizeStyles = {
-  sm:   'h-8 px-4 text-xs gap-1.5 rounded-full',
-  md:   'h-10 px-5 text-sm gap-2 rounded-full',
-  lg:   'h-11 px-6 text-base gap-2 rounded-full',
-  icon: 'h-10 w-10 p-0 rounded-full',
-};
-
 export const Button = ({
   variant = 'primary',
   size = 'md',
-  pill = false,
   isLoading = false,
   children,
   className = '',
@@ -123,7 +88,7 @@ export const Button = ({
         'transition-[transform,box-shadow,background,border-color,color] duration-150',
         'disabled:pointer-events-none disabled:opacity-50',
         variantStyles[variant],
-        pill ? pillSizeStyles[size] : sizeStyles[size],
+        sizeStyles[size],
         className
       )}
       disabled={isDisabled}

@@ -21,7 +21,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { EmptyState } from '@/components/UI/EmptyState';
 import { Input } from '@/components/UI/Input';
 import { MainLayout } from '@/components/Layout/MainLayout';
-import { PageHeader } from '@/components/UI/PageHeader';
 import { Table, Column } from '@/components/UI/Table';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Employee } from '@/types/employee';
@@ -280,15 +279,23 @@ export const ProjectDetailPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <PageHeader
-          icon={FolderKanban}
-          title={project?.name || 'Chi tiết dự án'}
-          description="Theo dõi thông tin dự án, phân công thành viên và task liên quan."
-          actions={
-            project && (
-              <>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-800 via-cyan-900 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sky-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-400/20 ring-1 ring-sky-300/30">
+                <FolderKanban size={22} className="text-sky-200" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{project?.name || 'Chi tiết dự án'}</h1>
+                <p className="mt-0.5 text-sm text-sky-300">Theo dõi thông tin dự án, phân công thành viên và task liên quan.</p>
+              </div>
+            </div>
+            {project && (
+              <div className="flex flex-wrap items-center gap-3">
                 <Link to="/projects">
-                  <Button variant="outline">Quay lại</Button>
+                  <Button variant="secondary">Quay lại</Button>
                 </Link>
                 {canUpdateProject && (
                   <Link to={`/projects/edit/${project.id}`}>
@@ -298,10 +305,10 @@ export const ProjectDetailPage = () => {
                     </Button>
                   </Link>
                 )}
-              </>
-            )
-          }
-        />
+              </div>
+            )}
+          </div>
+        </div>
 
         {error && (
           <Card className="border-rose-200">

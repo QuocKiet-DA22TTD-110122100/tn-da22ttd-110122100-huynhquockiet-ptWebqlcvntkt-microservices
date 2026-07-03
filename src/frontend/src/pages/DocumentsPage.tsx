@@ -249,6 +249,7 @@ export const DocumentsPage = () => {
       {/* Hero header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 px-6 py-7 shadow-xl">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/10 blur-2xl" />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-400/20 ring-1 ring-violet-300/30">
@@ -261,15 +262,15 @@ export const DocumentsPage = () => {
           </div>
           <div className="flex flex-wrap gap-3">
             {[
-              { label: 'Tổng tài liệu', value: docs.length,           color: 'text-violet-300' },
-              { label: 'PDF',           value: pdfCount,              color: 'text-rose-300'   },
-              { label: 'Excel',         value: excelCount,            color: 'text-emerald-300' },
-              { label: 'Word',          value: wordCount,             color: 'text-blue-300'   },
-              { label: 'Tổng dung lượng', value: formatBytes(totalSize), color: 'text-amber-300' },
-            ].map(({ label, value, color }) => (
+              { label: 'Tổng tài liệu', value: docs.length },
+              { label: 'PDF', value: pdfCount },
+              { label: 'Excel', value: excelCount },
+              { label: 'Word', value: wordCount },
+              { label: 'Tổng dung lượng', value: formatBytes(totalSize) },
+            ].map(({ label, value }) => (
               <div key={label} className="rounded-xl bg-white/5 px-3 py-2 ring-1 ring-white/10">
-                <div className="text-xs text-slate-400">{label}</div>
-                <div className={cn('text-sm font-bold leading-none mt-0.5', color)}>{value}</div>
+                <div className="text-xs text-violet-300/80">{label}</div>
+                <div className="text-base font-bold leading-none text-white mt-0.5">{value}</div>
               </div>
             ))}
             <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-1.5">

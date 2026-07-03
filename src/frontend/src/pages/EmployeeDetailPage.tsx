@@ -151,7 +151,7 @@ export const EmployeeDetailPage = () => {
       <div className="space-y-5">
 
         {/* ── Hero banner ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-blue-900 to-slate-900 px-6 py-8 shadow-xl">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-blue-900 to-slate-950 px-6 py-8 shadow-xl">
           <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-blue-400/10 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-12 left-1/4 h-40 w-40 rounded-full bg-indigo-400/10 blur-2xl" />
 

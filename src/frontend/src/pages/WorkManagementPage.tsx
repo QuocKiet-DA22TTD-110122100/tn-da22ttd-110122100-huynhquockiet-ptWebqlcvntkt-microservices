@@ -485,7 +485,11 @@ export const WorkManagementPage = () => {
 
   if (!isWorkRole(workspaceRole)) {
     return (
-      <WorkShell title="Không gian làm việc chưa được cấp" subtitle="Tài khoản cần được duyệt sang EMPLOYEE, MANAGER, DEPARTMENT_HEAD hoặc ADMIN để sử dụng module công việc.">
+      <WorkShell
+        title="Không gian làm việc chưa được cấp"
+        subtitle="Tài khoản cần được duyệt sang EMPLOYEE, MANAGER, DEPARTMENT_HEAD hoặc ADMIN để sử dụng module công việc."
+        icon={LockKeyhole}
+      >
         <Card className="p-6">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
@@ -513,6 +517,7 @@ export const WorkManagementPage = () => {
       navItems={allowedNav}
       currentView={currentView}
       onNavigate={(view) => navigate(viewToRoute[view])}
+      icon={currentNavItem?.icon}
     >
       {notice && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -601,23 +606,30 @@ interface WorkShellProps {
   navItems?: WorkNavItem[];
   currentView?: WorkView;
   onNavigate?: (view: WorkView) => void;
+  icon?: typeof LayoutDashboard;
 }
 
-const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNavigate }: WorkShellProps) => (
+const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNavigate, icon: Icon = Briefcase }: WorkShellProps) => (
   <div className="space-y-6">
-    <div className="surface-panel overflow-hidden rounded-xl">
-      <div className="bg-gradient-to-r from-white via-blue-50/60 to-sky-50/50 p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-blue-700">Work Management MVP</p>
-          <h1 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em] text-slate-950 text-balance">{title}</h1>
-          <p className="mt-2 max-w-[72ch] text-sm leading-6 text-slate-700 text-pretty">{subtitle}</p>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-green-900 to-slate-950 px-6 py-7 shadow-xl">
+      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-400/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-green-400/10 blur-2xl" />
+
+      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-400/20 ring-1 ring-emerald-300/30">
+            <Icon size={22} className="text-emerald-200" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold tracking-[-0.02em] text-white text-balance">{title}</h1>
+            <p className="mt-0.5 max-w-[64ch] text-sm leading-6 text-emerald-100/80 text-pretty">{subtitle}</p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/"
             aria-label="Thoát Work Management về menu chính"
-            className="interactive-lift inline-flex h-8 items-center gap-2 rounded-md border border-blue-200 bg-white px-3 text-xs font-bold text-blue-900 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-950 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="interactive-lift inline-flex h-8 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 text-xs font-bold text-white hover:border-white/30 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-emerald-900"
           >
             <ArrowLeft size={14} />
             Về menu chính
@@ -625,9 +637,11 @@ const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNa
           <Badge variant="info" className="bg-blue-100 text-blue-950">Phase 3</Badge>
         </div>
       </div>
+    </div>
 
-      {navItems.length > 0 && (
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+    {navItems.length > 0 && (
+      <div className="surface-panel overflow-hidden rounded-xl p-4">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {navItems.map((item) => {
             const active = item.key === currentView;
             return (
@@ -638,11 +652,11 @@ const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNa
                 className={cn(
                   'interactive-lift flex min-w-[180px] items-center gap-3 rounded-xl border px-3 py-3 text-left',
                   active
-                    ? 'border-blue-200 bg-white text-blue-800 shadow-[inset_0_-3px_0_#2563eb,0_8px_18px_rgba(37,99,235,0.08)]'
-                    : 'border-slate-200 bg-white/85 text-slate-700 hover:border-blue-200 hover:bg-white hover:text-slate-950'
+                    ? 'border-emerald-200 bg-white text-emerald-800 shadow-[inset_0_-3px_0_#059669,0_8px_18px_rgba(5,150,105,0.08)]'
+                    : 'border-slate-200 bg-white/85 text-slate-700 hover:border-emerald-200 hover:bg-white hover:text-slate-950'
                 )}
               >
-                <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', active ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600')}>
+                <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600')}>
                   <item.icon size={18} />
                 </span>
                 <span>
@@ -653,9 +667,8 @@ const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNa
             );
           })}
         </div>
-      )}
       </div>
-    </div>
+    )}
 
     {children}
   </div>
@@ -664,7 +677,7 @@ const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNa
 const LoadingGrid = () => (
   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
     {Array.from({ length: 4 }).map((_, index) => (
-      <div key={index} className="h-32 animate-pulse rounded-2xl bg-slate-200/70" />
+      <div key={index} className="h-32 animate-shimmer rounded-2xl bg-slate-200/70" />
     ))}
   </div>
 );
@@ -2263,7 +2276,7 @@ const AISuggestionsView = ({ projects, tasks, onNotice }: { projects: ProjectSum
         </div>
         <div className="space-y-3">
           {aiLoading ? (
-            <div className="h-28 animate-pulse rounded-xl bg-slate-200/70" />
+            <div className="h-28 animate-shimmer rounded-xl bg-slate-200/70" />
           ) : riskRadar.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center">
               <ShieldCheck className="mx-auto text-slate-600" size={28} />

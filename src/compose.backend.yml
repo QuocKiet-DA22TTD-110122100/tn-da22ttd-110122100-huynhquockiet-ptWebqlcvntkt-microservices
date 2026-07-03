@@ -1,3 +1,5 @@
+name: hr-microservices-spring-core
+
 x-eureka-default-zone: &eureka_default_zone http://${EUREKA_USERNAME}:${EUREKA_PASSWORD}@eureka-peer1:${EUREKA_PEER1_PORT}/eureka/
 # Reduced heap for 8GB dev machines: 6 services × 256m = 1.5GB vs old 6 × 384m = 2.3GB
 x-java-opts: &java_opts -Xmx256m -Xms128m -XX:TieredStopAtLevel=1
@@ -19,6 +21,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 100m
+    cpus: 0.25
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
@@ -59,6 +62,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 300m
+    cpus: 0.5
     healthcheck:
       test: ["CMD-SHELL", "curl -sf -u ${EUREKA_USERNAME}:${EUREKA_PASSWORD} http://localhost:${EUREKA_PEER1_PORT}/actuator/health | grep -q UP || exit 1"]
       interval: 30s
@@ -71,6 +75,10 @@ services:
     build:
       context: ./eureka-server
       dockerfile: dockerfile
+    # HAProxy only routes to eureka-peer1 by default (see haproxy.cfg) — peer2/3
+    # exist for HA replication demo, not needed for everyday local dev.
+    # Start with: docker compose -f compose.backend.yml --profile ha up -d
+    profiles: ["ha"]
     container_name: eureka-peer2
     hostname: eureka-peer2
     ports:
@@ -96,6 +104,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 300m
+    cpus: 0.5
     healthcheck:
       test: ["CMD-SHELL", "curl -sf -u ${EUREKA_USERNAME}:${EUREKA_PASSWORD} http://localhost:${EUREKA_PEER2_PORT}/actuator/health | grep -q UP || exit 1"]
       interval: 30s
@@ -108,6 +117,7 @@ services:
     build:
       context: ./eureka-server
       dockerfile: dockerfile
+    profiles: ["ha"]
     container_name: eureka-peer3
     hostname: eureka-peer3
     ports:
@@ -133,6 +143,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 300m
+    cpus: 0.5
     healthcheck:
       test: ["CMD-SHELL", "curl -sf -u ${EUREKA_USERNAME}:${EUREKA_PASSWORD} http://localhost:${EUREKA_PEER3_PORT}/actuator/health | grep -q UP || exit 1"]
       interval: 30s
@@ -155,6 +166,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 100m
+    cpus: 0.15
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://admin:admin123@127.0.0.1:8404/ >/dev/null 2>&1"]
       interval: 30s
@@ -177,6 +189,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 256m
+    cpus: 0.3
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
       interval: 30s
@@ -203,6 +216,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 256m
+    cpus: 0.3
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 30s
@@ -225,6 +239,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 256m
+    cpus: 0.3
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:14269/"]
       interval: 30s
@@ -255,6 +270,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 256m
+    cpus: 0.4
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq
@@ -276,6 +292,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 256m
+    cpus: 0.3
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -308,6 +325,7 @@ services:
       - microservices-network
     restart: on-failure
     mem_limit: 512m
+    cpus: 0.75
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8083/actuator/health"]
       interval: 20s
@@ -357,6 +375,7 @@ services:
       - microservices-network
     restart: on-failure
     mem_limit: 512m
+    cpus: 0.75
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8086/actuator/health"]
       interval: 20s
@@ -388,6 +407,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 256m
+    cpus: 0.3
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 15s
@@ -437,6 +457,7 @@ services:
       - microservices-network
     restart: on-failure
     mem_limit: 512m
+    cpus: 0.5
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8082/actuator/health"]
       interval: 20s
@@ -469,6 +490,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 300m
+    cpus: 0.3
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 15s
@@ -521,6 +543,7 @@ services:
       - microservices-network
     restart: on-failure
     mem_limit: 512m
+    cpus: 0.5
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8084/actuator/health"]
       interval: 20s
@@ -567,6 +590,7 @@ services:
       - microservices-network
     restart: on-failure
     mem_limit: 512m
+    cpus: 0.5
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8087/actuator/health"]
       interval: 20s
@@ -616,6 +640,7 @@ services:
       - microservices-network
     restart: on-failure
     mem_limit: 512m
+    cpus: 0.5
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/actuator/health"]
       interval: 20s

@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/Layout/MainLayout';
 import { Badge } from '@/components/UI/Badge';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
+import { roleProfiles } from '@/config/roleExperience';
 import { useUIStore } from '@/store/uiStore';
 
 interface BhxhEmployee {
@@ -88,20 +89,26 @@ export const BenefitsReviewPage = () => {
     });
   };
 
+  const heroTone = roleProfiles.hr.toneClass;
+
   return (
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <section className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${heroTone} px-6 py-7 shadow-xl`}>
+          {/* Decorative orbs */}
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full bg-emerald-400/10 blur-2xl" />
+
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-cyan-50 text-cyan-700">
-                <WalletCards size={24} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/25">
+                <WalletCards size={24} className="text-white" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase text-cyan-700">Phúc lợi · Rà soát hồ sơ</p>
-                <h1 className="mt-1 text-2xl font-semibold text-slate-900">{meta.title}</h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{meta.description}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Phúc lợi · Rà soát hồ sơ</p>
+                <h1 className="mt-1 text-2xl font-bold tracking-tight text-white">{meta.title}</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{meta.description}</p>
               </div>
             </div>
             <Link to="/workspace/benefits" className="shrink-0">
@@ -111,21 +118,24 @@ export const BenefitsReviewPage = () => {
               </Button>
             </Link>
           </div>
-        </section>
 
-        {/* Summary metrics */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[
-            { label: 'Chờ cập nhật', value: pendingCount, hint: 'Hồ sơ chưa bổ sung BHXH', cls: 'border-amber-200 bg-amber-50' },
-            { label: 'Đã nhắc nhở', value: notifiedCount, hint: 'Đã gửi thông báo qua email', cls: 'border-blue-200 bg-blue-50' },
-            { label: 'Đã cập nhật', value: updatedCount, hint: 'Hồ sơ đã điền đủ thông tin', cls: 'border-emerald-200 bg-emerald-50' },
-          ].map((m) => (
-            <div key={m.label} className={`rounded-xl border p-5 ${m.cls}`}>
-              <p className="text-sm font-medium text-slate-600">{m.label}</p>
-              <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-slate-950">{m.value}</p>
-              <p className="mt-2 text-sm text-slate-500">{m.hint}</p>
-            </div>
-          ))}
+          {/* Stat pills */}
+          <div className="relative mt-5 flex flex-wrap gap-3">
+            {[
+              { label: 'Chờ cập nhật', value: pendingCount, hint: 'Hồ sơ chưa bổ sung BHXH' },
+              { label: 'Đã nhắc nhở', value: notifiedCount, hint: 'Đã gửi thông báo qua email' },
+              { label: 'Đã cập nhật', value: updatedCount, hint: 'Hồ sơ đã điền đủ thông tin' },
+            ].map((m) => (
+              <div
+                key={m.label}
+                className="flex flex-col rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10 backdrop-blur-sm"
+              >
+                <span className="text-xs text-slate-300">{m.label}</span>
+                <span className="mt-0.5 text-base font-bold leading-none text-white">{m.value}</span>
+                <span className="mt-1 text-[10px] leading-tight text-slate-400">{m.hint}</span>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Actions toolbar */}
@@ -177,8 +187,12 @@ export const BenefitsReviewPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
-                  {employees.map((emp) => (
-                    <tr key={emp.id} className="group transition-colors hover:bg-slate-50/60">
+                  {employees.map((emp, idx) => (
+                    <tr
+                      key={emp.id}
+                      className="group animate-fade-up transition-colors hover:bg-slate-50/60"
+                      style={{ animationDelay: `${Math.min(idx * 35, 350)}ms` }}
+                    >
                       <td className="px-5 py-3.5 font-mono text-xs font-semibold text-slate-500">{emp.id}</td>
                       <td className="px-5 py-3.5">
                         <p className="font-semibold text-slate-900">{emp.name}</p>

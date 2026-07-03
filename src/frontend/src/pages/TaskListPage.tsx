@@ -11,7 +11,6 @@ import { Card } from '@/components/UI/Card';
 import { ConfirmModal } from '@/components/UI/ConfirmModal';
 import { TablePagination } from '@/components/UI/DataListPage';
 import { Input } from '@/components/UI/Input';
-import { PageHeader } from '@/components/UI/PageHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useUIStore } from '@/store/uiStore';
@@ -268,21 +267,31 @@ export const TaskListPage = () => {
       <div className="space-y-5">
 
         {/* ── h1: Header ────────────────────────────────────────────────────── */}
-        <PageHeader
-          icon={Zap}
-          title="Quản lý tác vụ"
-          description="Theo dõi tác vụ theo dự án, người phụ trách, trạng thái và mức ưu tiên."
-          actions={
-            canCreateTask ? (
-              <Link to="/tasks/add">
-                <Button className="rounded-xl shadow-sm">
-                  <Plus size={16} />
-                  Tạo task
-                </Button>
-              </Link>
-            ) : undefined
-          }
-        />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-800 via-purple-900 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/10 blur-2xl" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-400/20 ring-1 ring-violet-300/30">
+                <Zap size={22} className="text-violet-200" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">Quản lý tác vụ</h1>
+                <p className="mt-0.5 text-sm text-violet-300">Theo dõi tác vụ theo dự án, người phụ trách, trạng thái và mức ưu tiên.</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {canCreateTask && (
+                <Link to="/tasks/add">
+                  <Button className="rounded-xl shadow-sm">
+                    <Plus size={16} />
+                    Tạo task
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* ── h2: Stats cards ────────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -290,7 +299,8 @@ export const TaskListPage = () => {
             <Card
               key={stat.label}
               className={cn(
-                'relative overflow-hidden p-5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md',
+                'card-hover relative overflow-hidden p-5',
+                'animate-fade-up',
                 stat.danger && 'border-rose-200 bg-rose-50/60'
               )}
               style={{ animationDelay: `${i * 60}ms` }}
@@ -519,7 +529,7 @@ export const TaskListPage = () => {
                 {pagedTasks.map((task, i) => (
                   <div
                     key={task.id}
-                    className="group relative flex gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md animate-fade-up"
+                    className="card-hover group relative flex gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm animate-fade-up"
                     style={{ animationDelay: `${i * 35}ms` }}
                   >
                     <div className={cn('w-1 shrink-0', priorityBar[task.priority])} />

@@ -1,3 +1,5 @@
+name: hr-microservices-spring-core
+
 services:
   frontend:
     image: ${FRONTEND_IMAGE:-ghcr.io/quockiet-da22ttd-110122100/hr-frontend:latest}
@@ -11,6 +13,7 @@ services:
       - microservices-network
     restart: unless-stopped
     mem_limit: 256m
+    cpus: 0.25
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:80/"]
       interval: 30s

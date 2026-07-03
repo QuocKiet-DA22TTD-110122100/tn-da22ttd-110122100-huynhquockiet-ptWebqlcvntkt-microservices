@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { AxiosError } from 'axios';
-import { ArrowRight, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react';
 import { authApi } from '@/api/auth.api';
 import { AuthShell } from '@/components/Auth/AuthShell';
 import { Button } from '@/components/UI/Button';
@@ -70,6 +70,7 @@ export const LoginPage = () => {
   const { addNotification } = useUIStore();
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const lastSubmitAtRef = useRef(0);
 
   const {
@@ -144,39 +145,56 @@ export const LoginPage = () => {
         </div>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label="Tên đăng nhập"
-          type="text"
-          autoComplete="username"
-          placeholder="admin hoặc mã nhân viên"
-          error={errors.username?.message}
-          {...register('username', {
-            required: 'Vui lòng nhập tên đăng nhập.',
-          })}
-        />
+      <form onSubmit={handleSubmit(onSubmit)} className="stagger-children space-y-4">
+        <div className="animate-fade-up">
+          <Input
+            label="Tên đăng nhập"
+            type="text"
+            autoComplete="username"
+            placeholder="admin hoặc mã nhân viên"
+            error={errors.username?.message}
+            {...register('username', {
+              required: 'Vui lòng nhập tên đăng nhập.',
+            })}
+          />
+        </div>
 
-        <Input
-          label="Mật khẩu"
-          type="password"
-          autoComplete="current-password"
-          placeholder="Nhập mật khẩu"
-          error={errors.password?.message}
-          {...register('password', {
-            required: 'Vui lòng nhập mật khẩu.',
-          })}
-        />
+        <div className="animate-fade-up">
+          <Input
+            label="Mật khẩu"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            placeholder="Nhập mật khẩu"
+            error={errors.password?.message}
+            rightElement={
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="text-slate-400 transition-colors hover:text-slate-600"
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            }
+            {...register('password', {
+              required: 'Vui lòng nhập mật khẩu.',
+            })}
+          />
+        </div>
 
         {formError && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium leading-6 text-rose-800">
+          <div className="animate-fade-up rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium leading-6 text-rose-800">
             {formError}
           </div>
         )}
 
-        <Button type="submit" className="w-full" isLoading={isLoading}>
-          Đăng nhập
-          <ArrowRight size={16} />
-        </Button>
+        <div className="animate-fade-up">
+          <Button type="submit" className="w-full" isLoading={isLoading}>
+            Đăng nhập
+            <ArrowRight size={16} />
+          </Button>
+        </div>
       </form>
     </AuthShell>
   );

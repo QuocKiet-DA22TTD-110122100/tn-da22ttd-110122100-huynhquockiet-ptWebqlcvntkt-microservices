@@ -21,7 +21,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { EmptyState } from '@/components/UI/EmptyState';
 import { Input } from '@/components/UI/Input';
 import { MainLayout } from '@/components/Layout/MainLayout';
-import { PageHeader } from '@/components/UI/PageHeader';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useUIStore } from '@/store/uiStore';
 import { Employee } from '@/types/employee';
@@ -372,33 +371,40 @@ export const PayrollPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <PageHeader
-          icon={WalletCards}
-          title="Quản lý bảng lương"
-          description="Tạo kỳ lương, tính lương, phê duyệt và xử lý chi trả cho nhân viên."
-          actions={
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => void refreshPayroll(Number(selectedEmployeeId))}
-                disabled={!selectedEmployeeId}
-              >
-                <RefreshCw size={16} />
-                Tải lại
-              </Button>
-              {view === 'table' && (
-                <Button
-                  type="button"
-                  onClick={() => addNotification({ type: 'info', message: 'Export Excel sẽ gọi endpoint /payroll/export.' })}
-                >
-                  <Download size={16} />
-                  Xuất XLSX
-                </Button>
-              )}
+
+        {/* ── Hero header ──────────────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-700 via-orange-800 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-orange-400/10 blur-2xl" />
+
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-400/20 ring-1 ring-amber-300/30">
+                <WalletCards size={22} className="text-amber-200" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">Quản lý bảng lương</h1>
+                <p className="mt-0.5 text-sm text-amber-200/80">Tạo kỳ lương, tính lương, phê duyệt và xử lý chi trả cho nhân viên</p>
+              </div>
             </div>
-          }
-        />
+
+            <div className="flex flex-wrap items-center gap-3">
+              {[
+                { label: 'Kỳ lương',  value: history.length,                    icon: FileSpreadsheet, color: 'text-amber-300' },
+                { label: 'Chờ duyệt', value: pendingCount,                      icon: ArrowRight,      color: 'text-cyan-300' },
+                { label: 'Đã xử lý',  value: workflowColumns.PROCESSED.length,  icon: CheckCircle2,    color: 'text-emerald-300' },
+              ].map(({ label, value, icon: Icon, color }) => (
+                <div key={label} className="flex items-center gap-2.5 rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
+                  <Icon size={16} className={color} />
+                  <div>
+                    <div className="text-xs text-amber-200/70">{label}</div>
+                    <div className="text-base font-bold leading-none text-white mt-0.5">{value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {!canManagePayroll && (
           <Card className="border-cyan-200 bg-cyan-50">
@@ -411,10 +417,35 @@ export const PayrollPage = () => {
         )}
 
         {/* ── Tab navigation ─────────────────────────────── */}
-        <div className="flex flex-wrap gap-1.5 rounded-2xl border border-slate-200 bg-slate-50 p-1.5">
-          <ViewTab active={view === 'dashboard'} onClick={() => setView('dashboard')} icon={WalletCards}      label="Tổng quan" />
-          <ViewTab active={view === 'workflow'}  onClick={() => setView('workflow')}  icon={ArrowRight}       label="Quy trình duyệt" count={pendingCount} />
-          <ViewTab active={view === 'table'}     onClick={() => setView('table')}     icon={FileSpreadsheet}  label="Bảng lương"      count={history.length} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-1.5 rounded-2xl border border-slate-200 bg-slate-50 p-1.5">
+            <ViewTab active={view === 'dashboard'} onClick={() => setView('dashboard')} icon={WalletCards}      label="Tổng quan" />
+            <ViewTab active={view === 'workflow'}  onClick={() => setView('workflow')}  icon={ArrowRight}       label="Quy trình duyệt" count={pendingCount} />
+            <ViewTab active={view === 'table'}     onClick={() => setView('table')}     icon={FileSpreadsheet}  label="Bảng lương"      count={history.length} />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void refreshPayroll(Number(selectedEmployeeId))}
+              disabled={!selectedEmployeeId}
+            >
+              <RefreshCw size={16} />
+              Tải lại
+            </Button>
+            {view === 'table' && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => addNotification({ type: 'info', message: 'Export Excel sẽ gọi endpoint /payroll/export.' })}
+              >
+                <Download size={16} />
+                Xuất XLSX
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* ══════════════════════════════════════════════════
@@ -799,9 +830,10 @@ export const PayrollPage = () => {
                         <tr
                           key={record.id}
                           className={cn(
-                            'group cursor-pointer transition-colors hover:bg-cyan-50/50',
+                            'group animate-fade-up cursor-pointer transition-colors hover:bg-cyan-50/50',
                             statusRowBg[record.status] || ''
                           )}
+                          style={{ animationDelay: `${Math.min(idx * 35, 350)}ms` }}
                           onClick={() => { setCurrentPayroll(record); setView('dashboard'); }}
                         >
                           <td className="py-4 pl-5 text-[11px] font-bold tabular-nums text-slate-300">

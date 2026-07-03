@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertCircle, ListChecks, Save } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ListChecks, Save } from 'lucide-react';
 import { employeeApi } from '@/api/employee.api';
 import { projectApi } from '@/api/project.api';
 import { taskApi } from '@/api/task.api';
@@ -9,7 +9,6 @@ import { Card, CardContent } from '@/components/UI/Card';
 import { EmptyState } from '@/components/UI/EmptyState';
 import { Input } from '@/components/UI/Input';
 import { MainLayout } from '@/components/Layout/MainLayout';
-import { PageHeader } from '@/components/UI/PageHeader';
 import { Employee } from '@/types/employee';
 import { Project } from '@/types/project';
 import { TaskPriority, TaskRequest, TaskStatus } from '@/types/task';
@@ -142,16 +141,43 @@ export const TaskFormPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <PageHeader
-          icon={ListChecks}
-          title={isEditing ? 'Sửa task' : 'Tạo task'}
-          description={isEditing ? 'Cập nhật nội dung, trạng thái, độ ưu tiên và người phụ trách task.' : 'Tạo task mới và gắn vào dự án phù hợp.'}
-          actions={
-            <Link to="/tasks">
-              <Button variant="outline">Quay lại</Button>
-            </Link>
-          }
-        />
+        {/* ── Hero header ──────────────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-800 via-purple-900 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/10 blur-2xl" />
+
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-400/20 ring-1 ring-violet-300/30">
+                <ListChecks size={22} className="text-violet-200" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{isEditing ? 'Sửa task' : 'Tạo task'}</h1>
+                <p className="mt-0.5 text-sm text-violet-300">
+                  {isEditing ? 'Cập nhật nội dung, trạng thái, độ ưu tiên và người phụ trách task.' : 'Tạo task mới và gắn vào dự án phù hợp.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
+                <div className="text-xs text-violet-300/80">Chế độ</div>
+                <div className="text-base font-bold leading-none text-white mt-0.5">{isEditing ? 'Chỉnh sửa' : 'Tạo mới'}</div>
+              </div>
+              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
+                <div className="text-xs text-violet-300/80">Dự án</div>
+                <div className="text-base font-bold leading-none text-white mt-0.5">{projects.length}</div>
+              </div>
+
+              <Link to="/tasks">
+                <Button type="button" variant="secondary" className="gap-1.5">
+                  <ArrowLeft size={16} />
+                  Quay lại
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
 
         {error && (
           <Card className="border-rose-200">

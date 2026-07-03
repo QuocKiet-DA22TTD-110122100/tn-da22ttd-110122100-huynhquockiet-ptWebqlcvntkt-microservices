@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef, useId } from 'react';
+import { InputHTMLAttributes, ReactNode, forwardRef, useId } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -7,10 +7,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   helperText?: string;
   showErrorIcon?: boolean;
+  rightElement?: ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, showErrorIcon = true, className = '', id: providedId, ...props }, ref) => {
+  ({ label, error, helperText, showErrorIcon = true, rightElement, className = '', id: providedId, ...props }, ref) => {
     const generatedId = useId();
     const inputId = providedId || generatedId;
     const errorId = error ? `${inputId}-error` : undefined;
@@ -37,14 +38,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               'transition-[border-color,box-shadow,background-color] duration-150',
               'hover:border-slate-400 hover:bg-slate-50/50',
               'focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-3 focus:ring-blue-500/15',
-              error ? 'border-rose-400 pr-10 focus:border-rose-500 focus:ring-rose-500/15' : 'border-slate-300',
+              error ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/15' : 'border-slate-300',
+              rightElement && error ? 'pr-16' : Boolean(error || rightElement) && 'pr-10',
               className
             )}
             {...props}
           />
 
+          {rightElement && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md bg-white">{rightElement}</div>
+          )}
+
           {error && showErrorIcon && (
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+            <div
+              className={cn(
+                'pointer-events-none absolute top-1/2 -translate-y-1/2',
+                rightElement ? 'right-10' : 'right-3'
+              )}
+            >
               <AlertCircle size={18} className="text-rose-500" aria-hidden="true" />
             </div>
           )}

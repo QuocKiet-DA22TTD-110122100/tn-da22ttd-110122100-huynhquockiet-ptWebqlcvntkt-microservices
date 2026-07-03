@@ -7,7 +7,6 @@ import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
 import { EmptyState } from '@/components/UI/EmptyState';
 import { MainLayout } from '@/components/Layout/MainLayout';
-import { PageHeader } from '@/components/UI/PageHeader';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Task, TaskPriority, TaskStatus } from '@/types/task';
 import { PERMISSIONS } from '@/utils/permissions';
@@ -129,15 +128,23 @@ export const TaskDetailPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <PageHeader
-          icon={ListChecks}
-          title={task?.title || 'Chi tiết task'}
-          description="Theo dõi trạng thái, ưu tiên, người phụ trách và liên kết dự án."
-          actions={
-            task && (
-              <>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-800 via-purple-900 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/10 blur-2xl" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-400/20 ring-1 ring-violet-300/30">
+                <ListChecks size={22} className="text-violet-200" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{task?.title || 'Chi tiết task'}</h1>
+                <p className="mt-0.5 text-sm text-violet-300">Theo dõi trạng thái, ưu tiên, người phụ trách và liên kết dự án.</p>
+              </div>
+            </div>
+            {task && (
+              <div className="flex flex-wrap items-center gap-3">
                 <Link to="/tasks">
-                  <Button variant="outline">Quay lại</Button>
+                  <Button variant="secondary">Quay lại</Button>
                 </Link>
                 {canUpdateTask && (
                   <Link to={`/tasks/edit/${task.id}`}>
@@ -147,10 +154,10 @@ export const TaskDetailPage = () => {
                     </Button>
                   </Link>
                 )}
-              </>
-            )
-          }
-        />
+              </div>
+            )}
+          </div>
+        </div>
 
         {error && (
           <Card className="border-rose-200">

@@ -2,7 +2,7 @@ import { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'muted' | 'accent' | 'dark';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'muted';
   children: ReactNode;
 }
 
@@ -13,9 +13,6 @@ const badgeStyles = {
   danger:  'border-rose-200 bg-rose-50 text-rose-800',
   info:    'border-blue-200 bg-blue-50 text-blue-800',
   muted:   'border-slate-200 bg-slate-100 text-slate-700',
-  /* Lumora-style */
-  accent:  'border-[#e8c8a8] bg-[#fdf3ea] text-[#b15f2c]',
-  dark:    'border-transparent bg-[#0a0a0a] text-white',
 };
 
 export const Badge = ({ variant = 'default', className = '', children, ...props }: BadgeProps) => (

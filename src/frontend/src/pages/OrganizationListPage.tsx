@@ -115,7 +115,7 @@ export const OrganizationListPage = () => {
       <div className="space-y-5">
 
         {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-emerald-800 to-slate-900 px-6 py-7 shadow-xl">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-emerald-800 to-slate-950 px-6 py-7 shadow-xl">
           <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full bg-emerald-400/10 blur-2xl" />
 

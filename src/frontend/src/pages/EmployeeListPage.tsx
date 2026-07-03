@@ -77,7 +77,7 @@ const EmployeeCard = ({ employee, onClick }: { employee: Employee; onClick: () =
     <button
       type="button"
       onClick={onClick}
-      className="group flex flex-col items-center gap-2.5 rounded-xl bg-white p-4 text-center shadow-sm ring-1 ring-slate-100 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      className="card-hover group flex flex-col items-center gap-2.5 rounded-xl bg-white p-4 text-center shadow-sm ring-1 ring-slate-100 hover:ring-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
     >
       <div className="relative">
         <div
@@ -599,46 +599,50 @@ export const EmployeeListPage = () => {
     <MainLayout>
       <div className="flex flex-col gap-5">
         {/* Page Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
-                <Users size={18} className="text-white" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-800 via-blue-900 to-slate-950 px-6 py-7 shadow-xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-400/20 ring-1 ring-blue-300/30">
+                <Users size={22} className="text-blue-200" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900">Quản lý nhân sự</h1>
+              <div>
+                <h1 className="text-xl font-bold text-white">Quản lý nhân sự</h1>
+                <p className="mt-0.5 text-sm text-blue-300">
+                  Tra cứu, phân tích và quản lý nhân viên theo phòng ban.
+                </p>
+              </div>
             </div>
-            <p className="mt-1 text-sm text-slate-500">
-              Tra cứu, phân tích và quản lý nhân viên theo phòng ban.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm">
-              {(['dashboard', 'table'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => {
-                    setViewMode(mode);
-                    setPage(0);
-                  }}
-                  className={cn(
-                    'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
-                    viewMode === mode
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-800'
-                  )}
-                >
-                  {mode === 'dashboard' ? <Grid3X3 size={13} /> : <LayoutList size={13} />}
-                  {mode === 'dashboard' ? 'Dashboard' : 'Danh sách'}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center rounded-lg bg-white/10 p-0.5 ring-1 ring-white/10">
+                {(['dashboard', 'table'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => {
+                      setViewMode(mode);
+                      setPage(0);
+                    }}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
+                      viewMode === mode
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-blue-100 hover:text-white'
+                    )}
+                  >
+                    {mode === 'dashboard' ? <Grid3X3 size={13} /> : <LayoutList size={13} />}
+                    {mode === 'dashboard' ? 'Dashboard' : 'Danh sách'}
+                  </button>
+                ))}
+              </div>
+              <PermissionGate permission={PERMISSIONS.EMPLOYEE_CREATE}>
+                <Button onClick={() => navigate('/employees/add')}>
+                  <Plus size={16} />
+                  Thêm nhân viên
+                </Button>
+              </PermissionGate>
             </div>
-            <PermissionGate permission={PERMISSIONS.EMPLOYEE_CREATE}>
-              <Button onClick={() => navigate('/employees/add')}>
-                <Plus size={16} />
-                Thêm nhân viên
-              </Button>
-            </PermissionGate>
           </div>
         </div>
 
@@ -690,7 +694,7 @@ export const EmployeeListPage = () => {
                   </p>
                   <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
                     {loading ? (
-                      <span className="inline-block h-8 w-12 animate-pulse rounded bg-slate-100" />
+                      <span className="inline-block h-8 w-12 animate-shimmer rounded bg-slate-100" />
                     ) : (
                       stat.value
                     )}
@@ -785,7 +789,7 @@ export const EmployeeListPage = () => {
                 {loading ? (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                     {Array.from({ length: 8 }, (_, i) => (
-                      <div key={i} className="h-[146px] animate-pulse rounded-xl bg-slate-100" />
+                      <div key={i} className="h-[146px] animate-shimmer rounded-xl bg-slate-100" />
                     ))}
                   </div>
                 ) : employees.length === 0 ? (

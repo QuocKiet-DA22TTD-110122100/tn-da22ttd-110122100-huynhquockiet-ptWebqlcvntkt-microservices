@@ -305,13 +305,13 @@ export const ChangePasswordPage = () => {
               {passwordRules.map((rule) => {
                 const passed = rule.test(newPassword);
                 return (
-                  <div key={rule.label} className="flex items-center gap-2 text-sm">
+                  <div key={rule.label} className="flex items-center gap-2 text-sm transition-colors duration-200">
                     {passed ? (
-                      <CheckCircle2 size={17} className="shrink-0 text-emerald-600" />
+                      <CheckCircle2 size={17} className="shrink-0 text-emerald-600 transition-colors duration-200" />
                     ) : (
-                      <XCircle size={17} className="shrink-0 text-slate-300" />
+                      <XCircle size={17} className="shrink-0 text-slate-300 transition-colors duration-200" />
                     )}
-                    <span className={passed ? 'font-medium text-slate-800' : 'text-slate-600'}>
+                    <span className={cn('transition-colors duration-200', passed ? 'font-medium text-slate-800' : 'text-slate-600')}>
                       {rule.label}
                     </span>
                   </div>

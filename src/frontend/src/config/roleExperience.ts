@@ -77,6 +77,21 @@ const roleAliases: Record<WorkspaceRole, string[]> = {
 
 const rolePriority: WorkspaceRole[] = ['admin', 'payroll', 'hr', 'departmentHead', 'manager', 'employee', 'user'];
 
+/**
+ * Decorative glow-circle colors for each role's hero banner, derived from the
+ * hues already present in that role's own `toneClass` gradient (see
+ * `roleProfiles` below) instead of a generic white glow.
+ */
+export const ROLE_GLOW: Record<WorkspaceRole, [string, string]> = {
+  admin: ['bg-cyan-400/10', 'bg-emerald-400/10'],
+  hr: ['bg-cyan-400/10', 'bg-emerald-400/10'],
+  payroll: ['bg-indigo-400/10', 'bg-cyan-400/10'],
+  departmentHead: ['bg-sky-400/10', 'bg-emerald-400/10'],
+  manager: ['bg-slate-400/10', 'bg-teal-400/10'],
+  employee: ['bg-slate-400/10', 'bg-cyan-400/10'],
+  user: ['bg-zinc-400/10', 'bg-cyan-400/10'],
+};
+
 export const resolveWorkspaceRole = (roles: string[] = []): WorkspaceRole => {
   const normalizedRoles = roles.map((role) => role.trim().toUpperCase());
   const matchedRole = rolePriority.find((role) =>

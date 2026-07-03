@@ -6,7 +6,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: hr-frontend
     ports:
       - "3000:80"
     networks:

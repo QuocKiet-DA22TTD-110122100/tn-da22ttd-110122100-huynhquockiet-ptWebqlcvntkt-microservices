@@ -19,6 +19,7 @@ import { Badge } from '@/components/UI/Badge';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
 import { EmptyState } from '@/components/UI/EmptyState';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { Input } from '@/components/UI/Input';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -75,7 +76,7 @@ const ViewTab = ({
     className={cn(
       'flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all',
       active
-        ? 'border-cyan-200 bg-white text-cyan-800 shadow-sm'
+        ? 'border-indigo-200 bg-white text-indigo-800 shadow-sm'
         : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900'
     )}
   >
@@ -84,7 +85,7 @@ const ViewTab = ({
     {count !== undefined && (
       <span className={cn(
         'rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums',
-        active ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-200 text-slate-500'
+        active ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'
       )}>
         {count}
       </span>
@@ -93,12 +94,11 @@ const ViewTab = ({
 );
 
 const StatCard = ({
-  label, value, hint, icon: Icon, gradient, tone,
+  label, value, hint, icon: Icon, tone,
 }: {
-  label: string; value: string; hint: string; icon: typeof WalletCards; gradient: string; tone: string;
+  label: string; value: string; hint: string; icon: typeof WalletCards; tone: string;
 }) => (
   <Card className="relative overflow-hidden p-5">
-    <div className={cn('absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r', gradient)} />
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
@@ -153,8 +153,8 @@ const WorkflowStageCol = ({
             type="button"
             onClick={() => onSelect(r)}
             className={cn(
-              'w-full rounded-xl border bg-white p-4 text-left shadow-sm transition-all hover:border-cyan-300 hover:shadow-md',
-              selectedId === r.id ? 'border-cyan-400 ring-1 ring-cyan-300' : 'border-slate-200'
+              'w-full rounded-xl border bg-white p-4 text-left shadow-sm transition-all hover:border-indigo-300 hover:shadow-md',
+              selectedId === r.id ? 'border-indigo-400 ring-1 ring-indigo-300' : 'border-slate-200'
             )}
           >
             <div className="flex items-start justify-between gap-2">
@@ -175,7 +175,7 @@ const WorkflowStageCol = ({
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onApprove(r); }}
-                  className="inline-flex h-6 items-center gap-1 rounded-lg bg-cyan-600 px-2.5 text-[10px] font-bold text-white transition hover:bg-cyan-700"
+                  className="inline-flex h-6 items-center gap-1 rounded-lg bg-indigo-600 px-2.5 text-[10px] font-bold text-white transition hover:bg-indigo-700"
                 >
                   <CheckCircle2 size={10} />
                   Duyệt
@@ -355,14 +355,14 @@ export const PayrollPage = () => {
   const canProcess = canManagePayroll && currentPayroll?.status === 'APPROVED';
 
   const summaryStats = [
-    { label: 'Lương gộp',    value: formatCurrency(currentPayroll?.grossPay),       hint: 'Tổng thu nhập trước khấu trừ', icon: WalletCards,   gradient: 'from-cyan-400 to-cyan-600',     tone: 'bg-cyan-50 text-cyan-700'     },
-    { label: 'Tổng khấu trừ', value: formatCurrency(currentPayroll?.totalDeduction), hint: 'Thuế + bảo hiểm + khác',       icon: Calculator,    gradient: 'from-amber-400 to-amber-600',   tone: 'bg-amber-50 text-amber-700'   },
-    { label: 'Thực lĩnh',    value: formatCurrency(currentPayroll?.netPay),          hint: 'Số tiền sau khấu trừ',          icon: CheckCircle2,  gradient: 'from-emerald-400 to-emerald-600', tone: 'bg-emerald-50 text-emerald-700' },
+    { label: 'Lương gộp',    value: formatCurrency(currentPayroll?.grossPay),       hint: 'Tổng thu nhập trước khấu trừ', icon: WalletCards,   tone: 'bg-indigo-50 text-indigo-600'   },
+    { label: 'Tổng khấu trừ', value: formatCurrency(currentPayroll?.totalDeduction), hint: 'Thuế + bảo hiểm + khác',       icon: Calculator,    tone: 'bg-amber-50 text-amber-700'     },
+    { label: 'Thực lĩnh',    value: formatCurrency(currentPayroll?.netPay),          hint: 'Số tiền sau khấu trừ',          icon: CheckCircle2,  tone: 'bg-emerald-50 text-emerald-700' },
     {
       label: 'Trạng thái',
       value: currentPayroll ? formatStatus(currentPayroll.status) : 'Chưa có',
       hint: currentPayroll ? `Payroll #${currentPayroll.id}` : 'Tính lương để tạo bản ghi',
-      icon: ClipboardCheck, gradient: 'from-slate-400 to-slate-600', tone: 'bg-slate-100 text-slate-600',
+      icon: ClipboardCheck, tone: 'bg-slate-100 text-slate-600',
     },
   ];
 
@@ -372,44 +372,21 @@ export const PayrollPage = () => {
     <MainLayout>
       <div className="space-y-5">
 
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-700 via-orange-800 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-orange-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-400/20 ring-1 ring-amber-300/30">
-                <WalletCards size={22} className="text-amber-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Quản lý bảng lương</h1>
-                <p className="mt-0.5 text-sm text-amber-200/80">Tạo kỳ lương, tính lương, phê duyệt và xử lý chi trả cho nhân viên</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {[
-                { label: 'Kỳ lương',  value: history.length,                    icon: FileSpreadsheet, color: 'text-amber-300' },
-                { label: 'Chờ duyệt', value: pendingCount,                      icon: ArrowRight,      color: 'text-cyan-300' },
-                { label: 'Đã xử lý',  value: workflowColumns.PROCESSED.length,  icon: CheckCircle2,    color: 'text-emerald-300' },
-              ].map(({ label, value, icon: Icon, color }) => (
-                <div key={label} className="flex items-center gap-2.5 rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                  <Icon size={16} className={color} />
-                  <div>
-                    <div className="text-xs text-amber-200/70">{label}</div>
-                    <div className="text-base font-bold leading-none text-white mt-0.5">{value}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={WalletCards}
+          title="Quản lý bảng lương"
+          description="Tạo kỳ lương, tính lương, phê duyệt và xử lý chi trả cho nhân viên"
+          stats={[
+            { label: 'Kỳ lương', value: history.length, icon: FileSpreadsheet },
+            { label: 'Chờ duyệt', value: pendingCount, icon: ArrowRight },
+            { label: 'Đã xử lý', value: workflowColumns.PROCESSED.length, icon: CheckCircle2 },
+          ]}
+        />
 
         {!canManagePayroll && (
-          <Card className="border-cyan-200 bg-cyan-50">
+          <Card className="border-indigo-200 bg-indigo-50">
             <CardContent className="py-3">
-              <p className="text-sm font-medium text-cyan-900">
+              <p className="text-sm font-medium text-indigo-900">
                 Chỉ có quyền xem. Cần <strong>PAYROLL_MANAGE</strong> để tính lương và phê duyệt.
               </p>
             </CardContent>
@@ -470,7 +447,7 @@ export const PayrollPage = () => {
                       id="payroll-employee"
                       value={selectedEmployeeId}
                       onChange={(e) => setSelectedEmployeeId(Number(e.target.value))}
-                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       disabled={loading || employees.length === 0}
                     >
                       {employees.map((emp) => (
@@ -560,7 +537,7 @@ export const PayrollPage = () => {
                       <div key={s} className="flex items-center gap-1.5">
                         <span className={cn(
                           'rounded-full px-2.5 py-1 text-[11px] font-bold',
-                          currentPayroll?.status === s ? 'bg-cyan-600 text-white' : 'bg-slate-200 text-slate-500'
+                          currentPayroll?.status === s ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'
                         )}>
                           {statusLabels[s]}
                         </span>
@@ -608,7 +585,7 @@ export const PayrollPage = () => {
               <select
                 value={selectedEmployeeId}
                 onChange={(e) => setSelectedEmployeeId(Number(e.target.value))}
-                className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {employees.map((emp) => (
                   <option key={emp.id} value={emp.id}>{emp.name} #{emp.id}</option>
@@ -732,7 +709,7 @@ export const PayrollPage = () => {
                 <select
                   value={selectedEmployeeId}
                   onChange={(e) => setSelectedEmployeeId(Number(e.target.value))}
-                  className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>{emp.name} #{emp.id}</option>
@@ -793,7 +770,7 @@ export const PayrollPage = () => {
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               {/* Panel header */}
               <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-100 text-xs font-bold text-cyan-800">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-800">
                   {(selectedEmployee?.name || 'NV').slice(0, 2).toUpperCase()}
                 </div>
                 <div>
@@ -830,7 +807,7 @@ export const PayrollPage = () => {
                         <tr
                           key={record.id}
                           className={cn(
-                            'group animate-fade-up cursor-pointer transition-colors hover:bg-cyan-50/50',
+                            'group animate-fade-up cursor-pointer transition-colors hover:bg-indigo-50/50',
                             statusRowBg[record.status] || ''
                           )}
                           style={{ animationDelay: `${Math.min(idx * 35, 350)}ms` }}
@@ -841,7 +818,7 @@ export const PayrollPage = () => {
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2.5">
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-xs font-bold text-cyan-800">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-800">
                                 {(record.employee?.name || selectedEmployee?.name || 'NV').slice(0, 2).toUpperCase()}
                               </div>
                               <div>
@@ -886,7 +863,7 @@ export const PayrollPage = () => {
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); setCurrentPayroll(record); setView('dashboard'); }}
-                              className="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-[11px] font-semibold text-slate-600 opacity-0 shadow-sm transition group-hover:opacity-100 hover:border-cyan-300 hover:text-cyan-700"
+                              className="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 text-[11px] font-semibold text-slate-600 opacity-0 shadow-sm transition group-hover:opacity-100 hover:border-indigo-300 hover:text-indigo-700"
                             >
                               Chi tiết →
                             </button>

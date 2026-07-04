@@ -4,6 +4,7 @@ import { Modal } from '@/components/UI/Modal';
 import { Input } from '@/components/UI/Input';
 import { Badge } from '@/components/UI/Badge';
 import { Card } from '@/components/UI/Card';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import {
   Plus, Edit, Trash2, Shield, AlertCircle, Search,
@@ -44,7 +45,7 @@ const GROUP_COLORS: Record<string, string> = {
   'Công việc':  'bg-teal-600',
   'Bảng lương': 'bg-rose-600',
   'Vai trò':    'bg-purple-600',
-  'Người dùng': 'bg-cyan-600',
+  'Người dùng': 'bg-indigo-600',
 };
 
 const permissionGroups: Record<string, { value: string; label: string }[]> = {
@@ -161,14 +162,14 @@ function PermissionMatrix({
   return (
     <div className="space-y-3">
       {/* Select all */}
-      <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 p-3 transition hover:bg-cyan-100/60">
+      <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 transition hover:bg-indigo-100/60">
         <input
           type="checkbox"
           checked={selectedPerms.length === allPermissions.length}
           onChange={onSelectAll}
-          className="rounded border-cyan-300 text-cyan-700 focus:ring-cyan-500"
+          className="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500"
         />
-        <span className="text-sm font-semibold text-cyan-900">
+        <span className="text-sm font-semibold text-indigo-900">
           Chọn tất cả quyền ({selectedPerms.length}/{allPermissions.length})
         </span>
       </label>
@@ -190,7 +191,7 @@ function PermissionMatrix({
                   checked={allSel}
                   ref={(el) => { if (el) el.indeterminate = someSel; }}
                   onChange={() => onSelectGroup(group)}
-                  className="rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <span className="text-sm font-semibold text-slate-800">{group}</span>
               </label>
@@ -202,13 +203,13 @@ function PermissionMatrix({
               {perms.map((perm) => (
                 <label
                   key={perm.value}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition hover:bg-cyan-50/70"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition hover:bg-indigo-50/70"
                 >
                   <input
                     type="checkbox"
                     checked={selectedPerms.includes(perm.value)}
                     onChange={() => onToggle(perm.value)}
-                    className="rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                   />
                   <div>
                     <div className="text-xs font-semibold text-slate-800">{perm.label}</div>
@@ -451,43 +452,18 @@ export const RoleManagementPage = () => {
     <MainLayout>
       <div className="space-y-5">
 
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 px-6 py-7 shadow-xl">
-          {/* Decorative orbs */}
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full bg-purple-500/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            {/* Title */}
-            <div className="flex items-start gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/20 ring-1 ring-blue-400/30">
-                <Shield size={22} className="text-blue-300" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-white">Quản lý phân quyền</h1>
-                <p className="mt-0.5 text-sm text-slate-400">Cấu hình vai trò và quyền truy cập tài nguyên hệ thống</p>
-              </div>
-            </div>
-
-            {/* Stats row */}
-            <div className="flex flex-wrap gap-3 sm:shrink-0">
-              {[
-                { icon: ShieldCheck, label: 'Vai trò', value: roleList.length, color: 'text-blue-300' },
-                { icon: Users,       label: 'Người dùng', value: totalUsers,  color: 'text-emerald-300' },
-                { icon: Lock,        label: 'Hệ thống',   value: systemCount, color: 'text-amber-300' },
-                { icon: UserCog,     label: 'Tùy chỉnh',  value: customCount, color: 'text-purple-300' },
-              ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="flex items-center gap-2.5 rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10 backdrop-blur-sm">
-                  <Icon size={16} className={color} />
-                  <div>
-                    <div className="text-xs text-slate-400">{label}</div>
-                    <div className="text-base font-bold text-white leading-none mt-0.5">{value}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={Shield}
+          title="Quản lý phân quyền"
+          description="Cấu hình vai trò và quyền truy cập tài nguyên hệ thống"
+          align="start"
+          stats={[
+            { icon: ShieldCheck, label: 'Vai trò', value: roleList.length },
+            { icon: Users, label: 'Người dùng', value: totalUsers },
+            { icon: Lock, label: 'Hệ thống', value: systemCount },
+            { icon: UserCog, label: 'Tùy chỉnh', value: customCount },
+          ]}
+        />
 
         {/* ── Controls bar ─────────────────────────────────────────────── */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -885,8 +861,8 @@ export const RoleManagementPage = () => {
               onBlur={() => setDescErr(validateDesc(newDesc))}
               placeholder="Mô tả vai trò (tối thiểu 10 ký tự)"
               className={cn(
-                'w-full resize-none rounded-xl border px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500',
-                descErr ? 'border-rose-400' : 'border-slate-300 hover:border-cyan-300'
+                'w-full resize-none rounded-xl border px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                descErr ? 'border-rose-400' : 'border-slate-300 hover:border-indigo-300'
               )}
             />
             {descErr && <p className="mt-1 text-xs text-rose-600">{descErr}</p>}
@@ -956,8 +932,8 @@ export const RoleManagementPage = () => {
               onBlur={() => setEditDescErr(validateDesc(editDesc))}
               placeholder="Mô tả vai trò"
               className={cn(
-                'w-full resize-none rounded-xl border px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500',
-                editDescErr ? 'border-rose-400' : 'border-slate-300 hover:border-cyan-300'
+                'w-full resize-none rounded-xl border px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                editDescErr ? 'border-rose-400' : 'border-slate-300 hover:border-indigo-300'
               )}
             />
             {editDescErr && <p className="mt-1 text-xs text-rose-600">{editDescErr}</p>}

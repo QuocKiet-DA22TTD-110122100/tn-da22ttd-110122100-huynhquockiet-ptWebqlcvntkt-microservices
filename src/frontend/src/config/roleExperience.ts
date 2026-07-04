@@ -54,7 +54,6 @@ export interface RoleProfile {
   badge: string;
   headline: string;
   description: string;
-  toneClass: string;
   statCards: Array<{
     label: string;
     value: string;
@@ -76,21 +75,6 @@ const roleAliases: Record<WorkspaceRole, string[]> = {
 };
 
 const rolePriority: WorkspaceRole[] = ['admin', 'payroll', 'hr', 'departmentHead', 'manager', 'employee', 'user'];
-
-/**
- * Decorative glow-circle colors for each role's hero banner, derived from the
- * hues already present in that role's own `toneClass` gradient (see
- * `roleProfiles` below) instead of a generic white glow.
- */
-export const ROLE_GLOW: Record<WorkspaceRole, [string, string]> = {
-  admin: ['bg-cyan-400/10', 'bg-emerald-400/10'],
-  hr: ['bg-cyan-400/10', 'bg-emerald-400/10'],
-  payroll: ['bg-indigo-400/10', 'bg-cyan-400/10'],
-  departmentHead: ['bg-sky-400/10', 'bg-emerald-400/10'],
-  manager: ['bg-slate-400/10', 'bg-teal-400/10'],
-  employee: ['bg-slate-400/10', 'bg-cyan-400/10'],
-  user: ['bg-zinc-400/10', 'bg-cyan-400/10'],
-};
 
 export const resolveWorkspaceRole = (roles: string[] = []): WorkspaceRole => {
   const normalizedRoles = roles.map((role) => role.trim().toUpperCase());
@@ -352,7 +336,6 @@ export const roleProfiles: Record<WorkspaceRole, RoleProfile> = {
     badge: 'ADMIN',
     headline: 'Bảng điều phối quản trị hệ thống',
     description: 'Tập trung vào tài khoản, vai trò, quyền truy cập và các điểm cần kiểm toán.',
-    toneClass: 'from-slate-950 via-cyan-900 to-emerald-700',
     statCards: [
       { label: 'Tài khoản', value: 'Quản trị', hint: 'Tạo, khóa và cấp quyền người dùng', icon: UserCog },
       { label: 'Vai trò', value: 'RBAC', hint: 'Role, permission và phạm vi truy cập', icon: Key },
@@ -391,7 +374,6 @@ export const roleProfiles: Record<WorkspaceRole, RoleProfile> = {
     badge: 'HR',
     headline: 'Không gian nghiệp vụ nhân sự',
     description: 'Tập trung vào hồ sơ nhân sự, phòng ban, vòng đời nhân viên và phúc lợi.',
-    toneClass: 'from-cyan-900 via-teal-800 to-emerald-700',
     statCards: [
       { label: 'Hồ sơ nhân sự', value: 'HRIS', hint: 'Thông tin nhân viên và trạng thái làm việc', icon: Users },
       { label: 'Phúc lợi', value: 'Benefit', hint: 'Bảo hiểm, phụ cấp và dữ liệu payroll', icon: WalletCards },
@@ -429,7 +411,6 @@ export const roleProfiles: Record<WorkspaceRole, RoleProfile> = {
     badge: 'PAYROLL_OFFICER',
     headline: 'Không gian bảng lương',
     description: 'Tập trung vào kỳ lương, tính lương, phê duyệt và lịch sử chi trả theo đúng phạm vi payroll.',
-    toneClass: 'from-slate-950 via-indigo-900 to-cyan-700',
     statCards: [
       { label: 'Bảng lương', value: 'Payroll', hint: 'Tính và đối soát lương theo tháng', icon: WalletCards },
       { label: 'Workflow', value: 'Duyệt', hint: 'Draft, approved và processed', icon: ClipboardCheck },
@@ -469,7 +450,6 @@ export const roleProfiles: Record<WorkspaceRole, RoleProfile> = {
     badge: 'DEPARTMENT_HEAD',
     headline: 'Bảng điều hành phòng ban',
     description: 'Theo dõi báo cáo phòng ban, phê duyệt cấp phòng và các rủi ro vận hành.',
-    toneClass: 'from-sky-900 via-blue-800 to-emerald-700',
     statCards: [
       { label: 'Báo cáo', value: 'Phòng ban', hint: 'KPI, headcount và tải công việc', icon: BarChart3 },
       { label: 'Phê duyệt', value: 'Cấp phòng', hint: 'Nghỉ phép, phân bổ, điều chuyển', icon: ClipboardCheck },
@@ -506,7 +486,6 @@ export const roleProfiles: Record<WorkspaceRole, RoleProfile> = {
     badge: 'MANAGER',
     headline: 'Không gian quản lý nhóm',
     description: 'Tập trung duyệt timesheet, điều phối task nhóm và theo dõi tiến độ hằng ngày.',
-    toneClass: 'from-stone-900 via-slate-800 to-teal-700',
     statCards: [
       { label: 'Timesheet', value: 'Duyệt', hint: 'Ngoại lệ chấm công trong nhóm', icon: Clock3 },
       { label: 'Task nhóm', value: 'Điều phối', hint: 'Ưu tiên, deadline và tải công việc', icon: Briefcase },
@@ -544,7 +523,6 @@ export const roleProfiles: Record<WorkspaceRole, RoleProfile> = {
     badge: 'EMPLOYEE',
     headline: 'Không gian làm việc cá nhân',
     description: 'Theo dõi chấm công, nghỉ phép và task cá nhân được giao.',
-    toneClass: 'from-zinc-950 via-slate-800 to-cyan-800',
     statCards: [
       { label: 'Chấm công', value: 'Timesheet', hint: 'Ngày công, giờ làm và ghi chú', icon: Clock3 },
       { label: 'Nghỉ phép', value: 'Yêu cầu', hint: 'Tạo đơn và xem trạng thái duyệt', icon: CalendarCheck },
@@ -581,7 +559,6 @@ export const roleProfiles: Record<WorkspaceRole, RoleProfile> = {
     badge: 'USER',
     headline: 'Không gian tài khoản cá nhân',
     description: 'Dành cho tài khoản, bảo mật và quyền truy cập được cấp.',
-    toneClass: 'from-slate-950 via-zinc-800 to-cyan-800',
     statCards: [
       { label: 'Tài khoản', value: 'Cá nhân', hint: 'Thông tin đăng nhập và liên hệ', icon: User },
       { label: 'Bảo mật', value: 'Mật khẩu', hint: 'Đổi mật khẩu và hạn bảo mật', icon: Key },

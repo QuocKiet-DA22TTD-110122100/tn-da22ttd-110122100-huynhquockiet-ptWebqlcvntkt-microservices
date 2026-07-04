@@ -35,7 +35,7 @@ function InfoField({ icon: Icon, label, value, accent = 'blue' }: {
     purple:  'bg-purple-50 text-purple-600',
     amber:   'bg-amber-50 text-amber-600',
     rose:    'bg-rose-50 text-rose-600',
-    cyan:    'bg-cyan-50 text-cyan-600',
+    cyan:    'bg-indigo-50 text-indigo-600',
     indigo:  'bg-indigo-50 text-indigo-600',
     slate:   'bg-slate-100 text-slate-600',
   };
@@ -151,16 +151,13 @@ export const EmployeeDetailPage = () => {
       <div className="space-y-5">
 
         {/* ── Hero banner ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-blue-900 to-slate-950 px-6 py-8 shadow-xl">
-          <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-blue-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-12 left-1/4 h-40 w-40 rounded-full bg-indigo-400/10 blur-2xl" />
-
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-blue-50 via-indigo-100 to-white px-6 py-8 shadow-[0_1px_1px_rgba(67,56,202,0.05),0_18px_34px_-12px_rgba(67,56,202,0.20)]">
           {/* Back + actions row */}
           <div className="relative flex items-center justify-between mb-6">
             <button
               type="button"
               onClick={() => navigate('/employees')}
-              className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20"
+              className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm ring-1 ring-indigo-100 transition hover:bg-indigo-50"
             >
               <ArrowLeft size={16} />
               Quay lại
@@ -180,21 +177,21 @@ export const EmployeeDetailPage = () => {
           {/* Profile identity */}
           <div className="relative flex items-center gap-5">
             {/* Large avatar */}
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 text-3xl font-bold text-white shadow-lg ring-2 ring-white/20">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 text-3xl font-bold text-white shadow-lg ring-2 ring-white">
               {avatarText}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold text-white">{employee.name}</h1>
+                <h1 className="text-xl font-bold text-slate-900">{employee.name}</h1>
                 <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
               </div>
-              <p className="mt-1 text-sm text-blue-200">{employee.position || 'Chưa có chức vụ'}</p>
+              <p className="mt-1 text-sm text-indigo-700">{employee.position || 'Chưa có chức vụ'}</p>
               {employee.departmentName && (
-                <p className="mt-0.5 text-xs text-slate-400">{employee.departmentName}</p>
+                <p className="mt-0.5 text-xs text-indigo-400">{employee.departmentName}</p>
               )}
               <div className="mt-2 flex items-center gap-1.5">
-                <Hash size={12} className="text-slate-400" />
-                <span className="rounded bg-white/10 px-2 py-0.5 font-mono text-xs text-slate-300">{employeeCode}</span>
+                <Hash size={12} className="text-indigo-400" />
+                <span className="rounded bg-white px-2 py-0.5 font-mono text-xs text-indigo-700 ring-1 ring-indigo-100">{employeeCode}</span>
               </div>
             </div>
           </div>

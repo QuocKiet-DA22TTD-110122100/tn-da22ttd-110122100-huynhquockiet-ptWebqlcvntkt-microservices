@@ -7,6 +7,7 @@ import { Button } from '@/components/UI/Button';
 import { Card, CardContent } from '@/components/UI/Card';
 import { EmptyState } from '@/components/UI/EmptyState';
 import { Input } from '@/components/UI/Input';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Employee } from '@/types/employee';
 import { ProjectRequest, ProjectStatus } from '@/types/project';
@@ -116,43 +117,23 @@ export const ProjectFormPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-800 via-cyan-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sky-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-400/20 ring-1 ring-sky-300/30">
-                <FolderKanban size={22} className="text-sky-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{isEditing ? 'Sửa dự án' : 'Tạo dự án'}</h1>
-                <p className="mt-0.5 text-sm text-sky-300">
-                  {isEditing ? 'Cập nhật thông tin vận hành, trạng thái và người phụ trách dự án.' : 'Tạo dự án mới và chỉ định người phụ trách chính.'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-sky-300/80">Chế độ</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">{isEditing ? 'Chỉnh sửa' : 'Tạo mới'}</div>
-              </div>
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-sky-300/80">Nhân viên</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">{employees.length}</div>
-              </div>
-
-              <Link to="/projects">
-                <Button type="button" variant="secondary" className="gap-1.5">
-                  <ArrowLeft size={16} />
-                  Quay lại
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={FolderKanban}
+          title={isEditing ? 'Sửa dự án' : 'Tạo dự án'}
+          description={isEditing ? 'Cập nhật thông tin vận hành, trạng thái và người phụ trách dự án.' : 'Tạo dự án mới và chỉ định người phụ trách chính.'}
+          stats={[
+            { label: 'Chế độ', value: isEditing ? 'Chỉnh sửa' : 'Tạo mới' },
+            { label: 'Nhân viên', value: employees.length },
+          ]}
+          actions={
+            <Link to="/projects">
+              <Button type="button" variant="secondary" className="gap-1.5">
+                <ArrowLeft size={16} />
+                Quay lại
+              </Button>
+            </Link>
+          }
+        />
 
         {error && (
           <Card className="border-rose-200">
@@ -186,7 +167,7 @@ export const ProjectFormPage = () => {
                     value={form.description || ''}
                     onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
                     rows={4}
-                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition placeholder:text-slate-500 hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition placeholder:text-slate-500 hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                   />
                 </div>
 
@@ -199,7 +180,7 @@ export const ProjectFormPage = () => {
                       id="project-status"
                       value={form.status || 'ACTIVE'}
                       onChange={(event) => setForm((current) => ({ ...current, status: event.target.value as ProjectStatus }))}
-                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                     >
                       {Object.entries(statusLabels).map(([value, label]) => (
                         <option key={value} value={value}>
@@ -218,7 +199,7 @@ export const ProjectFormPage = () => {
                         id="project-lead"
                         value={form.leadId || ''}
                         onChange={(event) => setForm((current) => ({ ...current, leadId: Number(event.target.value) }))}
-                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                       >
                         <option value="" disabled>
                           Chọn trưởng dự án

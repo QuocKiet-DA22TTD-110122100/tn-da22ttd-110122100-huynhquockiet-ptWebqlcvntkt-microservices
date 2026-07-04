@@ -72,11 +72,11 @@ export const Toast = ({ id, type, message, duration = 5000, onClose, onRetry }: 
       progressBg: 'bg-amber-500',
     },
     info: {
-      bg: 'bg-cyan-50',
-      border: 'border-cyan-200',
-      text: 'text-cyan-900',
-      icon: <Info size={20} className="text-cyan-700" aria-hidden="true" />,
-      progressBg: 'bg-cyan-600',
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-200',
+      text: 'text-indigo-900',
+      icon: <Info size={20} className="text-indigo-700" aria-hidden="true" />,
+      progressBg: 'bg-indigo-600',
     },
   };
 

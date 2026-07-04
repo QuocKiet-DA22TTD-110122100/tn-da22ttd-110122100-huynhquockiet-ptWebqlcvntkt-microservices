@@ -51,7 +51,7 @@ export const ForgotPasswordPage = () => {
       eyebrow="Password recovery"
       footer={
         <div className="space-y-4">
-          <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-700 hover:text-cyan-800">
+          <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
             <ArrowLeft size={16} />
             Quay lại đăng nhập
           </Link>

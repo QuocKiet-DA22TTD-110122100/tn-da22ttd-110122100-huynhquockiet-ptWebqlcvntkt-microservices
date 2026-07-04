@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Input } from '@/components/UI/Input';
 import { Button } from '@/components/UI/Button';
@@ -117,7 +118,7 @@ export const DepartmentFormPage = () => {
     return (
       <MainLayout>
         <div className="flex justify-center items-center py-12">
-          <Loader size={32} className="animate-spin text-cyan-600" />
+          <Loader size={32} className="animate-spin text-indigo-600" />
         </div>
       </MainLayout>
     );
@@ -126,41 +127,21 @@ export const DepartmentFormPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-800 via-indigo-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-violet-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-400/20 ring-1 ring-indigo-300/30">
-                <Building2 size={22} className="text-indigo-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{id ? 'Chỉnh sửa phòng ban' : 'Thêm phòng ban mới'}</h1>
-                <p className="mt-0.5 text-sm text-indigo-300">
-                  {id ? 'Cập nhật mã, tên và tổ chức quản lý của phòng ban.' : 'Tạo phòng ban mới và gắn vào đúng đơn vị tổ chức.'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-indigo-300/80">Chế độ</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">{id ? 'Chỉnh sửa' : 'Tạo mới'}</div>
-              </div>
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-indigo-300/80">Tổ chức</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">{organizations.length}</div>
-              </div>
-
-              <Button type="button" variant="secondary" onClick={() => navigate('/departments')} className="gap-1.5">
-                <ArrowLeft size={16} />
-                Quay lại
-              </Button>
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={Building2}
+          title={id ? 'Chỉnh sửa phòng ban' : 'Thêm phòng ban mới'}
+          description={id ? 'Cập nhật mã, tên và tổ chức quản lý của phòng ban.' : 'Tạo phòng ban mới và gắn vào đúng đơn vị tổ chức.'}
+          stats={[
+            { label: 'Chế độ', value: id ? 'Chỉnh sửa' : 'Tạo mới' },
+            { label: 'Tổ chức', value: organizations.length },
+          ]}
+          actions={
+            <Button type="button" variant="secondary" onClick={() => navigate('/departments')} className="gap-1.5">
+              <ArrowLeft size={16} />
+              Quay lại
+            </Button>
+          }
+        />
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>
@@ -186,7 +167,7 @@ export const DepartmentFormPage = () => {
                 </label>
                 <select
                   id="organizationUnitId"
-                  className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                  className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                   {...register('organizationUnitId')}
                 >
                   <option value="">Chọn tổ chức</option>

@@ -70,11 +70,11 @@ export const WorkspaceActionPanel = ({ selectedItem, processNotes, onApprove, on
               <div>
                 <div className="mb-1.5 flex items-center justify-between text-xs">
                   <span className="font-semibold text-slate-600">Tiến độ hoàn thành</span>
-                  <span className="font-bold text-cyan-700">{selectedItem.progress}%</span>
+                  <span className="font-bold text-indigo-700">{selectedItem.progress}%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
                   <div
-                    className="h-full w-full origin-left rounded-full bg-cyan-600 transition-transform duration-700"
+                    className="h-full w-full origin-left rounded-full bg-indigo-600 transition-transform duration-700"
                     style={{ transform: `scaleX(${selectedItem.progress / 100})` }}
                   />
                 </div>
@@ -82,9 +82,9 @@ export const WorkspaceActionPanel = ({ selectedItem, processNotes, onApprove, on
             )}
 
             {/* Next step */}
-            <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
-              <p className="text-sm font-semibold text-cyan-900">Bước tiếp theo</p>
-              <p className="mt-1 text-sm leading-6 text-cyan-800">{selectedItem.nextStep}</p>
+            <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+              <p className="text-sm font-semibold text-indigo-900">Bước tiếp theo</p>
+              <p className="mt-1 text-sm leading-6 text-indigo-800">{selectedItem.nextStep}</p>
             </div>
 
             {/* Approve / Reject actions */}
@@ -129,9 +129,9 @@ export const WorkspaceActionPanel = ({ selectedItem, processNotes, onApprove, on
                   disabled={!selectedItem.reviewId}
                   onClick={() => selectedItem.reviewId && onOpenRecord(selectedItem)}
                   className={cn(
-                    'flex w-full items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2',
+                    'flex w-full items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
                     selectedItem.reviewId
-                      ? 'border-cyan-600 bg-cyan-600 text-white hover:bg-cyan-700'
+                      ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
                       : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400',
                   )}
                 >
@@ -162,7 +162,7 @@ export const WorkspaceActionPanel = ({ selectedItem, processNotes, onApprove, on
           const NoteIcon = noteIcons[index % noteIcons.length];
           return (
             <div key={note} className="flex gap-2 text-sm text-slate-600">
-              <NoteIcon size={18} className="mt-0.5 shrink-0 text-cyan-700" />
+              <NoteIcon size={18} className="mt-0.5 shrink-0 text-indigo-700" />
               <p>{note}</p>
             </div>
           );

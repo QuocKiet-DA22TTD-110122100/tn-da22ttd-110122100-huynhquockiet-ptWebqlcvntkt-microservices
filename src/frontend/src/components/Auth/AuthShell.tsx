@@ -36,13 +36,13 @@ export const AuthShell = ({ title, description, icon: Icon, children, footer, ey
         <div className="absolute inset-0 opacity-[0.13]">
           <div className="h-full w-full bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:52px_52px]" />
         </div>
-        <div className="animate-float absolute left-[-8rem] top-[-8rem] h-80 w-80 rounded-full bg-cyan-500/12 blur-3xl" />
+        <div className="animate-float absolute left-[-8rem] top-[-8rem] h-80 w-80 rounded-full bg-indigo-500/12 blur-3xl" />
         <div className="animate-float absolute -bottom-16 right-[-6rem] h-64 w-64 rounded-full bg-blue-400/10 blur-3xl" style={{ animationDelay: '1.2s' }} />
-        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-cyan-950/60 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-indigo-950/60 to-transparent" />
 
         <div className="relative animate-fade-in">
           <Link to="/login" className="inline-flex items-center gap-3 text-lg font-semibold">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-300 text-slate-950 shadow-[0_12px_30px_rgba(34,211,238,0.2)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-300 text-slate-950 shadow-[0_12px_30px_rgba(129,140,248,0.25)]">
               <Building2 size={22} />
             </span>
             HR Core
@@ -50,7 +50,7 @@ export const AuthShell = ({ title, description, icon: Icon, children, footer, ey
         </div>
 
         <div className="relative max-w-2xl">
-          <div className="mb-5 animate-fade-up inline-flex items-center gap-2 rounded-lg border border-cyan-200/20 bg-cyan-200/10 px-3 py-1.5 text-sm font-semibold text-cyan-50">
+          <div className="mb-5 animate-fade-up inline-flex items-center gap-2 rounded-lg border border-indigo-200/20 bg-indigo-200/10 px-3 py-1.5 text-sm font-semibold text-indigo-50">
             <ShieldCheck size={16} />
             Quản trị nhân sự theo quyền truy cập
           </div>
@@ -64,7 +64,7 @@ export const AuthShell = ({ title, description, icon: Icon, children, footer, ey
           <div className="stagger-children mt-8 grid gap-3">
             {authHighlights.map((item) => (
               <div key={item.title} className="animate-fade-up flex gap-4 rounded-xl border border-white/10 bg-white/[0.045] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition duration-150 hover:bg-white/[0.07]">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-cyan-200">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-indigo-200">
                   <item.icon size={20} />
                 </div>
                 <div>
@@ -86,7 +86,7 @@ export const AuthShell = ({ title, description, icon: Icon, children, footer, ey
         <div className="w-full max-w-md">
           <div className="mb-8 flex items-center justify-between lg:hidden">
             <Link to="/login" className="inline-flex items-center gap-3 text-lg font-semibold text-slate-900">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-700 text-white">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-700 text-white">
                 <Building2 size={22} />
               </span>
               HR Core
@@ -99,7 +99,7 @@ export const AuthShell = ({ title, description, icon: Icon, children, footer, ey
           <div className="page-enter surface-panel rounded-xl">
             <div className="border-b border-slate-200 px-6 py-6 sm:px-8">
               <div className="mb-5 flex items-center justify-between gap-4">
-                <div className="animate-scale-in flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-50 text-cyan-800 ring-1 ring-cyan-100">
+                <div className="animate-scale-in flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 text-indigo-800 ring-1 ring-indigo-100">
                   <Icon size={24} />
                 </div>
                 <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">{eyebrow}</span>

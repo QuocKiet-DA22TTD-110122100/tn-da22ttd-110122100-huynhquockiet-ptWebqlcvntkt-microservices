@@ -30,7 +30,7 @@ const weekdayLabels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 const statusDotClass: Record<WorkspaceItem['status'], string> = {
   approved: 'bg-emerald-500',
   pending: 'bg-amber-500',
-  inProgress: 'bg-cyan-500',
+  inProgress: 'bg-indigo-500',
   blocked: 'bg-rose-500',
 };
 
@@ -109,9 +109,9 @@ export const LeaveCalendarModal = ({ isOpen, onClose, items }: LeaveCalendarModa
                 className={cn(
                   'flex h-16 flex-col items-center justify-start gap-1 rounded-md border p-1 text-xs transition disabled:cursor-default',
                   inMonth ? 'border-slate-200 bg-white' : 'border-transparent bg-slate-50',
-                  isToday(day) && 'border-cyan-600',
-                  selectedDate === key && 'ring-2 ring-cyan-600',
-                  dayItems.length > 0 && 'cursor-pointer hover:border-cyan-400'
+                  isToday(day) && 'border-indigo-600',
+                  selectedDate === key && 'ring-2 ring-indigo-600',
+                  dayItems.length > 0 && 'cursor-pointer hover:border-indigo-400'
                 )}
               >
                 <span className={cn('font-semibold', inMonth ? 'text-slate-700' : 'text-slate-300')}>

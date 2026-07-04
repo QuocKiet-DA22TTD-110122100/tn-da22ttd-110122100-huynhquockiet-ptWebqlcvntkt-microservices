@@ -13,6 +13,7 @@ import {
   Users,
   WalletCards,
 } from 'lucide-react';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Badge } from '@/components/UI/Badge';
 import { Button } from '@/components/UI/Button';
@@ -23,7 +24,7 @@ import { WorkspaceStatusFilters, WorkspaceFilter } from '@/components/Workspace/
 import { WorkspaceStatusList } from '@/components/Workspace/WorkspaceStatusList';
 import { WorkspaceDefinition, WorkspaceItem } from '@/components/Workspace/types';
 import { LeaveCalendarModal } from '@/components/Workspace/LeaveCalendarModal';
-import { resolveWorkspaceRole, roleProfiles, ROLE_GLOW } from '@/config/roleExperience';
+import { resolveWorkspaceRole } from '@/config/roleExperience';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { downloadCsv } from '@/utils/exportCsv';
@@ -69,7 +70,7 @@ const HrMissingRecordsTable = ({
   description: string;
   focused?: boolean;
 }) => (
-  <Card className={focused ? 'border-cyan-300 bg-cyan-50/20' : undefined}>
+  <Card className={focused ? 'border-indigo-300 bg-indigo-50/20' : undefined}>
     <CardHeader>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -956,44 +957,21 @@ export const RoleWorkspacePage = () => {
     : [];
   const isHrPrimaryDisabled = slug === 'hr-records' && !selectedItem;
 
-  const heroTone = roleProfiles[workspaceRole].toneClass;
-  const [heroGlowPrimary, heroGlowSecondary] = ROLE_GLOW[workspaceRole];
-
   return (
     <MainLayout>
       <div className="space-y-6">
-        <section className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${heroTone} px-6 py-7 shadow-xl`}>
-          {/* Decorative orbs */}
-          <div className={`pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full ${heroGlowPrimary} blur-3xl`} />
-          <div className={`pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full ${heroGlowSecondary} blur-2xl`} />
-
-          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex min-w-0 gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/25">
-                <Icon size={24} className="text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Workspace</p>
-                <h1 className="mt-1 text-2xl font-bold tracking-tight text-white">{workspace.title}</h1>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">{workspace.subtitle}</p>
-              </div>
-            </div>
-
-            {/* Stat pills */}
-            <div className="flex flex-wrap gap-3">
-              {workspace.metrics.slice(0, 3).map((metric) => (
-                <div
-                  key={metric.label}
-                  className="flex flex-col rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10 backdrop-blur-sm"
-                >
-                  <span className="text-xs text-slate-300">{metric.label}</span>
-                  <span className="mt-0.5 text-base font-bold leading-none text-white">{metric.value}</span>
-                  <span className="mt-1 text-[10px] leading-tight text-slate-400">{metric.hint}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
+        <HeroHeader
+          icon={Icon}
+          eyebrow="Workspace"
+          title={workspace.title}
+          description={workspace.subtitle}
+          align="start"
+          stats={workspace.metrics.slice(0, 3).map((metric) => ({
+            label: metric.label,
+            value: metric.value,
+            hint: metric.hint,
+          }))}
+        >
           <div className="relative mt-5 flex flex-wrap gap-2">
             {actionRoutes.secondary ? (
               <Link to={actionRoutes.secondary}>
@@ -1035,7 +1013,7 @@ export const RoleWorkspacePage = () => {
               </Button>
             )}
           </div>
-        </section>
+        </HeroHeader>
 
         <WorkspaceMetricCards
           metrics={workspace.metrics}
@@ -1059,7 +1037,7 @@ export const RoleWorkspacePage = () => {
               description={`${hrSelectedRecords.length} nhân viên cần HR liên hệ và cập nhật thông tin còn thiếu.`}
               focused
             />
-            <div className="flex flex-wrap gap-2 rounded-lg border border-cyan-200 bg-white p-4">
+            <div className="flex flex-wrap gap-2 rounded-lg border border-indigo-200 bg-white p-4">
               <Button
                 type="button"
                 variant="secondary"

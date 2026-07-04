@@ -130,7 +130,7 @@ export const LoginPage = () => {
       footer={
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 text-sm">
-            <Link to="/forgot-password" className="font-semibold text-cyan-700 hover:text-cyan-800">
+            <Link to="/forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-700">
               Quên mật khẩu?
             </Link>
             <Link to="/register" className="inline-flex items-center gap-2 font-semibold text-slate-600 hover:text-slate-900">

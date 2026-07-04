@@ -11,6 +11,7 @@ import { Button } from '@/components/UI/Button';
 import { Card } from '@/components/UI/Card';
 import { ConfirmModal } from '@/components/UI/ConfirmModal';
 import { TablePagination } from '@/components/UI/DataListPage';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { Input } from '@/components/UI/Input';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -285,6 +286,22 @@ export const ProjectListPage = () => {
     }
   };
 
+  /* ── derived counts (shared by charts, stat cards and hero) ── */
+
+  const { totalTasks, completedTasks, openTasks, activeProjects, totalMembers, completionRate } = useMemo(() => {
+    const totalTasksCount = allTasks.length;
+    const completedTasksCount = allTasks.filter(t => t.status === 'COMPLETED').length;
+    const openTasksCount = allTasks.filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length;
+    return {
+      totalTasks: totalTasksCount,
+      completedTasks: completedTasksCount,
+      openTasks: openTasksCount,
+      activeProjects: projects.filter(p => p.status === 'ACTIVE').length,
+      totalMembers: projects.reduce((s, p) => s + p.memberCount, 0),
+      completionRate: totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0,
+    };
+  }, [allTasks, projects]);
+
   /* ── chart data ── */
 
   const taskStatusChartData = useMemo<BarDatum[]>(() => [
@@ -295,11 +312,11 @@ export const ProjectListPage = () => {
   ], [allTasks]);
 
   const projectStatusChartData = useMemo<BarDatum[]>(() => [
-    { label: 'Đang chạy', sublabel: 'Chạy', value: projects.filter(p => p.status === 'ACTIVE').length, color: '#2563eb' },
+    { label: 'Đang chạy', sublabel: 'Chạy', value: activeProjects, color: '#2563eb' },
     { label: 'Tạm dừng', sublabel: 'Dừng', value: projects.filter(p => p.status === 'PAUSED').length, color: '#f59e0b' },
     { label: 'Hoàn tất', sublabel: 'Xong', value: projects.filter(p => p.status === 'COMPLETED').length, color: '#10b981' },
     { label: 'Lưu trữ', sublabel: 'Lưu', value: projects.filter(p => p.status === 'ARCHIVED').length, color: '#64748b' },
-  ], [projects]);
+  ], [projects, activeProjects]);
 
   const completionChartData = useMemo<LineDatum[]>(() =>
     projects
@@ -327,17 +344,11 @@ export const ProjectListPage = () => {
 
   /* ── stat cards ── */
 
-  const totalTasks = allTasks.length;
-  const completedTasks = allTasks.filter(t => t.status === 'COMPLETED').length;
-  const openTasks = allTasks.filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length;
-  const totalMembers = projects.reduce((s, p) => s + p.memberCount, 0);
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
   const projectStats = useMemo(() => [
     {
       label: 'Tổng dự án',
       value: projects.length,
-      detail: `${projects.filter(p => p.status === 'ACTIVE').length} đang chạy`,
+      detail: `${activeProjects} đang chạy`,
       icon: FolderKanban,
       text: 'text-blue-700',
       bg: 'bg-blue-50',
@@ -366,7 +377,7 @@ export const ProjectListPage = () => {
       text: 'text-slate-700',
       bg: 'bg-slate-100',
     },
-  ], [completedTasks, completionRate, openTasks, projects, totalMembers, totalTasks]);
+  ], [activeProjects, completedTasks, completionRate, openTasks, projects, totalMembers, totalTasks]);
 
   /* ── filter + table ── */
 
@@ -386,48 +397,26 @@ export const ProjectListPage = () => {
     <MainLayout>
       <div className="space-y-5">
 
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-800 via-cyan-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sky-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-400/20 ring-1 ring-sky-300/30">
-                <FolderKanban size={22} className="text-sky-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Quản lý dự án</h1>
-                <p className="mt-0.5 text-sm text-sky-300">Theo dõi tiến độ, phân công và biểu đồ tổng quan toàn bộ dự án</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {[
-                { label: 'Tổng dự án',  value: projects.length,                                        icon: FolderKanban, color: 'text-sky-300' },
-                { label: 'Đang chạy',   value: projects.filter((p) => p.status === 'ACTIVE').length,    icon: TrendingUp,   color: 'text-emerald-300' },
-                { label: 'Task cần xử lý', value: openTasks,                                            icon: Activity,     color: 'text-amber-300' },
-              ].map(({ label, value, icon: Icon, color }) => (
-                <div key={label} className="flex items-center gap-2.5 rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                  <Icon size={16} className={color} />
-                  <div>
-                    <div className="text-xs text-sky-300/80">{label}</div>
-                    <div className="text-base font-bold leading-none text-white mt-0.5">{value}</div>
-                  </div>
-                </div>
-              ))}
-
-              {canCreateProject && (
-                <Link to="/projects/add">
-                  <Button size="sm" className="gap-1.5">
-                    <Plus size={16} />
-                    Tạo dự án
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={FolderKanban}
+          title="Quản lý dự án"
+          description="Theo dõi tiến độ, phân công và biểu đồ tổng quan toàn bộ dự án"
+          stats={[
+            { label: 'Tổng dự án', value: projects.length, icon: FolderKanban },
+            { label: 'Đang chạy', value: activeProjects, icon: TrendingUp },
+            { label: 'Task cần xử lý', value: openTasks, icon: Activity },
+          ]}
+          actions={
+            canCreateProject && (
+              <Link to="/projects/add">
+                <Button size="sm" className="gap-1.5">
+                  <Plus size={16} />
+                  Tạo dự án
+                </Button>
+              </Link>
+            )
+          }
+        />
 
         {/* Stats */}
         <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -519,7 +508,7 @@ export const ProjectListPage = () => {
                 id="status-filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'ALL' | ProjectStatus)}
-                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="ALL">Tất cả</option>
                 {(Object.entries(statusLabels) as [ProjectStatus, string][]).map(([v, l]) => (
@@ -577,7 +566,7 @@ export const ProjectListPage = () => {
                       >
                         {/* Name + description */}
                         <td className="px-4 py-3">
-                          <p className="font-semibold text-slate-900 group-hover:text-cyan-700 transition-colors">
+                          <p className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">
                             {project.name}
                           </p>
                           <p className="mt-0.5 text-xs text-slate-400 line-clamp-1">
@@ -616,7 +605,7 @@ export const ProjectListPage = () => {
                                 <div
                                   className={cn(
                                     'h-full rounded-full',
-                                    pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-cyan-500' : pct >= 30 ? 'bg-amber-400' : 'bg-rose-400',
+                                    pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-indigo-500' : pct >= 30 ? 'bg-amber-400' : 'bg-rose-400',
                                   )}
                                   style={{ width: `${pct}%` }}
                                 />
@@ -653,7 +642,7 @@ export const ProjectListPage = () => {
                               <button
                                 type="button"
                                 title="Sửa"
-                                className="rounded p-1 text-slate-400 hover:bg-cyan-50 hover:text-cyan-700 transition-colors"
+                                className="rounded p-1 text-slate-400 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                                 onClick={() => navigate(`/projects/edit/${project.id}`)}
                               >
                                 <Edit size={14} />

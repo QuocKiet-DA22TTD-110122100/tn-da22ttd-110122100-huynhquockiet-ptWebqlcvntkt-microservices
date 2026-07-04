@@ -1,6 +1,8 @@
 ﻿import { Link } from 'react-router-dom';
 import { Calendar, Key, Mail, Shield, User, UserRoundCheck } from 'lucide-react';
 import { Badge } from '@/components/UI/Badge';
+import { Button } from '@/components/UI/Button';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { resolveWorkspaceRole, roleProfiles } from '@/config/roleExperience';
 import { useAuthStore } from '@/store/authStore';
@@ -47,33 +49,20 @@ export const ProfilePage = () => {
   return (
     <MainLayout>
       <div className="mx-auto max-w-5xl space-y-6">
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 px-6 py-7 text-white shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/20">
-                <UserRoundCheck size={32} />
-              </div>
-              <div className="min-w-0">
-                <p className="font-display text-sm font-bold uppercase text-blue-100">{roleProfile.badge}</p>
-                <h1 className="mt-1 truncate font-display text-2xl font-bold tracking-[-0.01em]">
-                  {user?.fullName || user?.username || 'Người dùng'}
-                </h1>
-                <p className="mt-2 max-w-[68ch] text-sm leading-6 text-slate-200">{roleProfile.description}</p>
-              </div>
-            </div>
-
-            <Link
-              to="/change-password"
-              className="interactive-lift inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-sm ring-1 ring-white/20 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-slate-950"
-            >
-              <Key size={16} />
-              Đổi mật khẩu
+        <HeroHeader
+          icon={UserRoundCheck}
+          eyebrow={roleProfile.badge}
+          title={user?.fullName || user?.username || 'Người dùng'}
+          description={roleProfile.description}
+          actions={
+            <Link to="/change-password">
+              <Button type="button" variant="secondary" className="gap-1.5">
+                <Key size={16} />
+                Đổi mật khẩu
+              </Button>
             </Link>
-          </div>
-        </section>
+          }
+        />
 
         <section className="grid gap-6 lg:grid-cols-[1fr_340px]">
           <section className="space-y-4">

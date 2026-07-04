@@ -99,7 +99,7 @@ export const RegisterPage = () => {
       icon={UserPlus}
       eyebrow="New account"
       footer={
-        <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-700 hover:text-cyan-800">
+        <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
           <ArrowLeft size={16} />
           Đã có tài khoản? Đăng nhập
         </Link>

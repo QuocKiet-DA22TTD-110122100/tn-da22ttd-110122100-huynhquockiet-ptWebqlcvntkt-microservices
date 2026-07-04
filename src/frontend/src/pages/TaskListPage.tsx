@@ -11,6 +11,7 @@ import { Card } from '@/components/UI/Card';
 import { ConfirmModal } from '@/components/UI/ConfirmModal';
 import { TablePagination } from '@/components/UI/DataListPage';
 import { Input } from '@/components/UI/Input';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useUIStore } from '@/store/uiStore';
@@ -211,15 +212,13 @@ export const TaskListPage = () => {
         label: 'Task mở',
         value: useMock ? 12 : tasks.filter((t) => t.status === 'OPEN').length,
         icon: ListChecks,
-        gradient: 'from-cyan-500 to-cyan-700',
-        bg: 'bg-cyan-50', text: 'text-cyan-700',
+        bg: 'bg-indigo-50', text: 'text-indigo-600',
         danger: false,
       },
       {
         label: 'Đang làm',
         value: useMock ? 5 : tasks.filter((t) => t.status === 'IN_PROGRESS').length,
         icon: Clock3,
-        gradient: 'from-amber-400 to-amber-600',
         bg: 'bg-amber-50', text: 'text-amber-700',
         danger: false,
       },
@@ -227,7 +226,6 @@ export const TaskListPage = () => {
         label: 'Hoàn tất',
         value: useMock ? 48 : tasks.filter((t) => t.status === 'COMPLETED').length,
         icon: CheckCircle2,
-        gradient: 'from-emerald-500 to-emerald-700',
         bg: 'bg-emerald-50', text: 'text-emerald-700',
         danger: false,
       },
@@ -235,7 +233,6 @@ export const TaskListPage = () => {
         label: 'Ưu tiên cao',
         value: useMock ? 3 : tasks.filter((t) => t.priority === 'URGENT' || t.priority === 'HIGH').length,
         icon: AlertTriangle,
-        gradient: 'from-rose-500 to-rose-700',
         bg: 'bg-rose-100', text: 'text-rose-700',
         danger: true,
       },
@@ -266,32 +263,21 @@ export const TaskListPage = () => {
     <MainLayout>
       <div className="space-y-5">
 
-        {/* ── h1: Header ────────────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-800 via-purple-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/10 blur-2xl" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-400/20 ring-1 ring-violet-300/30">
-                <Zap size={22} className="text-violet-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Quản lý tác vụ</h1>
-                <p className="mt-0.5 text-sm text-violet-300">Theo dõi tác vụ theo dự án, người phụ trách, trạng thái và mức ưu tiên.</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {canCreateTask && (
-                <Link to="/tasks/add">
-                  <Button className="rounded-xl shadow-sm">
-                    <Plus size={16} />
-                    Tạo task
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={Zap}
+          title="Quản lý tác vụ"
+          description="Theo dõi tác vụ theo dự án, người phụ trách, trạng thái và mức ưu tiên."
+          actions={
+            canCreateTask && (
+              <Link to="/tasks/add">
+                <Button className="rounded-xl shadow-sm">
+                  <Plus size={16} />
+                  Tạo task
+                </Button>
+              </Link>
+            )
+          }
+        />
 
         {/* ── h2: Stats cards ────────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -305,7 +291,6 @@ export const TaskListPage = () => {
               )}
               style={{ animationDelay: `${i * 60}ms` }}
             >
-              <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${stat.gradient}`} />
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-medium text-slate-600">{stat.label}</p>
@@ -329,7 +314,6 @@ export const TaskListPage = () => {
 
         {/* ── h3: Filters ────────────────────────────────────────────────────── */}
         <Card className="overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-cyan-700 via-cyan-400 to-slate-200" />
           <div className="flex flex-col gap-4 p-5">
             {/* Search centered with max-width */}
             <div className="mx-auto w-full max-w-2xl">

@@ -20,11 +20,8 @@ export const PageHeader = ({ title, description, icon: Icon, actions, className 
       className
     )}
   >
-    {/* top accent bar */}
-    <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-blue-600 via-cyan-500 to-slate-300" />
-
     {/* decorative glow */}
-    <div className="pointer-events-none absolute right-0 top-0 h-28 w-64 bg-[radial-gradient(circle_at_top_right,rgba(14,116,144,0.10),transparent_70%)]" />
+    <div className="pointer-events-none absolute right-0 top-0 h-28 w-64 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.10),transparent_70%)]" />
 
     {centered ? (
       <>
@@ -33,7 +30,7 @@ export const PageHeader = ({ title, description, icon: Icon, actions, className 
             <div
               className={cn(
                 'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl',
-                'border border-blue-100/80 bg-gradient-to-b from-blue-50 to-cyan-50 text-blue-700',
+                'border border-blue-100/80 bg-gradient-to-b from-blue-50 to-indigo-50 text-blue-700',
                 'shadow-[0_1px_2px_rgba(37,99,235,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]',
                 'animate-scale-in'
               )}
@@ -80,7 +77,7 @@ export const PageHeader = ({ title, description, icon: Icon, actions, className 
             <div
               className={cn(
                 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
-                'border border-blue-100/80 bg-gradient-to-b from-blue-50 to-cyan-50 text-blue-700',
+                'border border-blue-100/80 bg-gradient-to-b from-blue-50 to-indigo-50 text-blue-700',
                 'shadow-[0_1px_2px_rgba(37,99,235,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]',
                 'transition-transform duration-300 hover:scale-105',
                 'animate-scale-in'

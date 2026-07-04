@@ -6,6 +6,7 @@ import { Badge } from '@/components/UI/Badge';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
 import { EmptyState } from '@/components/UI/EmptyState';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Task, TaskPriority, TaskStatus } from '@/types/task';
@@ -98,7 +99,7 @@ export const TaskDetailPage = () => {
         hint: statusHints[task.status],
         icon: Target,
         badge: <Badge variant={statusVariants[task.status]}>{statusLabels[task.status]}</Badge>,
-        tone: 'bg-cyan-50 text-cyan-700',
+        tone: 'bg-indigo-50 text-indigo-700',
       },
       {
         label: 'Ưu tiên',
@@ -128,21 +129,13 @@ export const TaskDetailPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-800 via-purple-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-purple-400/10 blur-2xl" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-400/20 ring-1 ring-violet-300/30">
-                <ListChecks size={22} className="text-violet-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{task?.title || 'Chi tiết task'}</h1>
-                <p className="mt-0.5 text-sm text-violet-300">Theo dõi trạng thái, ưu tiên, người phụ trách và liên kết dự án.</p>
-              </div>
-            </div>
-            {task && (
-              <div className="flex flex-wrap items-center gap-3">
+        <HeroHeader
+          icon={ListChecks}
+          title={task?.title || 'Chi tiết task'}
+          description="Theo dõi trạng thái, ưu tiên, người phụ trách và liên kết dự án."
+          actions={
+            task && (
+              <>
                 <Link to="/tasks">
                   <Button variant="secondary">Quay lại</Button>
                 </Link>
@@ -154,10 +147,10 @@ export const TaskDetailPage = () => {
                     </Button>
                   </Link>
                 )}
-              </div>
-            )}
-          </div>
-        </div>
+              </>
+            )
+          }
+        />
 
         {error && (
           <Card className="border-rose-200">
@@ -261,7 +254,7 @@ export const TaskDetailPage = () => {
                   )}
                   <div className="rounded-md border border-slate-200 bg-white p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-cyan-50 text-cyan-700">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-indigo-50 text-indigo-700">
                         <UserRound size={20} />
                       </div>
                       <div>

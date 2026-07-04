@@ -18,7 +18,7 @@ export const EmptyState = ({
   className = '',
 }: EmptyStateProps) => (
   <div className={cn('relative flex flex-col items-center justify-center overflow-hidden px-6 py-12 text-center', className)}>
-    <div className="pointer-events-none absolute inset-x-8 top-8 h-24 rounded-full bg-cyan-100/35 blur-3xl" />
+    <div className="pointer-events-none absolute inset-x-8 top-8 h-24 rounded-full bg-indigo-100/35 blur-3xl" />
     <div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm">
       <Icon size={28} strokeWidth={1.8} />
     </div>

@@ -8,7 +8,6 @@ import {
   Plus,
   Search,
   Star,
-  TrendingUp,
   UserCheck,
   UserMinus,
   Users,
@@ -20,6 +19,7 @@ import { Button } from '@/components/UI/Button';
 import { Input } from '@/components/UI/Input';
 import { Table, type Column } from '@/components/UI/Table';
 import { TablePagination } from '@/components/UI/DataListPage';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { useUIStore } from '@/store/uiStore';
 import { Employee } from '@/types/employee';
@@ -31,7 +31,7 @@ import { PERMISSIONS } from '@/utils/permissions';
 type EmployeeStatusVariant = 'success' | 'danger' | 'warning';
 
 const AVATAR_GRADIENTS = [
-  'from-cyan-500 to-blue-600',
+  'from-indigo-500 to-blue-600',
   'from-violet-500 to-purple-600',
   'from-emerald-500 to-teal-600',
   'from-rose-500 to-pink-600',
@@ -598,24 +598,13 @@ export const EmployeeListPage = () => {
   return (
     <MainLayout>
       <div className="flex flex-col gap-5">
-        {/* Page Header */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-800 via-blue-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-400/20 ring-1 ring-blue-300/30">
-                <Users size={22} className="text-blue-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Quản lý nhân sự</h1>
-                <p className="mt-0.5 text-sm text-blue-300">
-                  Tra cứu, phân tích và quản lý nhân viên theo phòng ban.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center rounded-lg bg-white/10 p-0.5 ring-1 ring-white/10">
+        <HeroHeader
+          icon={Users}
+          title="Quản lý nhân sự"
+          description="Tra cứu, phân tích và quản lý nhân viên theo phòng ban."
+          actions={
+            <>
+              <div className="flex items-center rounded-lg bg-indigo-50 p-0.5 ring-1 ring-indigo-100">
                 {(['dashboard', 'table'] as const).map((mode) => (
                   <button
                     key={mode}
@@ -627,8 +616,8 @@ export const EmployeeListPage = () => {
                     className={cn(
                       'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors',
                       viewMode === mode
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-blue-100 hover:text-white'
+                        ? 'bg-white text-indigo-700 shadow-sm'
+                        : 'text-indigo-400 hover:text-indigo-700'
                     )}
                   >
                     {mode === 'dashboard' ? <Grid3X3 size={13} /> : <LayoutList size={13} />}
@@ -642,9 +631,9 @@ export const EmployeeListPage = () => {
                   Thêm nhân viên
                 </Button>
               </PermissionGate>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -653,7 +642,6 @@ export const EmployeeListPage = () => {
               label: 'Tổng nhân viên',
               value: totalElements,
               icon: Users,
-              bar: 'from-blue-500 to-indigo-600',
               iconColor: 'text-blue-600',
               iconBg: 'bg-blue-50',
             },
@@ -661,7 +649,6 @@ export const EmployeeListPage = () => {
               label: 'Đang làm việc',
               value: activeCount,
               icon: UserCheck,
-              bar: 'from-emerald-500 to-teal-600',
               iconColor: 'text-emerald-600',
               iconBg: 'bg-emerald-50',
             },
@@ -669,7 +656,6 @@ export const EmployeeListPage = () => {
               label: 'Đang nghỉ phép',
               value: leaveCount,
               icon: Clock,
-              bar: 'from-amber-400 to-orange-500',
               iconColor: 'text-amber-600',
               iconBg: 'bg-amber-50',
             },
@@ -677,32 +663,26 @@ export const EmployeeListPage = () => {
               label: 'Đã nghỉ việc',
               value: inactiveCount,
               icon: UserMinus,
-              bar: 'from-rose-500 to-pink-600',
               iconColor: 'text-rose-600',
               iconBg: 'bg-rose-50',
             },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-100 transition-shadow hover:shadow-md"
+              className="rounded-2xl border border-slate-200/90 bg-white transition duration-150 ease-out hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_12px_28px_-10px_rgba(67,56,202,0.18)]"
             >
-              <div className={cn('h-1.5 w-full bg-gradient-to-r', stat.bar)} />
               <div className="flex items-start justify-between p-5">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                     {stat.label}
                   </p>
-                  <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                  <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-slate-900">
                     {loading ? (
                       <span className="inline-block h-8 w-12 animate-shimmer rounded bg-slate-100" />
                     ) : (
                       stat.value
                     )}
                   </p>
-                  <div className="mt-2 flex items-center gap-1 text-xs text-slate-400">
-                    <TrendingUp size={11} className="text-emerald-400" />
-                    Cập nhật gần nhất
-                  </div>
                 </div>
                 <div
                   className={cn(

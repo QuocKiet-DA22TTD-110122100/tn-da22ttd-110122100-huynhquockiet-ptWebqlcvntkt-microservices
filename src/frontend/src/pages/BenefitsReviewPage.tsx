@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Bell, ClipboardEdit, WalletCards } from 'lucide-react';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Badge } from '@/components/UI/Badge';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
-import { roleProfiles } from '@/config/roleExperience';
 import { useUIStore } from '@/store/uiStore';
 
 interface BhxhEmployee {
@@ -89,37 +89,24 @@ export const BenefitsReviewPage = () => {
     });
   };
 
-  const heroTone = roleProfiles.hr.toneClass;
-
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <section className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${heroTone} px-6 py-7 shadow-xl`}>
-          {/* Decorative orbs */}
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full bg-emerald-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex min-w-0 gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/25">
-                <WalletCards size={24} className="text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Phúc lợi · Rà soát hồ sơ</p>
-                <h1 className="mt-1 text-2xl font-bold tracking-tight text-white">{meta.title}</h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{meta.description}</p>
-              </div>
-            </div>
+        <HeroHeader
+          icon={WalletCards}
+          eyebrow="Phúc lợi · Rà soát hồ sơ"
+          title={meta.title}
+          description={meta.description}
+          align="start"
+          actions={
             <Link to="/workspace/benefits" className="shrink-0">
               <Button type="button" variant="outline">
                 <ArrowLeft size={15} />
                 Quay lại Phúc lợi
               </Button>
             </Link>
-          </div>
-
-          {/* Stat pills */}
+          }
+        >
           <div className="relative mt-5 flex flex-wrap gap-3">
             {[
               { label: 'Chờ cập nhật', value: pendingCount, hint: 'Hồ sơ chưa bổ sung BHXH' },
@@ -128,15 +115,15 @@ export const BenefitsReviewPage = () => {
             ].map((m) => (
               <div
                 key={m.label}
-                className="flex flex-col rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10 backdrop-blur-sm"
+                className="flex flex-col rounded-xl bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(67,56,202,0.07)] ring-1 ring-indigo-100"
               >
-                <span className="text-xs text-slate-300">{m.label}</span>
-                <span className="mt-0.5 text-base font-bold leading-none text-white">{m.value}</span>
-                <span className="mt-1 text-[10px] leading-tight text-slate-400">{m.hint}</span>
+                <span className="text-xs text-indigo-600">{m.label}</span>
+                <span className="mt-0.5 text-base font-bold leading-none text-indigo-950">{m.value}</span>
+                <span className="mt-1 text-[10px] leading-tight text-indigo-400">{m.hint}</span>
               </div>
             ))}
           </div>
-        </section>
+        </HeroHeader>
 
         {/* Actions toolbar */}
         <Card className="p-4">
@@ -228,7 +215,7 @@ export const BenefitsReviewPage = () => {
                             type="button"
                             disabled={emp.updated}
                             onClick={() => openUpdateForm(emp)}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-cyan-600 bg-cyan-600 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-indigo-600 bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                           >
                             <ClipboardEdit size={12} />
                             {emp.updated ? 'Đã cập nhật' : 'Cập nhật BHXH'}

@@ -5,6 +5,7 @@ import { departmentApi } from '@/api/department.api';
 import { Button } from '@/components/UI/Button';
 import { Card } from '@/components/UI/Card';
 import { ConfirmModal } from '@/components/UI/ConfirmModal';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { useUIStore } from '@/store/uiStore';
 import { Department } from '@/types/department';
@@ -18,7 +19,7 @@ const DEPT_COLORS = [
   'bg-emerald-100 text-emerald-700 ring-emerald-200',
   'bg-amber-100 text-amber-700 ring-amber-200',
   'bg-rose-100 text-rose-700 ring-rose-200',
-  'bg-cyan-100 text-cyan-700 ring-cyan-200',
+  'bg-indigo-100 text-indigo-700 ring-indigo-200',
   'bg-indigo-100 text-indigo-700 ring-indigo-200',
   'bg-teal-100 text-teal-700 ring-teal-200',
 ];
@@ -98,43 +99,21 @@ export const DepartmentListPage = () => {
     <MainLayout>
       <div className="space-y-5">
 
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-800 via-indigo-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-violet-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-400/20 ring-1 ring-indigo-300/30">
-                <Building2 size={22} className="text-indigo-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Quản lý phòng ban</h1>
-                <p className="mt-0.5 text-sm text-indigo-300">Theo dõi đơn vị tổ chức và phân bổ nhân viên</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {[
-                { label: 'Phòng ban',   value: departments.length, icon: Building2, color: 'text-indigo-300' },
-                { label: 'Nhân viên',   value: totalEmployees,     icon: Users,     color: 'text-emerald-300' },
-              ].map(({ label, value, icon: Icon, color }) => (
-                <div key={label} className="flex items-center gap-2.5 rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                  <Icon size={16} className={color} />
-                  <div>
-                    <div className="text-xs text-indigo-300/80">{label}</div>
-                    <div className="text-base font-bold leading-none text-white mt-0.5">{value}</div>
-                  </div>
-                </div>
-              ))}
-
-              <Button onClick={() => navigate('/departments/add')} size="sm" className="gap-1.5">
-                <Plus size={16} />
-                Thêm phòng ban
-              </Button>
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={Building2}
+          title="Quản lý phòng ban"
+          description="Theo dõi đơn vị tổ chức và phân bổ nhân viên"
+          stats={[
+            { label: 'Phòng ban', value: departments.length, icon: Building2 },
+            { label: 'Nhân viên', value: totalEmployees, icon: Users },
+          ]}
+          actions={
+            <Button onClick={() => navigate('/departments/add')} size="sm" className="gap-1.5">
+              <Plus size={16} />
+              Thêm phòng ban
+            </Button>
+          }
+        />
 
         {/* ── Search + refresh bar ──────────────────────────────────────── */}
         <div className="flex items-center gap-3">

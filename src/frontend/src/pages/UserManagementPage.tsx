@@ -4,6 +4,7 @@ import { Card } from '@/components/UI/Card';
 import { Input } from '@/components/UI/Input';
 import { Modal } from '@/components/UI/Modal';
 import { TablePagination } from '@/components/UI/DataListPage';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Plus, Search, Lock, Unlock, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, Shield, CheckSquare, Square, MinusSquare, Edit, Trash2, Users, RefreshCw, UserCog } from 'lucide-react';
 import { userApi, UserAccount } from '@/api/user.api';
@@ -87,9 +88,9 @@ export const UserManagementPage = () => {
       return <ArrowUpDown size={14} className="text-slate-400" />;
     }
     return sortOrder === 'asc' ? (
-      <ArrowUp size={14} className="text-cyan-700" />
+      <ArrowUp size={14} className="text-indigo-700" />
     ) : (
-      <ArrowDown size={14} className="text-cyan-700" />
+      <ArrowDown size={14} className="text-indigo-700" />
     );
   }, [sortField, sortOrder]);
 
@@ -247,38 +248,10 @@ export const UserManagementPage = () => {
     const topRole = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])[0];
 
     return [
-      {
-        label: 'Tổng tài khoản',
-        value: userList.length.toString(),
-        hint: 'Tài khoản đang có trong hệ thống',
-        gradient: 'from-cyan-500 to-cyan-700',
-        tone: 'bg-cyan-50 text-cyan-700',
-        icon: Shield,
-      },
-      {
-        label: 'Đang hoạt động',
-        value: activeCount.toString(),
-        hint: 'Có thể đăng nhập bình thường',
-        gradient: 'from-emerald-500 to-emerald-700',
-        tone: 'bg-emerald-50 text-emerald-700',
-        icon: Unlock,
-      },
-      {
-        label: 'Tài khoản khóa',
-        value: lockedCount.toString(),
-        hint: 'Cần admin mở khóa khi phù hợp',
-        gradient: 'from-rose-500 to-rose-700',
-        tone: 'bg-rose-50 text-rose-700',
-        icon: Lock,
-      },
-      {
-        label: 'Role phổ biến',
-        value: topRole?.[0] || '--',
-        hint: topRole ? `${topRole[1]} tài khoản` : 'Chưa có dữ liệu role',
-        gradient: 'from-slate-400 to-slate-600',
-        tone: 'bg-slate-100 text-slate-700',
-        icon: CheckSquare,
-      },
+      { label: 'Tổng tài khoản', value: userList.length.toString(), icon: Shield },
+      { label: 'Đang hoạt động', value: activeCount.toString(), icon: Unlock },
+      { label: 'Tài khoản khóa', value: lockedCount.toString(), icon: Lock },
+      { label: 'Role phổ biến', value: topRole?.[0] || '--', icon: CheckSquare },
     ];
   }, [userList]);
 
@@ -682,40 +655,21 @@ export const UserManagementPage = () => {
     <MainLayout>
     <div className="space-y-5">
 
-      {/* ── Hero header ────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 px-6 py-7 shadow-xl">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 h-36 w-36 rounded-full bg-blue-400/10 blur-2xl" />
-
-        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-400/20 ring-1 ring-cyan-300/30">
-              <UserCog size={22} className="text-cyan-200" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Quản lý tài khoản</h1>
-              <p className="mt-0.5 text-sm text-slate-400">Người dùng, trạng thái và phân quyền vai trò</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {userStats.map((stat) => (
-              <div key={stat.label} className="flex items-center gap-2.5 rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <stat.icon size={16} className={stat.tone.replace('bg-', 'text-').split(' ')[1] ?? 'text-white'} />
-                <div>
-                  <div className="text-xs text-slate-400">{stat.label}</div>
-                  <div className="text-base font-bold leading-none text-white mt-0.5">{stat.value}</div>
-                </div>
-              </div>
-            ))}
-            <PermissionGate permission={PERMISSIONS.USER_CREATE}>
-              <Button onClick={() => setIsAddModalOpen(true)} size="sm" className="gap-1.5">
-                <Plus size={16} aria-hidden="true" />
-                Thêm tài khoản
-              </Button>
-            </PermissionGate>
-          </div>
-        </div>
-      </div>
+      <HeroHeader
+        icon={UserCog}
+        title="Quản lý tài khoản"
+        description="Người dùng, trạng thái và phân quyền vai trò"
+        align="start"
+        stats={userStats}
+        actions={
+          <PermissionGate permission={PERMISSIONS.USER_CREATE}>
+            <Button onClick={() => setIsAddModalOpen(true)} size="sm" className="gap-1.5">
+              <Plus size={16} aria-hidden="true" />
+              Thêm tài khoản
+            </Button>
+          </PermissionGate>
+        }
+      />
 
       {/* ── Search bar ─────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
@@ -727,7 +681,7 @@ export const UserManagementPage = () => {
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             aria-label="Tìm kiếm tài khoản theo tên đăng nhập"
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
           />
         </div>
         <button
@@ -788,7 +742,7 @@ export const UserManagementPage = () => {
                   <tr
                     key={record.id}
                     className={cn(
-                      'group animate-fade-up transition-colors duration-100 hover:bg-cyan-50/40',
+                      'group animate-fade-up transition-colors duration-100 hover:bg-indigo-50/40',
                       idx % 2 === 1 && 'bg-slate-50/30'
                     )}
                     style={{ animationDelay: `${Math.min(idx * 35, 350)}ms` }}
@@ -936,7 +890,7 @@ export const UserManagementPage = () => {
                   onClick={() => setNewRole(role)}
                   aria-pressed={newRole === role}
                   aria-label={`Chọn vai trò ${role}`}
-                    className={`rounded-md border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2 active:translate-y-px ${
+                    className={`rounded-md border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:translate-y-px ${
                       newRole === role
                         ? 'border-slate-950 bg-slate-950 text-white'
                         : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-950'
@@ -996,7 +950,7 @@ export const UserManagementPage = () => {
                   disabled={isUpdating}
                   aria-pressed={editRole === role}
                   aria-label={`Chọn vai trò ${role}`}
-                  className={`rounded-md border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2 active:translate-y-px ${
+                  className={`rounded-md border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:translate-y-px ${
                     editRole === role
                       ? 'border-slate-950 bg-slate-950 text-white'
                       : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-950'
@@ -1050,7 +1004,7 @@ export const UserManagementPage = () => {
           {/* Permission Matrix UI */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Shield size={18} className="text-cyan-700" aria-hidden="true" />
+              <Shield size={18} className="text-indigo-700" aria-hidden="true" />
               <span id="permission-matrix-heading" className="block text-sm font-semibold text-slate-700">
                 Ma trận phân quyền
               </span>
@@ -1075,13 +1029,13 @@ export const UserManagementPage = () => {
                           }
                         }}
                         aria-label={`${isGroupFullySelected(group) ? 'Bỏ chọn' : 'Chọn'} tất cả quyền trong nhóm ${group.category}`}
-                        className="rounded-md transition hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2"
+                        className="rounded-md transition hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         disabled={isUpdating || group.permissions.every(p => p.inherited)}
                       >
                         {isGroupFullySelected(group) ? (
-                          <CheckSquare size={18} className="text-cyan-700" aria-hidden="true" />
+                          <CheckSquare size={18} className="text-indigo-700" aria-hidden="true" />
                         ) : isGroupPartiallySelected(group) ? (
-                          <MinusSquare size={18} className="text-cyan-500" aria-hidden="true" />
+                          <MinusSquare size={18} className="text-indigo-500" aria-hidden="true" />
                         ) : (
                           <Square size={18} className="text-slate-400" aria-hidden="true" />
                         )}
@@ -1111,7 +1065,7 @@ export const UserManagementPage = () => {
                                 onChange={() => handleTogglePermission(permission.id, permission.inherited || false)}
                                 disabled={isUpdating || permission.inherited}
                                 aria-describedby={`${permissionInputId}-description`}
-                                className="h-4 w-4 cursor-pointer rounded border-slate-300 text-cyan-700 focus:ring-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                               />
                             </div>
                             <label htmlFor={permissionInputId} className="flex-1 min-w-0 cursor-pointer">
@@ -1121,7 +1075,7 @@ export const UserManagementPage = () => {
                                 </span>
                                 {permission.inherited && (
                                   <span 
-                                    className="inline-flex items-center rounded-md bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800"
+                                    className="inline-flex items-center rounded-md bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-800"
                                     aria-label="Quyền này được kế thừa từ vai trò"
                                   >
                                     Kế thừa

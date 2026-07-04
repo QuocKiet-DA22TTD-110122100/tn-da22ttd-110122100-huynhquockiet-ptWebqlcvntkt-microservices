@@ -20,8 +20,8 @@ export const WorkspaceMetricCards = ({ metrics, onMetricClick, activeMetricIndex
             'group relative overflow-hidden p-5 transition duration-150',
             onMetricClick ? 'cursor-pointer select-none' : '',
             isActive
-              ? 'border-cyan-400 bg-cyan-50/50 shadow-[0_8px_20px_rgba(6,182,212,0.12)] -translate-y-0.5'
-              : 'hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-[0_12px_24px_rgba(15,23,42,0.07)]',
+              ? 'border-indigo-400 bg-indigo-50/50 shadow-[0_8px_20px_rgba(99,102,241,0.14)] -translate-y-0.5'
+              : 'hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_12px_28px_-10px_rgba(67,56,202,0.18)]',
           )}
           onClick={onMetricClick ? () => onMetricClick(index) : undefined}
           role={onMetricClick ? 'button' : undefined}
@@ -32,17 +32,9 @@ export const WorkspaceMetricCards = ({ metrics, onMetricClick, activeMetricIndex
               : undefined
           }
         >
-          <div
-            className={cn(
-              'pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r transition',
-              isActive
-                ? 'opacity-100 from-cyan-600 via-cyan-400 to-transparent'
-                : 'opacity-0 group-hover:opacity-100 from-cyan-600 via-slate-300 to-transparent',
-            )}
-          />
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className={cn('text-sm font-medium', isActive ? 'text-cyan-700' : 'text-slate-500')}>
+              <p className={cn('text-sm font-medium', isActive ? 'text-indigo-700' : 'text-slate-500')}>
                 {metric.label}
               </p>
               <p className="mt-2 text-3xl font-semibold tabular-nums tracking-[-0.03em] text-slate-950">
@@ -54,7 +46,7 @@ export const WorkspaceMetricCards = ({ metrics, onMetricClick, activeMetricIndex
               className={cn(
                 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ring-1',
                 isActive
-                  ? 'bg-cyan-100 text-cyan-700 ring-cyan-300'
+                  ? 'bg-indigo-100 text-indigo-700 ring-indigo-300'
                   : 'bg-slate-100 text-slate-500 ring-slate-200',
               )}
             >
@@ -62,7 +54,7 @@ export const WorkspaceMetricCards = ({ metrics, onMetricClick, activeMetricIndex
             </span>
           </div>
           {isActive && (
-            <p className="mt-3 text-[11px] font-semibold text-cyan-600">
+            <p className="mt-3 text-[11px] font-semibold text-indigo-600">
               Đang lọc · Bấm lại để bỏ lọc
             </p>
           )}

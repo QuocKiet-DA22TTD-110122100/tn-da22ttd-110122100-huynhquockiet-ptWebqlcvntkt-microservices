@@ -34,6 +34,7 @@ import { taskApi } from '@/api/task.api';
 import { aiApi, AiRiskRadarItem, AiSuggestion } from '@/api/ai.api';
 import { automationApi, AutomationRule } from '@/api/automation.api';
 import { Badge } from '@/components/UI/Badge';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
 import { Input } from '@/components/UI/Input';
@@ -611,33 +612,24 @@ interface WorkShellProps {
 
 const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNavigate, icon: Icon = Briefcase }: WorkShellProps) => (
   <div className="space-y-6">
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-green-900 to-slate-950 px-6 py-7 shadow-xl">
-      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-green-400/10 blur-2xl" />
-
-      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-400/20 ring-1 ring-emerald-300/30">
-            <Icon size={22} className="text-emerald-200" />
-          </div>
-          <div>
-            <h1 className="font-display text-xl font-bold tracking-[-0.02em] text-white text-balance">{title}</h1>
-            <p className="mt-0.5 max-w-[64ch] text-sm leading-6 text-emerald-100/80 text-pretty">{subtitle}</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
+    <HeroHeader
+      icon={Icon}
+      title={title}
+      description={subtitle}
+      actions={
+        <>
           <Link
             to="/"
             aria-label="Thoát Work Management về menu chính"
-            className="interactive-lift inline-flex h-8 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 text-xs font-bold text-white hover:border-white/30 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-emerald-900"
+            className="interactive-lift inline-flex h-8 items-center gap-2 rounded-md border border-indigo-100 bg-white px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2"
           >
             <ArrowLeft size={14} />
             Về menu chính
           </Link>
           <Badge variant="info" className="bg-blue-100 text-blue-950">Phase 3</Badge>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    />
 
     {navItems.length > 0 && (
       <div className="surface-panel overflow-hidden rounded-xl p-4">
@@ -793,7 +785,7 @@ const MyTasksView = ({ tasks, projects, taskFilter, onFilterChange }: MyTasksVie
               onClick={() => onFilterChange(value as 'all' | 'today' | 'week' | 'overdue')}
               className={cn(
                 'rounded-full px-3 py-1.5 text-sm font-semibold transition-colors',
-                taskFilter === value ? 'bg-cyan-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                taskFilter === value ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               )}
             >
               {label}
@@ -851,7 +843,7 @@ const ProjectsView = ({ projects }: { projects: ProjectSummary[] }) => {
           hint={`${activeCount} đang hoạt động`}
           sparkValues={[1, 2, Math.max(activeCount - 1, 1), activeCount, projects.length - 1, projects.length, projects.length]}
           stroke="#3b82f6"
-          accent="from-blue-500 to-cyan-400"
+          accent="from-blue-500 to-indigo-400"
         />
         <MetricCard
           label="Tổng task"
@@ -1033,7 +1025,7 @@ const BoardView = ({ projects, tasks, selectedProjectId, draggedTaskId, onProjec
             id="project-board-filter"
             value={selectedProjectId}
             onChange={(event) => onProjectChange(event.target.value === 'all' ? 'all' : Number(event.target.value))}
-            className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">Tat ca project</option>
             {projects.map((project) => (
@@ -1057,7 +1049,7 @@ const BoardView = ({ projects, tasks, selectedProjectId, draggedTaskId, onProjec
             className={cn(
               'min-h-[420px] rounded-2xl border p-3',
               statusTone[status],
-              draggedTaskId !== null && 'ring-2 ring-cyan-300/60'
+              draggedTaskId !== null && 'ring-2 ring-indigo-300/60'
             )}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -1118,7 +1110,7 @@ const TaskManagementView = ({ form, projects, canCreateTask, onChange, onSubmit 
               value={form.description ?? ''}
               onChange={(event) => onChange({ ...form, description: event.target.value })}
               rows={4}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Mô tả chi tiết công việc cần làm"
             />
           </div>
@@ -1131,7 +1123,7 @@ const TaskManagementView = ({ form, projects, canCreateTask, onChange, onSubmit 
                 id="task-project"
                 value={form.projectId}
                 onChange={(event) => onChange({ ...form, projectId: Number(event.target.value) })}
-                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
@@ -1155,7 +1147,7 @@ const TaskManagementView = ({ form, projects, canCreateTask, onChange, onSubmit 
                 id="task-priority"
                 value={form.priority ?? 'MEDIUM'}
                 onChange={(event) => onChange({ ...form, priority: event.target.value as TaskPriority })}
-                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {Object.entries(priorityLabels).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -1474,7 +1466,7 @@ const DiscussionsView = ({
               onClick={() => setSelectedTaskId(task.id)}
               className={cn(
                 'w-full rounded-xl border px-3 py-3 text-left transition-colors',
-                selectedTask?.id === task.id ? 'border-cyan-300 bg-cyan-50' : 'border-slate-200 bg-white hover:bg-slate-50'
+                selectedTask?.id === task.id ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'
               )}
             >
               <span className="block truncate text-sm font-bold text-slate-950">{task.title}</span>
@@ -1512,7 +1504,7 @@ const DiscussionsView = ({
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               rows={4}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="@dong-nghiep noi dung trao doi..."
             />
             <div className="mt-3 flex justify-end">
@@ -1842,7 +1834,7 @@ const DonutChart = ({
 
 const TeamWorkloadCard = ({ tasks }: { tasks: Task[] }) => {
   const avatarColors = [
-    'from-blue-500 to-cyan-500', 'from-violet-500 to-purple-500',
+    'from-blue-500 to-indigo-500', 'from-violet-500 to-purple-500',
     'from-emerald-500 to-teal-500', 'from-amber-500 to-orange-500',
     'from-rose-500 to-pink-500', 'from-sky-500 to-indigo-500', 'from-lime-500 to-green-500',
   ];
@@ -1886,7 +1878,7 @@ const TeamWorkloadCard = ({ tasks }: { tasks: Task[] }) => {
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-500"
+                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-400 transition-all duration-500"
                     style={{ width: `${member.rate}%` }}
                   />
                 </div>
@@ -1990,13 +1982,12 @@ const AnalyticsView = ({ projects, tasks }: { projects: ProjectSummary[]; tasks:
       {/* KPI cards */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Completion rate', value: `${completionRate}%`, hint: `${completed}/${tasks.length} task xong`, icon: CheckCircle2, tone: 'bg-emerald-50 text-emerald-700', gradient: 'from-emerald-500 to-teal-400' },
-          { label: 'Đang xử lý', value: inProgress, hint: 'Task đang trong In Progress', icon: Briefcase, tone: 'bg-blue-50 text-blue-700', gradient: 'from-blue-500 to-cyan-400' },
-          { label: 'Rủi ro ưu tiên', value: urgent, hint: 'HIGH + URGENT cần xử lý ngay', icon: Bell, tone: 'bg-amber-50 text-amber-700', gradient: 'from-amber-500 to-orange-400' },
-          { label: 'Dự án active', value: activeProjects, hint: `${projects.length} dự án tổng cộng`, icon: FolderKanban, tone: 'bg-cyan-50 text-cyan-700', gradient: 'from-cyan-500 to-sky-400' },
+          { label: 'Completion rate', value: `${completionRate}%`, hint: `${completed}/${tasks.length} task xong`, icon: CheckCircle2, tone: 'bg-emerald-50 text-emerald-700' },
+          { label: 'Đang xử lý', value: inProgress, hint: 'Task đang trong In Progress', icon: Briefcase, tone: 'bg-blue-50 text-blue-700' },
+          { label: 'Rủi ro ưu tiên', value: urgent, hint: 'HIGH + URGENT cần xử lý ngay', icon: Bell, tone: 'bg-amber-50 text-amber-700' },
+          { label: 'Dự án active', value: activeProjects, hint: `${projects.length} dự án tổng cộng`, icon: FolderKanban, tone: 'bg-indigo-50 text-indigo-600' },
         ].map((item) => (
           <Card key={item.label} className="relative overflow-hidden p-5">
-            <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${item.gradient}`} />
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-600">{item.label}</p>
@@ -2134,7 +2125,7 @@ const TimelineView = ({ projects, tasks }: { projects: ProjectSummary[]; tasks: 
                 </div>
                 <div className="relative h-9 rounded-lg bg-slate-100">
                   <div
-                    className="absolute top-1 h-7 w-full origin-left rounded-md bg-cyan-600 transition-transform duration-300 ease-out"
+                    className="absolute top-1 h-7 w-full origin-left rounded-md bg-indigo-600 transition-transform duration-300 ease-out"
                     style={{
                       left: `${laneStart}%`,
                       transform: `scaleX(${laneWidth / 100})`,
@@ -2422,7 +2413,7 @@ const IntegrationsView = ({ onNotice }: { onNotice: (value: string) => void }) =
     ].map((integration) => (
       <Card key={integration.name} className="p-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100">
             <PlugZap size={22} />
           </div>
           <h2 className="font-display text-lg font-bold text-slate-950">{integration.name}</h2>
@@ -2487,7 +2478,7 @@ const I18nMobileView = () => (
             'Native app can API contract on dinh truoc khi tach mobile',
           ].map((item) => (
             <div key={item} className="flex items-start gap-3 py-3 text-sm text-slate-700 first:pt-0 last:pb-0">
-              <Smartphone size={18} className="mt-0.5 shrink-0 text-cyan-700" />
+              <Smartphone size={18} className="mt-0.5 shrink-0 text-indigo-700" />
               <span>{item}</span>
             </div>
           ))}
@@ -2507,7 +2498,7 @@ const AdminShellView = () => (
     ].map((item) => (
       <Card key={item.title} className="group p-5 transition duration-150 hover:-translate-y-0.5 hover:bg-slate-50">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-100 bg-cyan-50 text-cyan-700 shadow-sm transition group-hover:border-cyan-200 group-hover:bg-white">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-indigo-700 shadow-sm transition group-hover:border-indigo-200 group-hover:bg-white">
             <item.icon size={24} />
           </div>
           <div className="min-w-0 flex-1">

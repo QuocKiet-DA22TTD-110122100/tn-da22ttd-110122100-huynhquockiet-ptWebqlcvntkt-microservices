@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowRight,
-  CheckCircle2,
   Clock3,
   Copy,
   FolderKanban,
@@ -25,13 +24,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { usePermissions } from '@/hooks/usePermissions';
-import { resolveWorkspaceRole, roleProfiles, ROLE_GLOW, WorkspaceRole } from '@/config/roleExperience';
+import { resolveWorkspaceRole, roleProfiles, WorkspaceRole } from '@/config/roleExperience';
 import { formatDate, getPasswordExpiryWarning } from '@/utils/format';
 import { PERMISSIONS } from '@/utils/permissions';
 import { cn } from '@/utils/cn';
 
 type Priority = 'high' | 'medium' | 'normal';
-type FeatureTone = 'blue' | 'rose' | 'emerald' | 'amber' | 'violet' | 'cyan';
 type WorkActionTone = 'blue' | 'amber' | 'slate';
 
 interface RoleWorkItem {
@@ -57,54 +55,12 @@ const priorityStyles: Record<Priority, { label: string; variant: 'danger' | 'war
   normal: { label: 'Ổn định', variant: 'success' },
 };
 
-const featureTones: Record<FeatureTone, { border: string; icon: string; text: string; badge: string }> = {
-  blue: {
-    border: 'from-blue-500 via-cyan-400 to-sky-500',
-    icon: 'bg-blue-100 text-blue-700 ring-blue-200',
-    text: 'text-blue-700',
-    badge: 'bg-blue-50 text-blue-700 ring-blue-200',
-  },
-  rose: {
-    border: 'from-rose-500 via-orange-400 to-amber-400',
-    icon: 'bg-rose-100 text-rose-700 ring-rose-200',
-    text: 'text-rose-700',
-    badge: 'bg-rose-50 text-rose-700 ring-rose-200',
-  },
-  emerald: {
-    border: 'from-emerald-500 via-teal-400 to-cyan-400',
-    icon: 'bg-emerald-100 text-emerald-700 ring-emerald-200',
-    text: 'text-emerald-700',
-    badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  },
-  amber: {
-    border: 'from-amber-500 via-orange-400 to-rose-400',
-    icon: 'bg-amber-100 text-amber-700 ring-amber-200',
-    text: 'text-amber-700',
-    badge: 'bg-amber-50 text-amber-700 ring-amber-200',
-  },
-  violet: {
-    border: 'from-violet-500 via-fuchsia-400 to-sky-400',
-    icon: 'bg-violet-100 text-violet-700 ring-violet-200',
-    text: 'text-violet-700',
-    badge: 'bg-violet-50 text-violet-700 ring-violet-200',
-  },
-  cyan: {
-    border: 'from-cyan-500 via-sky-400 to-blue-500',
-    icon: 'bg-cyan-100 text-cyan-700 ring-cyan-200',
-    text: 'text-cyan-700',
-    badge: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
-  },
-};
+// Một tông brand duy nhất (indigo) — màu sắc khác chỉ dành cho trạng thái (Badge).
+const cardShell =
+  'group relative h-full rounded-2xl border border-slate-200/90 bg-white transition duration-150 ease-out hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-[0_12px_28px_-10px_rgba(67,56,202,0.18)] focus-within:-translate-y-0.5 focus-within:border-indigo-200';
 
-const featureToneOrder: FeatureTone[] = ['blue', 'rose', 'emerald', 'amber', 'violet', 'cyan'];
-
-const getFeatureTone = (index: number) => featureTones[featureToneOrder[index % featureToneOrder.length]];
-
-const featureCardShell =
-  'group relative h-full overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 transition duration-150 ease-out hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-[0_12px_24px_rgba(15,23,42,0.07)] focus-within:-translate-y-0.5 focus-within:border-cyan-200 focus-within:shadow-[0_12px_24px_rgba(15,23,42,0.07)]';
-
-const featureCardInner =
-  'relative flex h-full flex-col bg-transparent p-5 transition duration-150 group-hover:bg-slate-50/60';
+const iconSquare =
+  'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 transition duration-150 group-hover:scale-105';
 
 const dashboardExperience: Record<WorkspaceRole, RoleDashboardExperience> = {
   user: {
@@ -362,40 +318,38 @@ const useLiveDashboardStats = (canViewEmployees: boolean, canViewProjects: boole
   return stats;
 };
 
-const LiveStatsBar = ({ stats, canViewEmployees, canViewProjects, canViewTasks }: {
+const HeroLiveStats = ({ stats, canViewEmployees, canViewProjects, canViewTasks }: {
   stats: LiveStats;
   canViewEmployees: boolean;
   canViewProjects: boolean;
   canViewTasks: boolean;
 }) => {
-  const items: Array<{ label: string; value: string; icon: LucideIcon; gradient: string; bg: string; text: string }> = [];
+  const items: Array<{ label: string; value: string; icon: LucideIcon }> = [];
   const employees = stats.employees || adminDashboardBaselineStats.employees;
   const activeProjects = stats.activeProjects || adminDashboardBaselineStats.activeProjects;
   const openTasks = stats.openTasks || adminDashboardBaselineStats.openTasks;
 
-  if (canViewEmployees) items.push({ label: 'Nhân viên',       value: stats.loading ? '—' : employees.toString(),      icon: Users,        gradient: 'from-cyan-600 to-teal-500',    bg: 'bg-cyan-50',   text: 'text-cyan-700'   });
-  if (canViewProjects)  items.push({ label: 'Dự án đang chạy', value: stats.loading ? '—' : activeProjects.toString(), icon: FolderKanban, gradient: 'from-violet-600 to-purple-500', bg: 'bg-violet-50', text: 'text-violet-700' });
-  if (canViewTasks)     items.push({ label: 'Task cần xử lý',  value: stats.loading ? '—' : openTasks.toString(),      icon: ListChecks,   gradient: 'from-amber-500 to-orange-400', bg: 'bg-amber-50',  text: 'text-amber-700'  });
+  if (canViewEmployees) items.push({ label: 'Nhân viên',       value: stats.loading ? '—' : employees.toString(),      icon: Users });
+  if (canViewProjects)  items.push({ label: 'Dự án đang chạy', value: stats.loading ? '—' : activeProjects.toString(), icon: FolderKanban });
+  if (canViewTasks)     items.push({ label: 'Task cần xử lý',  value: stats.loading ? '—' : openTasks.toString(),      icon: ListChecks });
 
   if (items.length === 0) return null;
 
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 animate-fade-up">
+    <div className="flex flex-wrap gap-3">
       {items.map((item) => (
-        <Card key={item.label} className="relative overflow-hidden p-4">
-          <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${item.gradient}`} />
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium text-slate-500">{item.label}</p>
-              <p className="mt-0.5 text-3xl font-bold tracking-tight text-slate-900">{item.value}</p>
-            </div>
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.text}`}>
-              <item.icon size={20} />
-            </div>
+        <div
+          key={item.label}
+          className="flex items-center gap-3 rounded-xl bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(67,56,202,0.07)] ring-1 ring-indigo-100"
+        >
+          <item.icon size={16} className="shrink-0 text-indigo-500" />
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-400">{item.label}</p>
+            <p className="mt-0.5 text-xl font-bold leading-none tabular-nums text-slate-900">{item.value}</p>
           </div>
-        </Card>
+        </div>
       ))}
-    </section>
+    </div>
   );
 };
 
@@ -451,41 +405,32 @@ const ActionCard = ({
   icon: Icon,
   href,
   disabled,
-  toneIndex,
 }: {
   title: string;
   description: string;
   icon: LucideIcon;
   href?: string;
   disabled?: boolean;
-  toneIndex: number;
 }) => {
-  const tone = getFeatureTone(toneIndex);
   const content = (
     <div
       className={cn(
-        featureCardShell,
-        tone.border,
-        disabled && 'opacity-70 hover:translate-y-0 hover:scale-100 hover:shadow-none'
+        cardShell,
+        disabled && 'opacity-60 hover:translate-y-0 hover:border-slate-200/90 hover:shadow-none'
       )}
     >
-        <div className={cn(featureCardInner, 'p-4')}>
+      <div className="flex h-full flex-col p-4">
         <div className="mb-4 flex items-start justify-between gap-3">
-          <div
-            className={cn(
-                'flex h-11 w-11 items-center justify-center rounded-xl ring-1 transition duration-150 group-hover:scale-105',
-              tone.icon
-            )}
-          >
-            <Icon size={22} strokeWidth={2.4} />
+          <div className={iconSquare}>
+            <Icon size={20} strokeWidth={2.2} />
           </div>
-          <Badge variant={disabled ? 'muted' : 'success'}>{disabled ? 'Đang khóa' : 'Sẵn sàng'}</Badge>
+          {disabled && <Badge variant="muted">Đang khóa</Badge>}
         </div>
-        <h3 className="font-bold text-slate-950">{title}</h3>
-        <p className="mt-2 flex-1 text-sm leading-6 text-slate-500">{description}</p>
-        <div className={cn('mt-4 inline-flex items-center gap-2 text-sm font-bold', disabled ? 'text-slate-500' : tone.text)}>
+        <h3 className="font-semibold text-slate-900">{title}</h3>
+        <p className="mt-1.5 flex-1 text-sm leading-6 text-slate-500">{description}</p>
+        <div className={cn('mt-4 inline-flex items-center gap-1.5 text-sm font-semibold', disabled ? 'text-slate-400' : 'text-indigo-600')}>
           {disabled ? 'Chưa có quyền' : 'Mở chức năng'}
-          {!disabled && <ArrowRight size={16} />}
+          {!disabled && <ArrowRight size={15} className="transition-transform duration-150 group-hover:translate-x-0.5" />}
         </div>
       </div>
     </div>
@@ -496,7 +441,7 @@ const ActionCard = ({
   }
 
   return (
-    <Link to={href} className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-600/30">
+    <Link to={href} className="block rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
       {content}
     </Link>
   );
@@ -625,7 +570,6 @@ export const DashboardPage = () => {
   const roleProfile = roleProfiles[workspaceRole];
   const experience = dashboardExperience[workspaceRole];
   const isPendingUser = workspaceRole === 'user';
-  const [heroGlowPrimary, heroGlowSecondary] = ROLE_GLOW[workspaceRole];
 
   const canViewEmployees = can(PERMISSIONS.EMPLOYEE_VIEW);
   const canViewProjects  = can(PERMISSIONS.PROJECT_VIEW);
@@ -663,33 +607,46 @@ export const DashboardPage = () => {
     <MainLayout>
       <div className="space-y-6">
         {!isPendingUser && (
-          <section className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${roleProfile.toneClass} text-white shadow-[0_18px_38px_rgba(15,23,42,0.16)]`}>
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(255,255,255,0.18),transparent_28rem)]" />
-          <div className={`pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full ${heroGlowPrimary} blur-3xl`} />
-          <div className={`pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full ${heroGlowSecondary} blur-2xl`} />
-          <div className="relative grid gap-6 p-6 lg:grid-cols-[1fr_340px] lg:p-8">
-            <div className="min-w-0">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-sm font-semibold text-cyan-50 ring-1 ring-white/20">
-                <Sparkles size={16} />
-                {roleProfile.badge}
+          <section className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-blue-50 via-indigo-100 to-white shadow-[0_1px_1px_rgba(67,56,202,0.05),0_18px_34px_-12px_rgba(67,56,202,0.20)]">
+          <div className="relative grid gap-6 p-6 lg:grid-cols-[1fr_360px] lg:p-8">
+            <div className="flex min-w-0 flex-col">
+              <div>
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-semibold text-indigo-700 shadow-sm ring-1 ring-indigo-100">
+                  <Sparkles size={16} />
+                  {roleProfile.badge}
+                </div>
+                <h2 className="text-2xl font-semibold tracking-[-0.02em] text-balance text-slate-900 sm:text-3xl">{roleProfile.headline}</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-indigo-700 sm:text-base">
+                  Chào mừng trở lại, {user?.fullName || user?.username || 'bạn'}. {roleProfile.description}
+                </p>
               </div>
-              <h2 className="text-2xl font-semibold tracking-[-0.02em] text-balance sm:text-3xl">{roleProfile.headline}</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/85 sm:text-base">
-                Chào mừng trở lại, {user?.fullName || user?.username || 'bạn'}. {roleProfile.description}
-              </p>
+
+              {(canViewEmployees || canViewProjects || canViewTasks) && (
+                <div className="mt-auto pt-6">
+                  <HeroLiveStats
+                    stats={liveStats}
+                    canViewEmployees={canViewEmployees}
+                    canViewProjects={canViewProjects}
+                    canViewTasks={canViewTasks}
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="rounded-xl border border-white/15 bg-white/10 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              <p className="text-sm font-semibold text-cyan-50">{experience.summaryTitle}</p>
-              <p className="mt-2 text-sm leading-6 text-white/80">{experience.operatingModel}</p>
-              <div className="mt-4 space-y-2">
-                {roleProfile.focusAreas.map((area) => (
-                  <div key={area} className="flex items-center gap-2 text-sm text-white/90">
-                    <CheckCircle2 size={16} className="shrink-0 text-cyan-200" />
-                    <span>{area}</span>
+            <div className="rounded-2xl bg-white p-5 shadow-[0_1px_2px_rgba(67,56,202,0.07)] ring-1 ring-indigo-100">
+              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">{experience.summaryTitle}</p>
+              <p className="mt-1.5 text-sm leading-6 text-slate-500">{experience.operatingModel}</p>
+              <dl className="mt-4 divide-y divide-slate-100">
+                {experience.health.map((metric) => (
+                  <div key={metric.label} className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+                    <div className="min-w-0">
+                      <dt className="text-sm font-medium text-slate-700">{metric.label}</dt>
+                      <dd className="mt-0.5 text-xs leading-5 text-slate-400">{metric.hint}</dd>
+                    </div>
+                    <dd className="shrink-0 text-lg font-bold tabular-nums text-indigo-950">{metric.value}</dd>
                   </div>
                 ))}
-              </div>
+              </dl>
             </div>
           </div>
         </section>
@@ -706,95 +663,29 @@ export const DashboardPage = () => {
 
         {isPendingUser && <PendingApprovalPanel user={user} onCopyEmail={handleCopyApproverEmail} />}
 
-        {!isPendingUser && (canViewEmployees || canViewProjects || canViewTasks) && (
-          <LiveStatsBar
-            stats={liveStats}
-            canViewEmployees={canViewEmployees}
-            canViewProjects={canViewProjects}
-            canViewTasks={canViewTasks}
-          />
-        )}
-
         {!isPendingUser && (
         <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {roleProfile.statCards.map((card, index) => {
-            const tone = getFeatureTone(index);
-            const isHero = index === 0;
-
-            return (
-              <div
-                key={card.label}
-                className={cn(
-                  featureCardShell,
-                  tone.border,
-                  isHero && 'md:col-span-2 xl:col-span-1'
-                )}
-              >
-                <div className={featureCardInner}>
-                  {isHero && (
-                    <span
-                      className={cn(
-                        'absolute right-4 top-4 rounded-lg border px-2.5 py-1 text-xs font-bold ring-1',
-                        tone.badge
-                      )}
-                    >
-                      Nổi bật
-                    </span>
-                  )}
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 pr-16">
-                      <p className={cn('text-sm font-bold', tone.text)}>{card.label}</p>
-                      <p className="mt-1 text-2xl font-bold tabular-nums text-slate-950">{card.value}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-500">{card.hint}</p>
-                    </div>
-                    <div
-                      className={cn(
-                        'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ring-1 transition duration-150 group-hover:scale-105',
-                        tone.icon
-                      )}
-                    >
-                      <card.icon size={24} strokeWidth={2.4} />
-                    </div>
+          {roleProfile.statCards.map((card) => (
+            <div key={card.label} className={cardShell}>
+              <div className="flex h-full flex-col p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{card.label}</p>
+                    <p className="mt-1.5 text-xl font-bold text-slate-900">{card.value}</p>
+                  </div>
+                  <div className={iconSquare}>
+                    <card.icon size={20} strokeWidth={2.2} />
                   </div>
                 </div>
+                <p className="mt-3 text-sm leading-6 text-slate-500">{card.hint}</p>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </section>
         )}
 
         {!isPendingUser && (
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {experience.health.map((metric, index) => {
-            const tone = getFeatureTone(index + 3);
-
-            return (
-              <div key={metric.label} className={cn(featureCardShell, tone.border)}>
-                <div className={featureCardInner}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className={cn('text-sm font-bold', tone.text)}>{metric.label}</p>
-                      <p className="mt-2 text-2xl font-bold tabular-nums text-slate-950">{metric.value}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-500">{metric.hint}</p>
-                    </div>
-                    <div
-                      className={cn(
-                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 transition duration-150 group-hover:scale-105',
-                        tone.icon
-                      )}
-                    >
-                      <CheckCircle2 size={21} strokeWidth={2.4} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-        )}
-
-        {!isPendingUser && (
-        <section className="grid gap-6 xl:grid-cols-[1fr_360px]">
+        <section className="grid items-start gap-6 xl:grid-cols-[1fr_360px]">
           <Card>
             <CardHeader>
               <CardTitle>Chức năng theo vai trò</CardTitle>
@@ -802,7 +693,7 @@ export const DashboardPage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {visibleActions.map((action, index) => (
+                {visibleActions.map((action) => (
                   <ActionCard
                     key={action.title}
                     title={action.title}
@@ -810,7 +701,6 @@ export const DashboardPage = () => {
                     icon={action.icon}
                     href={action.href}
                     disabled={action.status === 'soon'}
-                    toneIndex={index}
                   />
                 ))}
               </div>
@@ -837,7 +727,7 @@ export const DashboardPage = () => {
                 <div className="space-y-2">
                   {experience.accessNotes.map((note) => (
                     <div key={note} className="flex gap-2 text-sm text-slate-600">
-                      <ShieldCheck size={17} className="mt-0.5 shrink-0 text-cyan-700" />
+                      <ShieldCheck size={17} className="mt-0.5 shrink-0 text-indigo-500" />
                       <span>{note}</span>
                     </div>
                   ))}

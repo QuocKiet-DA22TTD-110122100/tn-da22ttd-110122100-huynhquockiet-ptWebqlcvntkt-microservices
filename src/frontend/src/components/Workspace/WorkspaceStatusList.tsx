@@ -22,8 +22,8 @@ export const WorkspaceStatusList = ({ items, selectedItem, onSelectItem }: Works
           onClick={() => onSelectItem(item)}
           className={cn(
             'block w-full animate-fade-up px-5 py-4 text-left transition-colors',
-            'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500/20',
-            isSelected ? 'bg-cyan-50/60' : 'bg-white'
+            'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500/20',
+            isSelected ? 'bg-indigo-50/60' : 'bg-white'
           )}
           style={{ animationDelay: `${Math.min(idx * 35, 350)}ms` }}
         >
@@ -67,11 +67,11 @@ export const WorkspaceStatusList = ({ items, selectedItem, onSelectItem }: Works
                 <div className="mt-3">
                   <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
                     <span>Tiến độ</span>
-                    <span className="font-semibold text-cyan-700">{item.progress}%</span>
+                    <span className="font-semibold text-indigo-700">{item.progress}%</span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                     <div
-                      className="h-full w-full origin-left rounded-full bg-cyan-600 transition-transform duration-500"
+                      className="h-full w-full origin-left rounded-full bg-indigo-600 transition-transform duration-500"
                       style={{ transform: `scaleX(${item.progress / 100})` }}
                     />
                   </div>

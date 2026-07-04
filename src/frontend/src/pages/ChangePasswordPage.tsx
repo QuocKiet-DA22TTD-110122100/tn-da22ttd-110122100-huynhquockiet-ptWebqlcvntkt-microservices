@@ -66,8 +66,8 @@ const OtpInput = ({
           className={cn(
             'h-12 w-10 rounded-lg border text-center text-lg font-bold text-slate-900',
             'transition-[border-color,box-shadow] duration-150',
-            'focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20',
-            digits[i] ? 'border-cyan-400 bg-cyan-50' : 'border-slate-300 bg-white',
+            'focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20',
+            digits[i] ? 'border-indigo-400 bg-indigo-50' : 'border-slate-300 bg-white',
             disabled && 'cursor-not-allowed opacity-50'
           )}
           aria-label={`Chữ số OTP thứ ${i + 1}`}
@@ -173,13 +173,13 @@ export const ChangePasswordPage = () => {
         <div className={cn(
           'flex flex-col gap-3 rounded-xl border p-5 sm:flex-row sm:items-center sm:justify-between',
           otpSent
-            ? 'border-cyan-200 bg-cyan-50/60'
+            ? 'border-indigo-200 bg-indigo-50/60'
             : 'border-slate-200 bg-white shadow-sm'
         )}>
           <div className="flex items-start gap-3">
             <div className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-              otpSent ? 'bg-cyan-100 text-cyan-700' : 'bg-slate-100 text-slate-600'
+              otpSent ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'
             )}>
               <Mail size={19} />
             </div>
@@ -261,7 +261,7 @@ export const ChangePasswordPage = () => {
 
                 {/* OTP input — hiện khi đã gửi mã */}
                 {otpSent && (
-                  <div className="rounded-lg border border-cyan-200 bg-cyan-50/40 p-4">
+                  <div className="rounded-lg border border-indigo-200 bg-indigo-50/40 p-4">
                     <p className="mb-3 text-sm font-semibold text-slate-800">Nhập mã OTP từ email</p>
                     <OtpInput value={otpCode} onChange={setOtpCode} disabled={isLoading} />
                     {otpCode.length === 6 && (

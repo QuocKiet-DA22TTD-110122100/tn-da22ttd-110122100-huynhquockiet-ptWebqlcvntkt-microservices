@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ArrowLeft, Loader, Shield, Users } from 'lucide-react';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Input } from '@/components/UI/Input';
 import { Button } from '@/components/UI/Button';
@@ -219,7 +220,7 @@ export const EmployeeFormPage = () => {
     return (
       <MainLayout>
         <div className="flex items-center justify-center py-12">
-          <Loader size={32} className="animate-spin text-cyan-600" />
+          <Loader size={32} className="animate-spin text-indigo-600" />
         </div>
       </MainLayout>
     );
@@ -228,41 +229,21 @@ export const EmployeeFormPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-800 via-blue-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-400/20 ring-1 ring-blue-300/30">
-                <Users size={22} className="text-blue-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{id ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'}</h1>
-                <p className="mt-0.5 text-sm text-blue-300">
-                  {id ? 'Cập nhật thông tin hồ sơ nhân viên' : 'Tạo hồ sơ HR và liên kết với auth-service'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-blue-300/80">Chế độ</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">{id ? 'Chỉnh sửa' : 'Tạo mới'}</div>
-              </div>
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-blue-300/80">Tổ chức</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">{organizations.length}</div>
-              </div>
-
-              <Button type="button" variant="secondary" onClick={() => navigate('/employees')} className="gap-1.5">
-                <ArrowLeft size={16} />
-                Quay lại
-              </Button>
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={Users}
+          title={id ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'}
+          description={id ? 'Cập nhật thông tin hồ sơ nhân viên' : 'Tạo hồ sơ HR và liên kết với auth-service'}
+          stats={[
+            { label: 'Chế độ', value: id ? 'Chỉnh sửa' : 'Tạo mới' },
+            { label: 'Tổ chức', value: organizations.length },
+          ]}
+          actions={
+            <Button type="button" variant="secondary" onClick={() => navigate('/employees')} className="gap-1.5">
+              <ArrowLeft size={16} />
+              Quay lại
+            </Button>
+          }
+        />
 
         {!hasSubmitPermission && (
           <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
@@ -374,7 +355,7 @@ export const EmployeeFormPage = () => {
                   </label>
                   <select
                     id="organizationId"
-                    className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                    className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                     value={selectedOrgId?.toString() || ''}
                     onChange={(event) => handleOrgChange(event.target.value)}
                   >
@@ -395,7 +376,7 @@ export const EmployeeFormPage = () => {
                     <>
                       <select
                         id="departmentId"
-                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                         {...register('departmentId', {
                           valueAsNumber: true,
                           validate: {

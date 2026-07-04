@@ -4,6 +4,7 @@ import { Edit2, Layers, Plus, Search, Trash2, RefreshCw, AlertCircle, ChevronRig
 import { organizationApi } from '@/api/organization.api';
 import { Button } from '@/components/UI/Button';
 import { Card } from '@/components/UI/Card';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { useUIStore } from '@/store/uiStore';
 import { OrganizationUnitTreeNode } from '@/types/organization';
@@ -114,48 +115,28 @@ export const OrganizationListPage = () => {
     <MainLayout>
       <div className="space-y-5">
 
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-emerald-800 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full bg-emerald-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-400/20 ring-1 ring-teal-300/30">
-                <Network size={22} className="text-teal-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Quản lý tổ chức</h1>
-                <p className="mt-0.5 text-sm text-teal-300">Cấu trúc phân cấp từ tập đoàn đến phòng ban</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {[
-                { label: 'Đơn vị',    value: totalCount, color: 'text-teal-300' },
-                { label: 'Gốc',       value: rootCount,  color: 'text-emerald-300' },
-                { label: 'Cấp sâu',  value: maxDepth + 1, color: 'text-amber-300' },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                  <div className="text-xs text-teal-300/80">{label}</div>
-                  <div className={cn('text-base font-bold leading-none mt-0.5', color)}>{value}</div>
-                </div>
-              ))}
-
-              <Button onClick={() => navigate('/organizations/add')} size="sm" className="gap-1.5">
-                <Plus size={16} />
-                Thêm tổ chức
-              </Button>
-            </div>
-          </div>
-
-          {/* Level breakdown */}
+        <HeroHeader
+          icon={Network}
+          title="Quản lý tổ chức"
+          description="Cấu trúc phân cấp từ tập đoàn đến phòng ban"
+          stats={[
+            { label: 'Đơn vị', value: totalCount },
+            { label: 'Gốc', value: rootCount },
+            { label: 'Cấp sâu', value: maxDepth + 1 },
+          ]}
+          actions={
+            <Button onClick={() => navigate('/organizations/add')} size="sm" className="gap-1.5">
+              <Plus size={16} />
+              Thêm tổ chức
+            </Button>
+          }
+        >
           {Object.entries(levelCounts).length > 0 && (
             <div className="relative mt-4 flex flex-wrap gap-2">
               {Object.entries(levelCounts).map(([level, count]) => {
                 const meta = getLevelMeta(level);
                 return (
-                  <span key={level} className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10">
+                  <span key={level} className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm ring-1 ring-indigo-100">
                     <span className={cn('h-2 w-2 rounded-full', meta.dot)} />
                     {meta.label} ({count})
                   </span>
@@ -163,7 +144,7 @@ export const OrganizationListPage = () => {
               })}
             </div>
           )}
-        </div>
+        </HeroHeader>
 
         {/* ── Search + refresh ──────────────────────────────────────────── */}
         <div className="flex items-center gap-3">

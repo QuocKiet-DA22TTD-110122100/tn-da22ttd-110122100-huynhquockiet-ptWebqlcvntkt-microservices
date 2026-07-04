@@ -20,6 +20,7 @@ import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
 import { EmptyState } from '@/components/UI/EmptyState';
 import { Input } from '@/components/UI/Input';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Table, Column } from '@/components/UI/Table';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -142,7 +143,7 @@ export const ProjectDetailPage = () => {
         value: activeMembers.toString(),
         hint: `${members.length} phân công trong dự án`,
         icon: Users,
-        tone: 'bg-cyan-50 text-cyan-700',
+        tone: 'bg-indigo-50 text-indigo-700',
       },
       {
         label: 'Task đang mở',
@@ -258,7 +259,7 @@ export const ProjectDetailPage = () => {
       key: 'title',
       title: 'Task',
       render: (value, record) => (
-        <button type="button" className="text-left font-medium text-cyan-700 hover:text-cyan-900" onClick={() => navigate(`/tasks/${record.id}`)}>
+        <button type="button" className="text-left font-medium text-indigo-700 hover:text-indigo-900" onClick={() => navigate(`/tasks/${record.id}`)}>
           {value}
         </button>
       ),
@@ -279,21 +280,13 @@ export const ProjectDetailPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-800 via-cyan-900 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sky-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-cyan-400/10 blur-2xl" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-400/20 ring-1 ring-sky-300/30">
-                <FolderKanban size={22} className="text-sky-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{project?.name || 'Chi tiết dự án'}</h1>
-                <p className="mt-0.5 text-sm text-sky-300">Theo dõi thông tin dự án, phân công thành viên và task liên quan.</p>
-              </div>
-            </div>
-            {project && (
-              <div className="flex flex-wrap items-center gap-3">
+        <HeroHeader
+          icon={FolderKanban}
+          title={project?.name || 'Chi tiết dự án'}
+          description="Theo dõi thông tin dự án, phân công thành viên và task liên quan."
+          actions={
+            project && (
+              <>
                 <Link to="/projects">
                   <Button variant="secondary">Quay lại</Button>
                 </Link>
@@ -305,10 +298,10 @@ export const ProjectDetailPage = () => {
                     </Button>
                   </Link>
                 )}
-              </div>
-            )}
-          </div>
-        </div>
+              </>
+            )
+          }
+        />
 
         {error && (
           <Card className="border-rose-200">
@@ -444,7 +437,7 @@ export const ProjectDetailPage = () => {
                         id="member-role"
                         value={memberRole}
                         onChange={(event) => setMemberRole(event.target.value as ProjectRole)}
-                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         {Object.entries(roleLabels).map(([value, label]) => (
                           <option key={value} value={value}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Input } from '@/components/UI/Input';
 import { Button } from '@/components/UI/Button';
@@ -148,7 +149,7 @@ export const OrganizationFormPage = () => {
     return (
       <MainLayout>
         <div className="flex justify-center items-center py-12">
-          <Loader size={32} className="animate-spin text-cyan-600" />
+          <Loader size={32} className="animate-spin text-indigo-600" />
         </div>
       </MainLayout>
     );
@@ -173,43 +174,21 @@ export const OrganizationFormPage = () => {
   return (
     <MainLayout>
       <div className="space-y-5">
-        {/* ── Hero header ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-700 via-emerald-800 to-slate-950 px-6 py-7 shadow-xl">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-12 left-1/3 h-36 w-36 rounded-full bg-emerald-400/10 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-400/20 ring-1 ring-teal-300/30">
-                <Layers size={22} className="text-teal-200" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{id ? 'Chỉnh sửa tổ chức' : 'Thêm tổ chức mới'}</h1>
-                <p className="mt-0.5 text-sm text-teal-300">
-                  {id ? 'Cập nhật tên, mã và quan hệ cha con của tổ chức.' : 'Tạo đơn vị mới trong cây tổ chức HR.'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-teal-300/80">Chế độ</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">{id ? 'Chỉnh sửa' : 'Tạo mới'}</div>
-              </div>
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 ring-1 ring-white/10">
-                <div className="text-xs text-teal-300/80">Cấp</div>
-                <div className="text-base font-bold leading-none text-white mt-0.5">
-                  {ORG_LEVELS.find((l) => l.value === currentLevel)?.label ?? currentLevel}
-                </div>
-              </div>
-
-              <Button type="button" variant="secondary" onClick={() => navigate('/organizations')} className="gap-1.5">
-                <ArrowLeft size={16} />
-                Quay lại
-              </Button>
-            </div>
-          </div>
-        </div>
+        <HeroHeader
+          icon={Layers}
+          title={id ? 'Chỉnh sửa tổ chức' : 'Thêm tổ chức mới'}
+          description={id ? 'Cập nhật tên, mã và quan hệ cha con của tổ chức.' : 'Tạo đơn vị mới trong cây tổ chức HR.'}
+          stats={[
+            { label: 'Chế độ', value: id ? 'Chỉnh sửa' : 'Tạo mới' },
+            { label: 'Cấp', value: ORG_LEVELS.find((l) => l.value === currentLevel)?.label ?? currentLevel },
+          ]}
+          actions={
+            <Button type="button" variant="secondary" onClick={() => navigate('/organizations')} className="gap-1.5">
+              <ArrowLeft size={16} />
+              Quay lại
+            </Button>
+          }
+        />
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>
@@ -235,7 +214,7 @@ export const OrganizationFormPage = () => {
                 </label>
                 <select
                   id="level"
-                  className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                  className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                   {...register('level', { required: 'Vui lòng chọn loại tổ chức' })}
                 >
                   {ORG_LEVELS.map((level) => (
@@ -259,7 +238,7 @@ export const OrganizationFormPage = () => {
                   ) : (
                     <select
                       id="parentId"
-                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-700/15"
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-[0_1px_1px_rgba(15,23,42,0.04)] transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
                       {...register('parentId')}
                       onChange={(e) => {
                         const value = e.target.value ? Number(e.target.value) : undefined;

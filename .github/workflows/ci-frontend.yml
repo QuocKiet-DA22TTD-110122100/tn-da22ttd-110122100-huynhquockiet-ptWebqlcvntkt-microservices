@@ -163,5 +163,5 @@ jobs:
           echo "Testing image: $IMAGE"
           docker run -d --name smoke-frontend -p 3001:80 "$IMAGE"
           sleep 5
-          curl -sf http://localhost:3001/ | grep -q "DOCTYPE" && echo "✅ Frontend serving HTML" || (docker logs smoke-frontend && exit 1)
+          curl -sf http://localhost:3001/ | grep -qi "doctype" && echo "✅ Frontend serving HTML" || (docker logs smoke-frontend && exit 1)
           docker stop smoke-frontend && docker rm smoke-frontend

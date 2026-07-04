@@ -455,22 +455,13 @@ const PendingApprovalPanel = ({
   onCopyEmail: (email: string) => void;
 }) => {
   const userRecord = (user || {}) as Record<string, unknown>;
-  const createdAt =
-    typeof userRecord.createdAt === 'string'
-      ? userRecord.createdAt
-      : typeof userRecord.registeredAt === 'string'
-        ? userRecord.registeredAt
-        : new Date().toISOString();
-  const groupName =
-    typeof userRecord.departmentName === 'string'
-      ? userRecord.departmentName
-      : typeof userRecord.requestedGroup === 'string'
-        ? userRecord.requestedGroup
-        : 'Nhóm: Phát triển phần mềm';
-  const approverName =
-    typeof userRecord.approverName === 'string' ? userRecord.approverName : 'Quản trị viên hệ thống';
-  const approverEmail =
-    typeof userRecord.approverEmail === 'string' ? userRecord.approverEmail : 'admin@company.com';
+  const firstString = (...values: unknown[]): string | undefined =>
+    values.find((v): v is string => typeof v === 'string');
+
+  const createdAt = firstString(userRecord.createdAt, userRecord.registeredAt) ?? new Date().toISOString();
+  const groupName = firstString(userRecord.departmentName, userRecord.requestedGroup) ?? 'Nhóm: Phát triển phần mềm';
+  const approverName = firstString(userRecord.approverName) ?? 'Quản trị viên hệ thống';
+  const approverEmail = firstString(userRecord.approverEmail) ?? 'admin@company.com';
 
   const pendingCards = [
     {

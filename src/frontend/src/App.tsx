@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { GlobalErrorUI } from './components/UI/GlobalErrorUI';
 import { ProtectedRoute, UnauthorizedPage } from './components/Auth/ProtectedRoute';
@@ -45,7 +45,29 @@ const WorkManagementPage = lazy(() => import('./pages/WorkManagementPage').then(
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage').then(m => ({ default: m.DocumentsPage })));
 const BenefitsReviewPage = lazy(() => import('./pages/BenefitsReviewPage').then(m => ({ default: m.BenefitsReviewPage })));
 
+// Nạp trước chunk của các trang hay vào nhất khi trình duyệt rảnh,
+// để lần điều hướng đầu tiên không phải chờ tải JS.
+const prefetchCommonRoutes = () => {
+  const load = () => {
+    void import('./pages/DashboardPage');
+    void import('./pages/EmployeeListPage');
+    void import('./pages/TaskListPage');
+    void import('./pages/WorkManagementPage');
+    void import('./pages/PayrollPage');
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(load, { timeout: 5000 });
+  } else {
+    setTimeout(load, 2500);
+  }
+};
+
 function App() {
+  useEffect(() => {
+    prefetchCommonRoutes();
+  }, []);
+
   return (
     <BrowserRouter>
       {/* Global Error UI - Toast Notifications & Error Modal */}

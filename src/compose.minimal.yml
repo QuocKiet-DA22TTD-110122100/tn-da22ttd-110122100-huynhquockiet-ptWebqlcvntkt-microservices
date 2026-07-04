@@ -89,7 +89,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8083/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 30s
       retries: 10
       start_period: 60s
 
@@ -127,7 +127,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8086/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 30s
       retries: 10
       start_period: 90s
 
@@ -145,6 +145,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${HR_DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${HR_DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
       INTERNAL_SECRET: ${INTERNAL_SECRET}
       REDIS_HOST: redis
       REDIS_PORT: "6379"
@@ -162,7 +164,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8082/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 30s
       retries: 10
       start_period: 90s
 
@@ -179,6 +181,8 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
       REDIS_HOST: redis
       REDIS_PORT: "6379"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -193,7 +197,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8084/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 30s
       retries: 10
       start_period: 90s
 
@@ -210,6 +214,8 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
       REDIS_HOST: redis
       REDIS_PORT: "6379"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -225,7 +231,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8087/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 30s
       retries: 10
       start_period: 90s
 
@@ -266,7 +272,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 30s
       retries: 5
       start_period: 60s
 
@@ -282,9 +288,9 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/"]
       interval: 30s
-      timeout: 5s
+      timeout: 30s
       retries: 3
       start_period: 30s
 

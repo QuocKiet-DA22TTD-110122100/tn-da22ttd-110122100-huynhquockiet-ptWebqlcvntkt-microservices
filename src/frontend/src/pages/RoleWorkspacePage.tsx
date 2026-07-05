@@ -22,9 +22,11 @@ import { WorkspaceActionPanel } from '@/components/Workspace/WorkspaceActionPane
 import { WorkspaceMetricCards } from '@/components/Workspace/WorkspaceMetricCards';
 import { WorkspaceStatusFilters, WorkspaceFilter } from '@/components/Workspace/WorkspaceStatusFilters';
 import { WorkspaceStatusList } from '@/components/Workspace/WorkspaceStatusList';
-import { WorkspaceDefinition, WorkspaceItem } from '@/components/Workspace/types';
+import { WorkspaceDefinition, WorkspaceItem, WorkspaceMetric } from '@/components/Workspace/types';
 import { LeaveCalendarModal } from '@/components/Workspace/LeaveCalendarModal';
 import { resolveWorkspaceRole } from '@/config/roleExperience';
+import { roleApi } from '@/api/role.api';
+import { userApi } from '@/api/user.api';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { downloadCsv } from '@/utils/exportCsv';
@@ -642,8 +644,71 @@ const workspaceDefinitions: Record<string, WorkspaceDefinition> = {
         nextStep: 'Đối chiếu danh sách tài khoản quyền cao.',
       },
     ],
-    processNotes: ['Admin chịu trách nhiệm kiểm soát quyền cao.', 'Audit cần có lý do và người phê duyệt.', 'Khi nối API, dữ liệu lấy từ auth-service.'],
+    processNotes: ['Admin chịu trách nhiệm kiểm soát quyền cao.', 'Audit cần có lý do và người phê duyệt.', 'Số liệu lấy trực tiếp từ auth-service (tài khoản, khóa, role).'],
   },
+};
+
+const PRIVILEGED_ROLES = new Set(['ADMIN', 'HR_MANAGER']);
+
+// Audit chưa có bảng log lịch sử ở backend; ở đây tổng hợp trạng thái THẬT
+// hiện tại từ auth-service (tài khoản khóa, quyền cao, role) thành các mục
+// cần rà soát — thay cho số liệu mẫu viết cứng trước đây.
+const buildAuditFromUsers = (
+  users: Array<{ locked: boolean; role: string }>,
+  roleCount: number | null,
+): { metrics: WorkspaceMetric[]; items: WorkspaceItem[] } => {
+  const locked = users.filter((u) => u.locked).length;
+  const privileged = users.filter((u) => PRIVILEGED_ROLES.has(u.role)).length;
+
+  const metrics: WorkspaceMetric[] = [
+    { label: 'Tài khoản hệ thống', value: String(users.length), hint: 'Đang quản lý trong auth-service' },
+    { label: 'Tài khoản bị khóa', value: String(locked), hint: 'Khóa do đăng nhập sai hoặc do admin' },
+    {
+      label: 'Quyền quản trị cao',
+      value: String(privileged),
+      hint: roleCount === null ? 'Role ADMIN và HR_MANAGER' : `${privileged} tài khoản trên ${roleCount} role`,
+    },
+  ];
+
+  const items: WorkspaceItem[] = [];
+  if (locked > 0) {
+    items.push({
+      title: `${locked} tài khoản đang bị khóa`,
+      description: 'Tài khoản bị khóa do đăng nhập sai nhiều lần hoặc do admin khóa thủ công.',
+      owner: 'Hệ thống',
+      meta: 'Security',
+      status: 'blocked',
+      priority: 'high',
+      due: 'Cần rà soát',
+      nextStep: 'Kiểm tra lý do khóa và mở khóa nếu là khóa nhầm.',
+    });
+  }
+  if (privileged > 0) {
+    items.push({
+      title: `${privileged} tài khoản có quyền quản trị cao`,
+      description: 'Tài khoản mang role ADMIN hoặc HR_MANAGER — phạm vi truy cập rộng.',
+      owner: 'Admin',
+      meta: 'Role',
+      status: 'inProgress',
+      priority: 'medium',
+      due: 'Định kỳ',
+      nextStep: 'Rà soát định kỳ để bảo đảm đúng người đúng quyền.',
+    });
+  }
+  if (roleCount !== null) {
+    items.push({
+      title: `${roleCount} role đang được định nghĩa`,
+      description: 'Số vai trò RBAC hiện có trong hệ thống, dùng để cấp quyền theo nhóm.',
+      owner: 'Admin',
+      meta: 'RBAC',
+      status: 'approved',
+      priority: 'normal',
+      due: 'Ổn định',
+      nextStep: 'Đối chiếu ma trận quyền khi có thay đổi nghiệp vụ.',
+    });
+  }
+
+  return { metrics, items };
 };
 
 const workspaceActionRoutes: Partial<Record<string, { primary?: string; secondary?: string }>> = {
@@ -669,6 +734,8 @@ export const RoleWorkspacePage = () => {
   const [exceptionOnly, setExceptionOnly] = useState(false);
   const [hrMissingDataOnly, setHrMissingDataOnly] = useState(false);
   const [hrDetailOpen, setHrDetailOpen] = useState(false);
+  // Audit: số liệu thật từ auth-service (null = chưa nạp/đang dùng số tĩnh của định nghĩa).
+  const [auditMetrics, setAuditMetrics] = useState<WorkspaceMetric[] | null>(null);
 
   useEffect(() => {
     const nextItems = workspaceDefinitions[slug]?.items ?? [];
@@ -679,6 +746,29 @@ export const RoleWorkspacePage = () => {
     setExceptionOnly(false);
     setHrMissingDataOnly(false);
     setHrDetailOpen(false);
+    setAuditMetrics(null);
+  }, [slug]);
+
+  // Nạp dữ liệu Audit thật; lỗi/thiếu quyền → giữ số tĩnh của định nghĩa (không làm vỡ trang).
+  useEffect(() => {
+    if (slug !== 'audit') return;
+    let cancelled = false;
+
+    void (async () => {
+      const [users, roleCount] = await Promise.all([
+        userApi.getAll().then((r) => r.data).catch(() => null),
+        roleApi.getAll().then((r) => r.data.length).catch(() => null),
+      ]);
+      if (cancelled || !users) return;
+
+      const { metrics, items: auditItems } = buildAuditFromUsers(users, roleCount);
+      setAuditMetrics(metrics);
+      if (auditItems.length > 0) setItems(auditItems);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   const workspace = workspaceDefinitions[slug];
@@ -966,7 +1056,7 @@ export const RoleWorkspacePage = () => {
           title={workspace.title}
           description={workspace.subtitle}
           align="start"
-          stats={workspace.metrics.slice(0, 3).map((metric) => ({
+          stats={(auditMetrics ?? workspace.metrics).slice(0, 3).map((metric) => ({
             label: metric.label,
             value: metric.value,
             hint: metric.hint,
@@ -1016,7 +1106,7 @@ export const RoleWorkspacePage = () => {
         </HeroHeader>
 
         <WorkspaceMetricCards
-          metrics={workspace.metrics}
+          metrics={auditMetrics ?? workspace.metrics}
           onMetricClick={['hr-records', 'benefits'].includes(slug) ? handleMetricClick : undefined}
           activeMetricIndex={activeMetricIndex}
         />

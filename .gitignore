@@ -20,3 +20,10 @@ src/frontend/shots/
 .vscode/
 .logs/
 .qodo/
+
+# Playwright MCP output & ad-hoc verification screenshots (repo root only)
+.playwright-mcp/
+/*.png
+/auth-app.jar
+/emp-list-snap.md
+/install.ps1

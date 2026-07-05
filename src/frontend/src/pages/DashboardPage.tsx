@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowRight,
+  CheckCircle2,
   Clock3,
   Copy,
   FolderKanban,
@@ -15,9 +16,12 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
+import { departmentApi } from '@/api/department.api';
 import { employeeApi } from '@/api/employee.api';
 import { projectApi } from '@/api/project.api';
+import { roleApi } from '@/api/role.api';
 import { taskApi } from '@/api/task.api';
+import { userApi } from '@/api/user.api';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Badge } from '@/components/UI/Badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
@@ -30,22 +34,18 @@ import { PERMISSIONS } from '@/utils/permissions';
 import { cn } from '@/utils/cn';
 
 type Priority = 'high' | 'medium' | 'normal';
-type WorkActionTone = 'blue' | 'amber' | 'slate';
 
 interface RoleWorkItem {
   title: string;
   description: string;
   meta: string;
   priority: Priority;
-  actionLabel?: string;
-  actionTone?: WorkActionTone;
+  href: string;
 }
 
 interface RoleDashboardExperience {
   summaryTitle: string;
   operatingModel: string;
-  health: Array<{ label: string; value: string; hint: string }>;
-  workQueue: RoleWorkItem[];
   accessNotes: string[];
 }
 
@@ -66,278 +66,257 @@ const dashboardExperience: Record<WorkspaceRole, RoleDashboardExperience> = {
   user: {
     summaryTitle: 'Tổng quan tài khoản',
     operatingModel: 'Người dùng cơ bản tập trung vào hồ sơ, bảo mật và phạm vi quyền truy cập cá nhân.',
-    health: [
-      { label: 'Tài khoản', value: 'Hoạt động', hint: 'Có thể đăng nhập và cập nhật hồ sơ' },
-      { label: 'Bảo mật', value: 'Theo dõi', hint: 'Kiểm tra hạn đổi mật khẩu định kỳ' },
-      { label: 'Truy cập', value: 'Giới hạn', hint: 'Module nghiệp vụ chỉ mở khi được cấp role' },
-    ],
-    workQueue: [
-      {
-        title: 'Kiểm tra thông tin hồ sơ',
-        description: 'Xác nhận email, họ tên và trạng thái tài khoản đang đúng.',
-        meta: 'Hồ sơ tài khoản',
-        priority: 'normal',
-      },
-      {
-        title: 'Đổi mật khẩu định kỳ',
-        description: 'Chủ động đổi mật khẩu khi gần hết hạn hoặc sau khi được cấp tài khoản mới.',
-        meta: 'Bảo mật cá nhân',
-        priority: 'medium',
-      },
-      {
-        title: 'Xem quyền truy cập',
-        description: 'Đối chiếu role trong token với các mục đang hiển thị trên menu.',
-        meta: 'Quyền của tôi',
-        priority: 'normal',
-      },
-    ],
     accessNotes: ['Chỉ thấy hồ sơ, bảo mật và quyền truy cập', 'Không mở module nghiệp vụ khi chưa có role phù hợp', 'Route vẫn được bảo vệ bởi ProtectedRoute'],
   },
   employee: {
     summaryTitle: 'Tổng quan công việc cá nhân',
     operatingModel: 'Nhân viên theo dõi chấm công, nghỉ phép và task cá nhân được giao.',
-    health: [
-      { label: 'Chấm công', value: '18/22', hint: 'Ngày công trong tháng hiện tại' },
-      { label: 'Nghỉ phép', value: '1 đơn', hint: 'Đang chờ quản lý duyệt' },
-      { label: 'Task cá nhân', value: '5', hint: '2 task đến hạn trong tuần' },
-    ],
-    workQueue: [
-      {
-        title: 'Bổ sung ghi chú chấm công',
-        description: 'Có 2 ngày cần giải trình lý do vào trễ hoặc thiếu log.',
-        meta: 'Chấm công',
-        priority: 'medium',
-      },
-      {
-        title: 'Theo dõi đơn nghỉ phép',
-        description: 'Đơn nghỉ ngày 12/06 đang chờ quản lý trực tiếp duyệt.',
-        meta: 'Nghỉ phép',
-        priority: 'normal',
-      },
-      {
-        title: 'Hoàn tất task cá nhân',
-        description: 'Task kiểm thử phân quyền cần cập nhật tiến độ trước cuối ngày.',
-        meta: 'Task cá nhân',
-        priority: 'high',
-      },
-    ],
     accessNotes: ['Có workspace chấm công, nghỉ phép, task cá nhân', 'Không có quyền role hoặc audit hệ thống', 'Chỉ xem dữ liệu trong phạm vi cá nhân'],
   },
   manager: {
     summaryTitle: 'Tổng quan quản lý nhóm',
     operatingModel: 'Quản lý xử lý phê duyệt hằng ngày và giữ nhịp task của nhóm.',
-    health: [
-      { label: 'Timesheet chờ duyệt', value: '12', hint: 'Có 3 ngoại lệ cần kiểm tra' },
-      { label: 'Task nhóm', value: '18', hint: '2 task quá hạn' },
-      { label: 'Nhân sự trực tiếp', value: '9', hint: 'Theo dõi trong phạm vi nhóm' },
-    ],
-    workQueue: [
-      {
-        title: 'Duyệt timesheet ngoại lệ',
-        description: 'Thiếu check-out và OT cần xác nhận trước khi khóa kỳ công.',
-        meta: 'Duyệt timesheet',
-        priority: 'high',
-      },
-      {
-        title: 'Điều phối task quá hạn',
-        description: '2 task nhóm cần đổi ưu tiên hoặc bổ sung người hỗ trợ.',
-        meta: 'Task nhóm',
-        priority: 'medium',
-      },
-      {
-        title: 'Xem nhân viên trong nhóm',
-        description: 'Kiểm tra trạng thái làm việc và phân bổ hiện tại.',
-        meta: 'Nhân sự nhóm',
-        priority: 'normal',
-      },
-    ],
     accessNotes: ['Có duyệt timesheet và task nhóm', 'Không có quyền role/audit hệ thống', 'Dữ liệu nhân sự giới hạn theo nhóm'],
   },
   departmentHead: {
     summaryTitle: 'Tổng quan điều hành phòng ban',
     operatingModel: 'Trưởng phòng theo dõi sức khỏe phòng ban, phê duyệt cấp phòng và rủi ro tải công việc.',
-    health: [
-      { label: 'Phê duyệt cấp phòng', value: '7', hint: '3 mục gần quá SLA' },
-      { label: 'Headcount', value: '46', hint: 'Nhân sự đang hoạt động' },
-      { label: 'KPI phòng ban', value: '88%', hint: 'Mức hoàn thành tháng' },
-    ],
-    workQueue: [
-      {
-        title: 'Phê duyệt điều chuyển nhân sự',
-        description: 'Yêu cầu điều chuyển sang nhóm Payroll cần quyết định cấp phòng.',
-        meta: 'Phê duyệt phòng ban',
-        priority: 'high',
-      },
-      {
-        title: 'Rà soát rủi ro tải công việc',
-        description: 'Nhóm Backend vượt 90% utilization trong 2 tuần liên tiếp.',
-        meta: 'Báo cáo phòng ban',
-        priority: 'medium',
-      },
-      {
-        title: 'Theo dõi task nhóm trọng điểm',
-        description: 'Các task release cần cập nhật tiến độ trước cuộc họp tuần.',
-        meta: 'Task nhóm',
-        priority: 'normal',
-      },
-    ],
     accessNotes: ['Có báo cáo và phê duyệt cấp phòng', 'Có thể xem nhân sự trong phạm vi phòng ban', 'Không trực tiếp cấu hình role hệ thống'],
   },
   payroll: {
     summaryTitle: 'Tổng quan bảng lương',
     operatingModel: 'Payroll Officer theo dõi kỳ lương, tính lương, phê duyệt và trạng thái chi trả.',
-    health: [
-      { label: 'Kỳ lương hiện tại', value: '06/2026', hint: 'Đang ở trạng thái đối soát' },
-      { label: 'Bảng lương draft', value: '4', hint: 'Cần tính và phê duyệt' },
-      { label: 'Đã xử lý', value: '12', hint: 'Lịch sử chi trả và audit' },
-    ],
-    workQueue: [
-      {
-        title: 'Tính lương nhân viên',
-        description: 'Chọn nhân viên và tháng lương để tạo bản ghi payroll draft.',
-        meta: 'Bảng lương',
-        priority: 'high',
-      },
-      {
-        title: 'Phê duyệt bảng lương',
-        description: 'Kiểm tra gross pay, khấu trừ và net pay trước khi chuyển sang APPROVED.',
-        meta: 'Workflow payroll',
-        priority: 'medium',
-      },
-      {
-        title: 'Xử lý chi trả',
-        description: 'Khóa bảng lương PROCESSED để phục vụ báo cáo bàn giao.',
-        meta: 'Audit payroll',
-        priority: 'normal',
-      },
-    ],
     accessNotes: ['Có quyền xem hồ sơ nhân viên để đối soát payroll', 'Có PAYROLL_MANAGE để tạo kỳ, tính lương và phê duyệt', 'Không có quyền quản lý user, role, project hoặc task'],
   },
   hr: {
     summaryTitle: 'Tổng quan nghiệp vụ nhân sự',
     operatingModel: 'HR giữ dữ liệu nhân sự, phúc lợi và thay đổi phòng ban sẵn sàng cho vận hành.',
-    health: [
-      { label: 'Hồ sơ nhân sự', value: '94%', hint: 'Đã có dữ liệu bắt buộc' },
-      { label: 'Phúc lợi cần rà soát', value: '11', hint: 'Thiếu BHXH hoặc phụ cấp' },
-      { label: 'Cập nhật mới', value: '6', hint: 'Trong tuần hiện tại' },
-    ],
-    workQueue: [
-      {
-        title: 'Bổ sung hồ sơ phúc lợi',
-        description: '11 hồ sơ cần hoàn tất trước kỳ payroll.',
-        meta: 'Phúc lợi',
-        priority: 'high',
-      },
-      {
-        title: 'Cập nhật hồ sơ nhân sự',
-        description: 'Các thay đổi chức danh và phòng ban cần đồng bộ lên HRIS.',
-        meta: 'Hồ sơ nhân sự',
-        priority: 'medium',
-      },
-      {
-        title: 'Rà soát phòng ban',
-        description: 'Kiểm tra trưởng phòng và trạng thái hoạt động của các đơn vị.',
-        meta: 'Phòng ban',
-        priority: 'normal',
-      },
-    ],
     accessNotes: ['Có hồ sơ nhân sự và phúc lợi', 'Có thể quản lý phòng ban/tổ chức', 'Không mặc định có quyền xóa role hệ thống'],
   },
   admin: {
     summaryTitle: 'Tổng quan quản trị',
     operatingModel: 'Admin kiểm soát tài khoản, role, quyền truy cập và các điểm cần audit.',
-    health: [
-      { label: 'Tài khoản nhạy cảm', value: '4', hint: 'Có quyền quản trị cao' },
-      { label: 'Role đang dùng', value: '6', hint: 'ADMIN, HR, HEAD, MANAGER, EMPLOYEE, USER' },
-      { label: 'Audit cần xem', value: '9', hint: 'Thay đổi quyền trong tuần' },
-    ],
-    workQueue: [
-      {
-        title: 'Rà soát tài khoản quyền cao',
-        description: 'Kiểm tra tài khoản admin và HR có đúng người phụ trách.',
-        meta: 'Tài khoản',
-        priority: 'high',
-        actionLabel: 'Kiểm tra ngay',
-        actionTone: 'blue',
-      },
-      {
-        title: 'Đối chiếu ma trận role',
-        description: 'Xác nhận quyền USER không mở module nghiệp vụ.',
-        meta: 'Role',
-        priority: 'medium',
-        actionLabel: 'Xử lý',
-        actionTone: 'amber',
-      },
-      {
-        title: 'Theo dõi audit thay đổi quyền',
-        description: 'Các thay đổi phân quyền cần có dấu vết kiểm toán rõ.',
-        meta: 'Audit',
-        priority: 'normal',
-        actionLabel: 'Xem chi tiết',
-        actionTone: 'slate',
-      },
-    ],
     accessNotes: ['Có toàn bộ quản trị tài khoản và role', 'Có quyền xem cấu trúc tổ chức', 'Audit là vùng UI chuẩn bị nối backend'],
   },
 };
 
-interface LiveStats {
-  employees: number;
-  activeProjects: number;
-  openTasks: number;
+interface DashboardData {
   loading: boolean;
+  employees: number | null;
+  departments: number | null;
+  activeProjects: number | null;
+  openTasks: number | null;
+  inProgressTasks: number | null;
+  completedTasks: number | null;
+  urgentTasks: number | null;
+  totalUsers: number | null;
+  lockedUsers: number | null;
+  privilegedUsers: number | null;
+  roleCount: number | null;
 }
 
-const adminDashboardBaselineStats = {
-  employees: 142,
-  activeProjects: 12,
-  openTasks: 38,
+const emptyDashboardData: DashboardData = {
+  loading: true,
+  employees: null,
+  departments: null,
+  activeProjects: null,
+  openTasks: null,
+  inProgressTasks: null,
+  completedTasks: null,
+  urgentTasks: null,
+  totalUsers: null,
+  lockedUsers: null,
+  privilegedUsers: null,
+  roleCount: null,
 };
 
-const useLiveDashboardStats = (canViewEmployees: boolean, canViewProjects: boolean, canViewTasks: boolean): LiveStats => {
-  const [stats, setStats] = useState<LiveStats>({ employees: 0, activeProjects: 0, openTasks: 0, loading: true });
+const PRIVILEGED_ROLES = new Set(['ADMIN', 'HR_MANAGER']);
+
+interface DashboardDataPerms {
+  employees: boolean;
+  departments: boolean;
+  projects: boolean;
+  tasks: boolean;
+  users: boolean;
+  roles: boolean;
+}
+
+// Chỉ gọi API mà role hiện tại có quyền; endpoint lỗi hoặc thiếu quyền → null (ẩn metric, không bịa số).
+const useDashboardData = (perms: DashboardDataPerms): DashboardData => {
+  const [data, setData] = useState<DashboardData>(emptyDashboardData);
 
   useEffect(() => {
-    const fetches = [
-      canViewEmployees
-        ? employeeApi.getAll({ page: 0, size: 1 }).then((r) => r.data.totalElements).catch(() => 0)
-        : Promise.resolve(0),
-      canViewProjects
-        ? projectApi.getAll().then((p) => p.filter((x) => x.status === 'ACTIVE').length).catch(() => 0)
-        : Promise.resolve(0),
-      canViewTasks
-        ? taskApi.getAll().then((t) => t.filter((x) => x.status === 'OPEN' || x.status === 'IN_PROGRESS').length).catch(() => 0)
-        : Promise.resolve(0),
-    ] as Promise<number>[];
+    let cancelled = false;
 
-    void Promise.all(fetches).then(([employees, activeProjects, openTasks]) => {
-      setStats({ employees, activeProjects, openTasks, loading: false });
-    });
-  }, [canViewEmployees, canViewProjects, canViewTasks]);
+    const fetchAll = async () => {
+      const [employees, departments, activeProjects, taskStats, userStats, roleCount] = await Promise.all([
+        perms.employees
+          ? employeeApi.getAll({ page: 0, size: 1 }).then((r) => r.data.totalElements).catch(() => null)
+          : Promise.resolve(null),
+        perms.departments
+          ? departmentApi.getAll({ page: 0, size: 1 }).then((r) => r.data.totalElements).catch(() => null)
+          : Promise.resolve(null),
+        perms.projects
+          ? projectApi.getAll().then((list) => list.filter((p) => p.status === 'ACTIVE').length).catch(() => null)
+          : Promise.resolve(null),
+        perms.tasks
+          ? taskApi.getAll().then((list) => ({
+              open: list.filter((t) => t.status === 'OPEN').length,
+              inProgress: list.filter((t) => t.status === 'IN_PROGRESS').length,
+              completed: list.filter((t) => t.status === 'COMPLETED').length,
+              urgent: list.filter(
+                (t) =>
+                  (t.priority === 'HIGH' || t.priority === 'URGENT') &&
+                  (t.status === 'OPEN' || t.status === 'IN_PROGRESS')
+              ).length,
+            })).catch(() => null)
+          : Promise.resolve(null),
+        perms.users
+          ? userApi.getAll().then((r) => ({
+              total: r.data.length,
+              locked: r.data.filter((u) => u.locked).length,
+              privileged: r.data.filter((u) => PRIVILEGED_ROLES.has(u.role)).length,
+            })).catch(() => null)
+          : Promise.resolve(null),
+        perms.roles
+          ? roleApi.getAll().then((r) => r.data.length).catch(() => null)
+          : Promise.resolve(null),
+      ]);
 
-  return stats;
+      if (cancelled) return;
+      setData({
+        loading: false,
+        employees,
+        departments,
+        activeProjects,
+        openTasks: taskStats?.open ?? null,
+        inProgressTasks: taskStats?.inProgress ?? null,
+        completedTasks: taskStats?.completed ?? null,
+        urgentTasks: taskStats?.urgent ?? null,
+        totalUsers: userStats?.total ?? null,
+        lockedUsers: userStats?.locked ?? null,
+        privilegedUsers: userStats?.privileged ?? null,
+        roleCount,
+      });
+    };
+
+    void fetchAll();
+    return () => {
+      cancelled = true;
+    };
+  }, [perms.employees, perms.departments, perms.projects, perms.tasks, perms.users, perms.roles]);
+
+  return data;
 };
 
-const HeroLiveStats = ({ stats, canViewEmployees, canViewProjects, canViewTasks }: {
-  stats: LiveStats;
+interface HealthMetric {
+  label: string;
+  value: number;
+  hint: string;
+}
+
+// Mỗi role xem một lát cắt số liệu thật khác nhau; metric không có dữ liệu (null) bị ẩn.
+const buildHealthMetrics = (role: WorkspaceRole, data: DashboardData): HealthMetric[] => {
+  const m = (label: string, value: number | null, hint: string): HealthMetric | null =>
+    value === null ? null : { label, value, hint };
+
+  const taskMetrics = [
+    m('Task đang thực hiện', data.inProgressTasks, 'Đang trong In Progress'),
+    m('Task ưu tiên cao', data.urgentTasks, 'HIGH/URGENT chưa hoàn tất'),
+    m('Task hoàn tất', data.completedTasks, 'Tích lũy trên hệ thống'),
+  ];
+
+  const byRole: Record<WorkspaceRole, Array<HealthMetric | null>> = {
+    user: [],
+    employee: taskMetrics,
+    manager: taskMetrics,
+    departmentHead: taskMetrics,
+    payroll: [m('Nhân viên', data.employees, 'Hồ sơ phục vụ đối soát lương')],
+    hr: [
+      m('Phòng ban', data.departments, 'Đơn vị đang theo dõi'),
+      m('Task đang thực hiện', data.inProgressTasks, 'Trên toàn hệ thống'),
+      m('Task ưu tiên cao', data.urgentTasks, 'HIGH/URGENT chưa hoàn tất'),
+    ],
+    admin: [
+      m('Tài khoản hệ thống', data.totalUsers, 'Đang quản lý trong auth service'),
+      m('Tài khoản bị khóa', data.lockedUsers, 'Khóa do đăng nhập sai hoặc do admin'),
+      m('Quyền quản trị cao', data.privilegedUsers, 'Role ADMIN và HR_MANAGER'),
+      m('Role đang dùng', data.roleCount, 'Định nghĩa trong hệ thống'),
+    ],
+  };
+
+  return byRole[role].filter((x): x is HealthMetric => x !== null).slice(0, 4);
+};
+
+// Queue tổng hợp từ dữ liệu thật, sắp theo mức khẩn; tối đa 3 mục.
+const buildWorkQueue = (data: DashboardData): RoleWorkItem[] => {
+  const items: RoleWorkItem[] = [];
+
+  if ((data.lockedUsers ?? 0) > 0) {
+    items.push({
+      title: `${data.lockedUsers} tài khoản đang bị khóa`,
+      description: 'Kiểm tra và mở khóa nếu tài khoản bị khóa nhầm do đăng nhập sai.',
+      meta: 'Quản lý tài khoản',
+      priority: 'high',
+      href: '/users',
+    });
+  }
+
+  if ((data.urgentTasks ?? 0) > 0) {
+    items.push({
+      title: `${data.urgentTasks} task ưu tiên cao đang mở`,
+      description: 'Task HIGH/URGENT chưa hoàn tất — xử lý hoặc điều phối trước.',
+      meta: 'Task',
+      priority: 'high',
+      href: '/tasks',
+    });
+  }
+
+  if ((data.inProgressTasks ?? 0) > 0) {
+    items.push({
+      title: `${data.inProgressTasks} task đang thực hiện`,
+      description: 'Theo dõi tiến độ và cập nhật trạng thái khi hoàn tất.',
+      meta: 'Task',
+      priority: 'medium',
+      href: '/tasks',
+    });
+  }
+
+  if ((data.openTasks ?? 0) > 0) {
+    items.push({
+      title: `${data.openTasks} task mở chưa bắt đầu`,
+      description: 'Nhận việc hoặc giao cho thành viên phù hợp.',
+      meta: 'Task',
+      priority: 'normal',
+      href: '/tasks',
+    });
+  }
+
+  return items.slice(0, 3);
+};
+
+const HeroLiveStats = ({ data, canViewEmployees, canViewProjects, canViewTasks }: {
+  data: DashboardData;
   canViewEmployees: boolean;
   canViewProjects: boolean;
   canViewTasks: boolean;
 }) => {
-  const items: Array<{ label: string; value: string; icon: LucideIcon }> = [];
-  const employees = stats.employees || adminDashboardBaselineStats.employees;
-  const activeProjects = stats.activeProjects || adminDashboardBaselineStats.activeProjects;
-  const openTasks = stats.openTasks || adminDashboardBaselineStats.openTasks;
+  const pendingTasks =
+    data.openTasks === null && data.inProgressTasks === null
+      ? null
+      : (data.openTasks ?? 0) + (data.inProgressTasks ?? 0);
 
-  if (canViewEmployees) items.push({ label: 'Nhân viên',       value: stats.loading ? '—' : employees.toString(),      icon: Users });
-  if (canViewProjects)  items.push({ label: 'Dự án đang chạy', value: stats.loading ? '—' : activeProjects.toString(), icon: FolderKanban });
-  if (canViewTasks)     items.push({ label: 'Task cần xử lý',  value: stats.loading ? '—' : openTasks.toString(),      icon: ListChecks });
+  const items: Array<{ label: string; value: number | null; icon: LucideIcon }> = [];
+  if (canViewEmployees) items.push({ label: 'Nhân viên',       value: data.employees,      icon: Users });
+  if (canViewProjects)  items.push({ label: 'Dự án đang chạy', value: data.activeProjects, icon: FolderKanban });
+  if (canViewTasks)     items.push({ label: 'Task cần xử lý',  value: pendingTasks,        icon: ListChecks });
 
-  if (items.length === 0) return null;
+  const visible = items.filter((item) => data.loading || item.value !== null);
+  if (visible.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-3">
-      {items.map((item) => (
+      {visible.map((item) => (
         <div
           key={item.label}
           className="flex items-center gap-3 rounded-xl bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(67,56,202,0.07)] ring-1 ring-indigo-100"
@@ -345,7 +324,9 @@ const HeroLiveStats = ({ stats, canViewEmployees, canViewProjects, canViewTasks 
           <item.icon size={16} className="shrink-0 text-indigo-500" />
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-400">{item.label}</p>
-            <p className="mt-0.5 text-xl font-bold leading-none tabular-nums text-slate-900">{item.value}</p>
+            <p className="mt-0.5 text-xl font-bold leading-none tabular-nums text-slate-900">
+              {data.loading ? '—' : item.value}
+            </p>
           </div>
         </div>
       ))}
@@ -353,51 +334,70 @@ const HeroLiveStats = ({ stats, canViewEmployees, canViewProjects, canViewTasks 
   );
 };
 
-const workActionStyles: Record<WorkActionTone, string> = {
-  blue: 'border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100 focus:ring-blue-500',
-  amber: 'border-amber-200 bg-amber-50 text-amber-800 hover:border-amber-300 hover:bg-amber-100 focus:ring-amber-500',
-  slate: 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100 focus:ring-slate-500',
-};
+const WorkQueueList = ({ items, loading, hasData }: { items: RoleWorkItem[]; loading: boolean; hasData: boolean }) => {
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[0, 1].map((i) => (
+          <div key={i} className="h-20 animate-shimmer rounded-xl bg-slate-100" />
+        ))}
+      </div>
+    );
+  }
 
-const WorkQueueList = ({ items, onAction }: { items: RoleWorkItem[]; onAction: (item: RoleWorkItem) => void }) => (
-  <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
-    {items.map((item) => {
-      const priority = priorityStyles[item.priority];
-      const actionTone = item.actionTone ?? 'slate';
+  // Phân biệt "đã tải, không có việc" với "không tải được nguồn dữ liệu nào".
+  if (items.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-6 text-center">
+        {hasData ? (
+          <>
+            <CheckCircle2 size={22} className="mx-auto text-emerald-500" />
+            <p className="mt-2 text-sm font-semibold text-slate-700">Không có việc tồn đọng</p>
+            <p className="mt-1 text-xs text-slate-400">Mục cần chú ý sẽ xuất hiện khi có dữ liệu mới.</p>
+          </>
+        ) : (
+          <>
+            <AlertCircle size={22} className="mx-auto text-slate-400" />
+            <p className="mt-2 text-sm font-semibold text-slate-700">Chưa tải được dữ liệu</p>
+            <p className="mt-1 text-xs text-slate-400">Backend có thể đang khởi động — tải lại trang sau ít phút.</p>
+          </>
+        )}
+      </div>
+    );
+  }
 
-      return (
-        <div key={item.title} className="grid gap-3 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-semibold text-slate-900">{item.title}</h3>
-              <Badge variant={priority.variant}>{priority.label}</Badge>
+  return (
+    <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      {items.map((item) => {
+        const priority = priorityStyles[item.priority];
+
+        return (
+          <div key={item.title} className="grid gap-3 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-semibold text-slate-900">{item.title}</h3>
+                <Badge variant={priority.variant}>{priority.label}</Badge>
+              </div>
+              <p className="mt-1 text-sm leading-6 text-slate-500">{item.description}</p>
+              <div className="mt-2 inline-flex items-center gap-2 rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+                <Clock3 size={14} />
+                {item.meta}
+              </div>
             </div>
-            <p className="mt-1 text-sm leading-6 text-slate-500">{item.description}</p>
-            <div className="mt-2 inline-flex items-center gap-2 rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-              <Clock3 size={14} />
-              {item.meta}
-            </div>
-          </div>
 
-          {item.actionLabel && (
-            <button
-              type="button"
-              aria-label={item.actionLabel}
-              className={cn(
-                'inline-flex h-9 w-9 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 min-[420px]:w-full sm:w-auto',
-                workActionStyles[actionTone]
-              )}
-              onClick={() => onAction(item)}
+            <Link
+              to={item.href}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-sm font-semibold text-indigo-600 transition hover:border-indigo-200 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-              <ArrowRight size={16} className="shrink-0 min-[420px]:hidden" />
-              <span className="hidden min-[420px]:inline">{item.actionLabel}</span>
-            </button>
-          )}
-        </div>
-      );
-    })}
-  </div>
-);
+              Mở
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const ActionCard = ({
   title,
@@ -565,7 +565,19 @@ export const DashboardPage = () => {
   const canViewEmployees = can(PERMISSIONS.EMPLOYEE_VIEW);
   const canViewProjects  = can(PERMISSIONS.PROJECT_VIEW);
   const canViewTasks     = can(PERMISSIONS.TASK_VIEW);
-  const liveStats = useLiveDashboardStats(canViewEmployees, canViewProjects, canViewTasks);
+  const dashboardData = useDashboardData({
+    employees: canViewEmployees,
+    departments: can(PERMISSIONS.DEPARTMENT_VIEW),
+    projects: canViewProjects,
+    tasks: canViewTasks,
+    users: can(PERMISSIONS.USER_VIEW),
+    roles: can(PERMISSIONS.ROLE_VIEW),
+  });
+  const healthMetrics = useMemo(
+    () => buildHealthMetrics(workspaceRole, dashboardData),
+    [workspaceRole, dashboardData]
+  );
+  const workQueue = useMemo(() => buildWorkQueue(dashboardData), [dashboardData]);
 
   const visibleActions = useMemo(
     () => roleProfile.actions.filter((action) => !action.permission || can(action.permission)),
@@ -590,10 +602,6 @@ export const DashboardPage = () => {
     }
   };
 
-  const handleWorkQueueAction = (item: RoleWorkItem) => {
-    addNotification({ type: 'info', message: `${item.actionLabel ?? 'Mở tác vụ'}: ${item.title}` });
-  };
-
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -615,7 +623,7 @@ export const DashboardPage = () => {
               {(canViewEmployees || canViewProjects || canViewTasks) && (
                 <div className="mt-auto pt-6">
                   <HeroLiveStats
-                    stats={liveStats}
+                    data={dashboardData}
                     canViewEmployees={canViewEmployees}
                     canViewProjects={canViewProjects}
                     canViewTasks={canViewTasks}
@@ -627,17 +635,19 @@ export const DashboardPage = () => {
             <div className="rounded-2xl bg-white p-5 shadow-[0_1px_2px_rgba(67,56,202,0.07)] ring-1 ring-indigo-100">
               <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">{experience.summaryTitle}</p>
               <p className="mt-1.5 text-sm leading-6 text-slate-500">{experience.operatingModel}</p>
-              <dl className="mt-4 divide-y divide-slate-100">
-                {experience.health.map((metric) => (
-                  <div key={metric.label} className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
-                    <div className="min-w-0">
-                      <dt className="text-sm font-medium text-slate-700">{metric.label}</dt>
-                      <dd className="mt-0.5 text-xs leading-5 text-slate-400">{metric.hint}</dd>
+              {healthMetrics.length > 0 && (
+                <dl className="mt-4 divide-y divide-slate-100">
+                  {healthMetrics.map((metric) => (
+                    <div key={metric.label} className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0 animate-fade-up">
+                      <div className="min-w-0">
+                        <dt className="text-sm font-medium text-slate-700">{metric.label}</dt>
+                        <dd className="mt-0.5 text-xs leading-5 text-slate-400">{metric.hint}</dd>
+                      </div>
+                      <dd className="shrink-0 text-lg font-bold tabular-nums text-indigo-950">{metric.value}</dd>
                     </div>
-                    <dd className="shrink-0 text-lg font-bold tabular-nums text-indigo-950">{metric.value}</dd>
-                  </div>
-                ))}
-              </dl>
+                  ))}
+                </dl>
+              )}
             </div>
           </div>
         </section>
@@ -702,10 +712,16 @@ export const DashboardPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Việc cần chú ý</CardTitle>
-                <CardDescription>Queue mẫu theo đúng vai trò đăng nhập.</CardDescription>
+                <CardDescription>Tổng hợp trực tiếp từ dữ liệu hệ thống theo quyền của bạn.</CardDescription>
               </CardHeader>
               <CardContent>
-                <WorkQueueList items={experience.workQueue} onAction={handleWorkQueueAction} />
+                <WorkQueueList
+                  items={workQueue}
+                  loading={dashboardData.loading}
+                  hasData={[dashboardData.urgentTasks, dashboardData.inProgressTasks, dashboardData.openTasks, dashboardData.lockedUsers].some(
+                    (v) => v !== null
+                  )}
+                />
               </CardContent>
             </Card>
 

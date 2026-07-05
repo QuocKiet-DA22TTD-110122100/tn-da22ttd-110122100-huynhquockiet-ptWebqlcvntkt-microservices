@@ -1,46 +1,70 @@
--- Project Service seed data — INSERT IGNORE để idempotent
+-- Project Service seed data — bộ enterprise đồng bộ với full business seed
 -- lead_id và employee_id tham chiếu employee.id từ hr-service
 
 INSERT IGNORE INTO projects (id, name, description, status, lead_id, created_at, updated_at) VALUES
-    (1, 'Hệ thống HR Microservices',  'Xây dựng nền tảng quản lý nhân sự dạng microservices hiện đại.',      'ACTIVE',    2,  '2024-01-10 08:00:00', NOW()),
-    (2, 'Cổng thông tin nhân viên',   'Portal tự phục vụ cho nhân viên tra cứu thông tin lương và phúc lợi.','ACTIVE',    2,  '2024-02-15 09:00:00', NOW()),
-    (3, 'Hệ thống chấm công',         'Tích hợp máy chấm công và tự động tính công theo ca.',                'ACTIVE',    15, '2024-03-01 08:30:00', NOW()),
-    (4, 'Tái cấu trúc Frontend',       'Nâng cấp UI từ legacy sang React + Tailwind CSS.',                   'PAUSED',    2,  '2024-01-20 10:00:00', NOW()),
-    (5, 'Tích hợp ERP',               'Kết nối hệ thống HR với phần mềm kế toán SAP.',                      'PAUSED',    16, '2023-11-01 08:00:00', NOW()),
-    (6, 'Chiến dịch tuyển dụng Q2',   'Tuyển 20 vị trí kỹ thuật và 5 vị trí kinh doanh trong Q2/2024.',    'COMPLETED', 7,  '2024-04-01 08:00:00', NOW()),
-    (7, 'Đào tạo onboarding 2024',    'Xây dựng chương trình onboarding chuẩn hóa cho nhân viên mới.',      'COMPLETED', 7,  '2024-01-05 08:00:00', NOW()),
-    (8, 'Hệ thống KPI cũ',            'Hệ thống đánh giá hiệu suất thế hệ trước — đã lưu trữ.',            'ARCHIVED',  16, '2023-01-01 08:00:00', NOW());
+    (1, 'ECC HR Platform v2.0',
+     'Nâng cấp toàn diện nền tảng quản lý nhân sự: employee lifecycle, phân quyền RBAC, API chuẩn hoá. Là dự án nền tảng cho toàn hệ thống ECC.',
+     'ACTIVE', 3, '2025-10-01 08:00:00', NOW(6)),
+    (2, 'Payroll Automation System',
+     'Tự động hoá quy trình tính lương, quản lý khấu trừ BHXH/BHYT/BHTN, thuế TNCN luỹ tiến, phê duyệt bảng lương đa cấp và xuất báo cáo quyết toán.',
+     'ACTIVE', 9, '2025-11-15 08:00:00', NOW(6)),
+    (3, 'Employee Self-Service Portal',
+     'Cổng tự phục vụ dành cho nhân viên: xem hợp đồng, phiếu lương, yêu cầu nghỉ phép, cập nhật thông tin cá nhân và theo dõi KPI.',
+     'PAUSED', 3, '2025-12-01 08:00:00', NOW(6)),
+    (4, 'ECC Mobile App',
+     'Ứng dụng di động (iOS/Android) cho quản lý dự án và task theo thời gian thực, thông báo push, check-in địa điểm và báo cáo nhanh.',
+     'ACTIVE', 9, '2026-01-15 08:00:00', NOW(6)),
+    (5, 'CRM Integration',
+     'Tích hợp hệ thống CRM nội bộ với Salesforce: đồng bộ khách hàng, cơ hội kinh doanh, lịch sử tương tác và báo cáo doanh số tự động.',
+     'COMPLETED', 19, '2025-08-01 08:00:00', '2026-02-28 17:00:00'),
+    (6, 'Cloud Infrastructure Migration',
+     'Di chuyển toàn bộ hạ tầng on-premise sang AWS (EKS + RDS + S3 + CloudFront). Bao gồm CI/CD pipeline, blue-green deployment và disaster recovery.',
+     'COMPLETED', 26, '2025-06-01 08:00:00', '2026-01-31 17:00:00'),
+    (7, 'Data Analytics Dashboard',
+     'Xây dựng hệ thống phân tích dữ liệu nhân sự và kinh doanh với Grafana, Metabase và pipeline ETL từ MySQL/PostgreSQL sang Data Warehouse.',
+     'ACTIVE', 25, '2026-03-01 08:00:00', NOW(6))
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name), description = VALUES(description),
+    status = VALUES(status), lead_id = VALUES(lead_id),
+    updated_at = NOW(6);
 
 INSERT IGNORE INTO project_assignments (id, project_id, employee_id, role, active, assigned_at) VALUES
-    -- Dự án 1: HR Microservices
-    (1,  1, 2,  'MANAGER',   true,  '2024-01-10 08:00:00'),
-    (2,  1, 3,  'DEVELOPER', true,  '2024-01-10 08:00:00'),
-    (3,  1, 4,  'DEVELOPER', true,  '2024-01-15 08:00:00'),
-    (4,  1, 5,  'DEVELOPER', true,  '2024-01-15 08:00:00'),
-    (5,  1, 6,  'QA',        true,  '2024-01-20 08:00:00'),
-    -- Dự án 2: Cổng thông tin nhân viên
-    (6,  2, 2,  'MANAGER',   true,  '2024-02-15 09:00:00'),
-    (7,  2, 4,  'DEVELOPER', true,  '2024-02-15 09:00:00'),
-    (8,  2, 3,  'DEVELOPER', true,  '2024-02-20 09:00:00'),
-    (9,  2, 6,  'QA',        true,  '2024-02-20 09:00:00'),
-    -- Dự án 3: Hệ thống chấm công
-    (10, 3, 15, 'MANAGER',   true,  '2024-03-01 08:30:00'),
-    (11, 3, 16, 'MEMBER',    true,  '2024-03-01 08:30:00'),
-    (12, 3, 17, 'MEMBER',    true,  '2024-03-05 08:30:00'),
-    (13, 3, 5,  'DEVELOPER', true,  '2024-03-05 08:30:00'),
-    -- Dự án 4: Tái cấu trúc Frontend (paused)
-    (14, 4, 2,  'MANAGER',   false, '2024-01-20 10:00:00'),
-    (15, 4, 4,  'DEVELOPER', false, '2024-01-20 10:00:00'),
-    (16, 4, 19, 'MEMBER',    false, '2024-01-25 10:00:00'),
-    -- Dự án 5: Tích hợp ERP (paused)
-    (17, 5, 16, 'MANAGER',   false, '2023-11-01 08:00:00'),
-    (18, 5, 12, 'MEMBER',    false, '2023-11-01 08:00:00'),
-    (19, 5, 13, 'MEMBER',    false, '2023-11-05 08:00:00'),
-    -- Dự án 6: Tuyển dụng Q2 (completed)
-    (20, 6, 7,  'MANAGER',   false, '2024-04-01 08:00:00'),
-    (21, 6, 8,  'MEMBER',    false, '2024-04-01 08:00:00'),
-    (22, 6, 9,  'MEMBER',    false, '2024-04-01 08:00:00'),
-    -- Dự án 7: Đào tạo onboarding (completed)
-    (23, 7, 7,  'MANAGER',   false, '2024-01-05 08:00:00'),
-    (24, 7, 10, 'MEMBER',    false, '2024-01-05 08:00:00'),
-    (25, 7, 8,  'MEMBER',    false, '2024-01-10 08:00:00');
+    (1,  1,  3,  'MANAGER',   b'1', '2025-10-01 08:00:00'),
+    (2,  1,  14, 'DEVELOPER', b'1', '2025-10-05 08:00:00'),
+    (3,  1,  4,  'DEVELOPER', b'1', '2025-10-05 08:00:00'),
+    (4,  1,  5,  'DEVELOPER', b'1', '2025-10-10 08:00:00'),
+    (5,  1,  21, 'DEVELOPER', b'1', '2025-12-01 08:00:00'),
+    (6,  1,  7,  'QA',        b'1', '2025-10-10 08:00:00'),
+    (7,  1,  16, 'QA',        b'1', '2026-01-15 08:00:00'),
+    (8,  1,  8,  'MEMBER',    b'1', '2025-10-05 08:00:00'),
+    (9,  2,  9,  'MANAGER',   b'1', '2025-11-15 08:00:00'),
+    (10, 2,  13, 'DEVELOPER', b'1', '2025-11-15 08:00:00'),
+    (11, 2,  4,  'DEVELOPER', b'1', '2025-11-20 08:00:00'),
+    (12, 2,  28, 'MEMBER',    b'1', '2025-11-20 08:00:00'),
+    (13, 2,  7,  'QA',        b'1', '2025-12-01 08:00:00'),
+    (14, 2,  22, 'MEMBER',    b'1', '2025-12-01 08:00:00'),
+    (15, 3,  3,  'MANAGER',   b'1', '2025-12-01 08:00:00'),
+    (16, 3,  6,  'DEVELOPER', b'1', '2025-12-05 08:00:00'),
+    (17, 3,  15, 'DEVELOPER', b'1', '2025-12-05 08:00:00'),
+    (18, 3,  10, 'MEMBER',    b'1', '2025-12-10 08:00:00'),
+    (19, 4,  9,  'MANAGER',   b'1', '2026-01-15 08:00:00'),
+    (20, 4,  15, 'DEVELOPER', b'1', '2026-01-20 08:00:00'),
+    (21, 4,  21, 'DEVELOPER', b'1', '2026-01-20 08:00:00'),
+    (22, 4,  23, 'DEVELOPER', b'1', '2026-02-01 08:00:00'),
+    (23, 4,  16, 'QA',        b'1', '2026-01-25 08:00:00'),
+    (24, 4,  8,  'MEMBER',    b'1', '2026-01-20 08:00:00'),
+    (25, 5,  19, 'MANAGER',   b'0', '2025-08-01 08:00:00'),
+    (26, 5,  14, 'DEVELOPER', b'0', '2025-08-05 08:00:00'),
+    (27, 5,  6,  'DEVELOPER', b'0', '2025-08-05 08:00:00'),
+    (28, 5,  7,  'QA',        b'0', '2025-08-10 08:00:00'),
+    (29, 6,  26, 'MANAGER',   b'0', '2025-06-01 08:00:00'),
+    (30, 6,  11, 'DEVELOPER', b'0', '2025-06-05 08:00:00'),
+    (31, 6,  17, 'DEVELOPER', b'0', '2025-06-05 08:00:00'),
+    (32, 6,  5,  'MEMBER',    b'0', '2025-06-10 08:00:00'),
+    (33, 7,  25, 'MANAGER',   b'1', '2026-03-01 08:00:00'),
+    (34, 7,  14, 'DEVELOPER', b'1', '2026-03-05 08:00:00'),
+    (35, 7,  11, 'DEVELOPER', b'1', '2026-03-05 08:00:00'),
+    (36, 7,  22, 'MEMBER',    b'1', '2026-03-10 08:00:00')
+ON DUPLICATE KEY UPDATE
+    role = VALUES(role), active = VALUES(active),
+    assigned_at = VALUES(assigned_at);

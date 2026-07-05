@@ -67,7 +67,7 @@ INSERT INTO employee (
      'did:ecc:employee:027', 'Nguyễn Minh Tuấn',       'Giám đốc Nhân sự (HRD)',
      75000000, 'VND', 'L5', '2022-02-15', 'ACTIVE', NOW(6), NOW(6), 1),
 
-    (10, NULL,                                    'tran.hai.yen',
+    (10, 'a1000016-0000-0000-0000-000000000016', 'tran.hai.yen',
      'did:ecc:employee:010', 'Trần Hải Yến',           'Chuyên viên Tuyển dụng',
      15000000, 'VND', 'L1', '2024-01-08', 'ACTIVE', NOW(6), NOW(6), 1),
 
@@ -89,11 +89,11 @@ INSERT INTO employee (
      'did:ecc:employee:003', 'Trần Minh Quân',         'Quản lý Kỹ thuật',
      55000000, 'VND', 'L4', '2022-05-15', 'ACTIVE', NOW(6), NOW(6), 3),
 
-    (9,  NULL,                                    'dang.quoc.bao',
+    (9,  'a1000017-0000-0000-0000-000000000017', 'dang.quoc.bao',
      'did:ecc:employee:009', 'Đặng Quốc Bảo',          'Quản lý Dự án (PM)',
      42000000, 'VND', 'L3', '2023-03-11', 'ACTIVE', NOW(6), NOW(6), 3),
 
-    (8,  NULL,                                    'hoang.kim.ngan',
+    (8,  'a1000018-0000-0000-0000-000000000018', 'hoang.kim.ngan',
      'did:ecc:employee:008', 'Hoàng Kim Ngân',          'Chuyên viên Phân tích (BA)',
      21000000, 'VND', 'L2', '2023-05-02', 'ACTIVE', NOW(6), NOW(6), 3),
 
@@ -106,7 +106,7 @@ INSERT INTO employee (
      'did:ecc:employee:004', 'Lê Thu An',              'Kỹ sư Phần mềm Backend',
      22000000, 'VND', 'L2', '2023-06-01', 'ACTIVE', NOW(6), NOW(6), 2),
 
-    (5,  NULL,                                    'pham.hoang.nam',
+    (5,  'a1000019-0000-0000-0000-000000000019', 'pham.hoang.nam',
      'did:ecc:employee:005', 'Phạm Hoàng Nam',          'Kỹ sư Backend',
      24000000, 'VND', 'L2', '2023-07-10', 'ACTIVE', NOW(6), NOW(6), 2),
 
@@ -123,7 +123,7 @@ INSERT INTO employee (
      12000000, 'VND', 'L1', '2025-01-06', 'ACTIVE', NOW(6), NOW(6), 2),
 
     -- ── Frontend Engineering ──
-    (6,  NULL,                                    'vo.thanh.dat',
+    (6,  'a1000020-0000-0000-0000-000000000020', 'vo.thanh.dat',
      'did:ecc:employee:006', 'Võ Thành Đạt',            'Kỹ sư Frontend',
      23000000, 'VND', 'L2', '2023-08-21', 'ACTIVE', NOW(6), NOW(6), 2),
 
@@ -132,7 +132,7 @@ INSERT INTO employee (
      48000000, 'VND', 'L4', '2023-03-20', 'ACTIVE', NOW(6), NOW(6), 2),
 
     -- ── QA / Testing ──
-    (7,  NULL,                                    'nguyen.my.duyen',
+    (7,  'a1000021-0000-0000-0000-000000000021', 'nguyen.my.duyen',
      'did:ecc:employee:007', 'Nguyễn Mỹ Duyên',         'Kỹ sư Kiểm thử (QA)',
      19000000, 'VND', 'L2', '2023-09-05', 'ACTIVE', NOW(6), NOW(6), 4),
 
@@ -141,7 +141,7 @@ INSERT INTO employee (
      42000000, 'VND', 'L4', '2023-02-28', 'ACTIVE', NOW(6), NOW(6), 4),
 
     -- ── DevOps / Infrastructure ──
-    (11, NULL,                                    'bui.manh.khoa',
+    (11, 'a1000022-0000-0000-0000-000000000022', 'bui.manh.khoa',
      'did:ecc:employee:011', 'Bùi Mạnh Khoa',           'Kỹ sư DevOps',
      35000000, 'VND', 'L3', '2023-11-14', 'ACTIVE', NOW(6), NOW(6), 5),
 
@@ -160,7 +160,7 @@ INSERT INTO employee (
      50000000, 'VND', 'L4', '2024-07-01', 'ACTIVE', NOW(6), NOW(6), 7),
 
     -- ── Đà Nẵng — Vận hành & R&D & Hỗ trợ ──
-    (12, NULL,                                    'le.minh.chau',
+    (12, 'a1000023-0000-0000-0000-000000000023', 'le.minh.chau',
      'did:ecc:employee:012', 'Lê Minh Châu',             'Nhân viên Vận hành',
      14000000, 'VND', 'L1', '2024-03-18', 'ACTIVE', NOW(6), NOW(6), 8),
 

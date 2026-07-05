@@ -40,7 +40,7 @@ ON CONFLICT (name) DO UPDATE SET
     updated_at   = NOW();
 
 -- ── 2. Users ─────────────────────────────────────────────────
--- Giữ nguyên 5 user cũ + thêm 15 user mới = 20 tổng
+-- Giữ nguyên 5 user cũ + thêm 18 user mới = 23 tổng
 INSERT INTO users (id, username, password_hash, role, password_updated_at, created_at, updated_at, locked, two_factor_enabled)
 VALUES
     -- ── Ban lãnh đạo & Admin ──
@@ -126,7 +126,31 @@ VALUES
 
     ('a1000012-0000-0000-0000-000000000012', 'ly.van.hoa',
      '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
-     'EMPLOYEE',        '2024-10-01 08:00:00+07', '2024-10-01 08:00:00+07', '2024-10-01 08:00:00+07', false, false)
+     'EMPLOYEE',        '2024-10-01 08:00:00+07', '2024-10-01 08:00:00+07', '2024-10-01 08:00:00+07', false, false),
+    ('a1000016-0000-0000-0000-000000000016', 'tran.hai.yen',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'HR_MANAGER',      '2024-01-08 08:00:00+07', '2024-01-08 08:00:00+07', '2024-01-08 08:00:00+07', false, false),
+    ('a1000017-0000-0000-0000-000000000017', 'dang.quoc.bao',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'MANAGER',         '2023-03-11 08:00:00+07', '2023-03-11 08:00:00+07', '2023-03-11 08:00:00+07', false, false),
+    ('a1000018-0000-0000-0000-000000000018', 'hoang.kim.ngan',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'EMPLOYEE',        '2023-05-02 08:00:00+07', '2023-05-02 08:00:00+07', '2023-05-02 08:00:00+07', false, false),
+    ('a1000019-0000-0000-0000-000000000019', 'pham.hoang.nam',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'EMPLOYEE',        '2023-07-10 08:00:00+07', '2023-07-10 08:00:00+07', '2023-07-10 08:00:00+07', false, false),
+    ('a1000020-0000-0000-0000-000000000020', 'vo.thanh.dat',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'EMPLOYEE',        '2023-08-21 08:00:00+07', '2023-08-21 08:00:00+07', '2023-08-21 08:00:00+07', false, false),
+    ('a1000021-0000-0000-0000-000000000021', 'nguyen.my.duyen',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'EMPLOYEE',        '2023-09-05 08:00:00+07', '2023-09-05 08:00:00+07', '2023-09-05 08:00:00+07', false, false),
+    ('a1000022-0000-0000-0000-000000000022', 'bui.manh.khoa',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'EMPLOYEE',        '2023-11-14 08:00:00+07', '2023-11-14 08:00:00+07', '2023-11-14 08:00:00+07', false, false),
+    ('a1000023-0000-0000-0000-000000000023', 'le.minh.chau',
+     '$argon2id$v=19$m=16384,t=2,p=1$8EcW3dyBX1zOpzRDM5yVkw$6WWw2ZyPPKi9/5ttPXrUqzJaTR6koEQW7ph9hXSyMZ0',
+     'EMPLOYEE',        '2024-03-18 08:00:00+07', '2024-03-18 08:00:00+07', '2024-03-18 08:00:00+07', false, false)
 ON CONFLICT (id) DO UPDATE SET
     username   = EXCLUDED.username,
     role       = EXCLUDED.role,

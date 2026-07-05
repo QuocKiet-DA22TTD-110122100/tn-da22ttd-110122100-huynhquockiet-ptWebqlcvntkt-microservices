@@ -42,4 +42,12 @@ VALUES
     -- Phòng Marketing (dept_id=5)
     (18, 'a1000002-0000-0000-0000-000000000002', 'pham.bich.ngoc',  'Phạm Bích Ngọc',     'Marketing Manager',    27000000, 'VND', 'L4', '2020-04-01', 'ACTIVE', 5, NOW()),
     (19, 'f9831e0f-9b28-43d9-b3ab-94df70f2e33e', 'employee',        'Nhân Viên Mẫu',      'Marketing Specialist', 14000000, 'VND', 'L1', '2023-03-01', 'ACTIVE', 5, NOW()),
-    (20, 'a1000008-0000-0000-0000-000000000008', 'hoang.duc.nam',   'Hoàng Đức Nam',      'Content Creator',      13000000, 'VND', 'L1', '2023-05-15', 'ACTIVE', 5, NOW());
+    (20, 'a1000008-0000-0000-0000-000000000008', 'hoang.duc.nam',   'Hoàng Đức Nam',      'Content Creator',      13000000, 'VND', 'L1', '2023-05-15', 'ACTIVE', 5, NOW()),
+    (21, 'a1000019-0000-0000-0000-000000000019', 'pham.hoang.nam',  'Phạm Hoàng Nam',     'Backend Engineer',     24000000, 'VND', 'L2', '2023-07-10', 'ACTIVE', 1, NOW()),
+    (22, 'a1000020-0000-0000-0000-000000000020', 'vo.thanh.dat',    'Võ Thành Đạt',       'Frontend Engineer',    23000000, 'VND', 'L2', '2023-08-21', 'ACTIVE', 1, NOW()),
+    (23, 'a1000021-0000-0000-0000-000000000021', 'nguyen.my.duyen', 'Nguyễn Mỹ Duyên',    'QA Engineer',          19000000, 'VND', 'L2', '2023-09-05', 'ACTIVE', 4, NOW()),
+    (24, 'a1000023-0000-0000-0000-000000000023', 'le.minh.chau',    'Lê Minh Châu',       'Operations Support',   14000000, 'VND', 'L1', '2024-03-18', 'ACTIVE', 4, NOW()),
+    (25, 'a1000012-0000-0000-0000-000000000012', 'ly.van.hoa',      'Lý Văn Hoa',         'Data Engineer',        36000000, 'VND', 'L3', '2024-10-01', 'ACTIVE', 1, NOW()),
+    (26, 'a1000013-0000-0000-0000-000000000013', 'tran.duc.hung',   'Trần Đức Hùng',      'Technical Lead',       32000000, 'VND', 'L5', '2018-05-01', 'ACTIVE', 1, NOW()),
+    (27, 'a1000014-0000-0000-0000-000000000014', 'nguyen.minh.tuan','Nguyễn Minh Tuấn',   'HR Director',          28000000, 'VND', 'L5', '2019-11-01', 'ACTIVE', 2, NOW()),
+    (28, 'a1000015-0000-0000-0000-000000000015', 'pham.thu.hoa',    'Phạm Thu Hoà',       'Payroll Specialist',   18000000, 'VND', 'L2', '2021-03-15', 'ACTIVE', 3, NOW());

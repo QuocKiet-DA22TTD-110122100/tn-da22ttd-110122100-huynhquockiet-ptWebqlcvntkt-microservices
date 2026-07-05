@@ -14,7 +14,7 @@
 #   employee       → EMPLOYEE
 #   tran.duc.hung  → DEPARTMENT_HEAD
 #   nguyen.minh.tuan → HR_MANAGER
-#   pham.bich.ngoc → MANAGER         ... (và 12 tài khoản khác)
+#   pham.bich.ngoc → MANAGER         ... (và 13 tài khoản khác)
 # ============================================================
 
 set -euo pipefail
@@ -127,6 +127,10 @@ run_mysql "$HR_MYSQL" "root" "$MYSQL_ROOT_PASSWORD" \
 log_section "4. Business Services — Projects & Tasks (MySQL)"
 run_mysql "$BUSINESS_MYSQL" "$BUSINESS_DB_USERNAME" "$BUSINESS_DB_PASSWORD" \
     "$SCRIPT_DIR/full-business-seed.sql"
+
+log_section "4b. Business Services — Enterprise add-on data (MySQL)"
+run_mysql "$BUSINESS_MYSQL" "$BUSINESS_DB_USERNAME" "$BUSINESS_DB_PASSWORD" \
+    "$SCRIPT_DIR/enterprise-scale-addon.sql"
 
 # ── Thống kê kết quả ─────────────────────────────────────────
 log_section "Kết quả nạp dữ liệu"

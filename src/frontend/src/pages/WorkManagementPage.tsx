@@ -1,4 +1,4 @@
-﻿import { FormEvent, useEffect, useMemo, useState } from 'react';
+﻿import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   AtSign,
@@ -311,6 +311,7 @@ export const WorkManagementPage = () => {
   const [draggedTaskId, setDraggedTaskId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const loadSeqRef = useRef(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [form, setForm] = useState<TaskRequest>({
     title: '',
@@ -347,6 +348,10 @@ export const WorkManagementPage = () => {
   const canUpdateTask = can(PERMISSIONS.TASK_UPDATE);
 
   const loadWorkData = async () => {
+    // Guard against overlapping loads (StrictMode double-invoke, manual reload):
+    // only the latest invocation may write state, otherwise a stale failure
+    // overwrites the error banner after a newer load already succeeded.
+    const seq = ++loadSeqRef.current;
     setLoading(true);
     setError(null);
 
@@ -367,16 +372,21 @@ export const WorkManagementPage = () => {
         })
       );
 
+      if (seq !== loadSeqRef.current) return;
       setProjects(projectRows);
       setTasks(taskList);
+      setError(null);
       setForm((current) => ({
         ...current,
         projectId: projectRows[0]?.id ?? current.projectId,
       }));
     } catch {
+      if (seq !== loadSeqRef.current) return;
       setError('Không thể tải dữ liệu công việc. Vui lòng kiểm tra gateway, project-service và task-service.');
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) {
+        setLoading(false);
+      }
     }
   };
 

@@ -62,7 +62,7 @@ export const TaskFormPage = () => {
         setEmployees(employeeResponse.data.content);
         setProjects(projectResponse);
       } catch {
-        setReferenceError('Chua tai duoc du lieu nhan vien/du an. Co the nhap ID thu cong de tiep tuc.');
+        setReferenceError('Chưa tải được dữ liệu nhân viên/dự án. Có thể nhập ID thủ công để tiếp tục.');
       }
     };
 

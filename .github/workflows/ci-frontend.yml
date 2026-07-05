@@ -161,7 +161,23 @@ jobs:
         run: |
           IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
           echo "Testing image: $IMAGE"
+          # buildx pushes without loading into the local daemon, so pull explicitly
+          # (fails fast with a clear message if the registry push/pull is the problem).
+          docker pull "$IMAGE"
           docker run -d --name smoke-frontend -p 3001:80 "$IMAGE"
-          sleep 5
-          curl -sf http://localhost:3001/ | grep -qi "doctype" && echo "✅ Frontend serving HTML" || (docker logs smoke-frontend && exit 1)
+          ok=0
+          for i in $(seq 1 12); do
+            if curl -sf http://localhost:3001/ | grep -qi "doctype"; then
+              ok=1
+              break
+            fi
+            echo "Attempt $i: not ready yet, retrying in 5s..."
+            sleep 5
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "❌ Frontend did not serve HTML within 60s"
+            docker logs smoke-frontend
+            exit 1
+          fi
+          echo "✅ Frontend serving HTML"
           docker stop smoke-frontend && docker rm smoke-frontend

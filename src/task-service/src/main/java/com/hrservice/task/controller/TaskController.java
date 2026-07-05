@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -78,7 +79,12 @@ public class TaskController {
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         log.info("[TASK-CONTROLLER] DELETE /api/tasks/{}", id);
         if (taskService.getTaskById(id).isPresent()) {
-            taskService.deleteTask(id);
+            try {
+                taskService.deleteTask(id);
+            } catch (ObjectOptimisticLockingFailureException e) {
+                // Row was already removed by a concurrent request (e.g. client retry after timeout).
+                return ResponseEntity.notFound().build();
+            }
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();

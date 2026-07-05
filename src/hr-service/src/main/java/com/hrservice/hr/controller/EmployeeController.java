@@ -11,6 +11,10 @@ import com.hrservice.hr.repository.ProcessedSyncEventRepository;
 import com.hrservice.hr.util.SecurityValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -48,15 +52,55 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public List<EmployeeResponse> getAll(@RequestParam(name = "departmentId", required = false) Long departmentId,
-                                         HttpServletRequest request) {
+    public Object getAll(@RequestParam(name = "departmentId", required = false) Long departmentId,
+                         @RequestParam(name = "department", required = false) String departmentName,
+                         @RequestParam(name = "keyword", required = false) String keyword,
+                         @RequestParam(name = "status", required = false) String status,
+                         @RequestParam(name = "page", required = false) Integer page,
+                         @RequestParam(name = "size", required = false) Integer size,
+                         HttpServletRequest request) {
         securityValidator.enforceGatewayAccess(request);
 
-        List<Employee> employees = departmentId == null
-            ? employeeRepository.findAll()
-            : employeeRepository.findByDepartmentId(departmentId);
+        String normalizedKeyword = (keyword == null || keyword.isBlank())
+            ? null
+            : "%" + keyword.trim().toLowerCase() + "%";
+        String normalizedStatus = (status == null || status.isBlank())
+            ? null
+            : status.trim().toUpperCase();
+        String normalizedDepartment = (departmentName == null || departmentName.isBlank())
+            ? null
+            : departmentName.trim().toLowerCase();
 
-        return employees.stream().map(hrDtoMapper::toResponse).toList();
+        // Legacy contract: without paging params, callers (service sync, dropdowns) expect a plain array.
+        if (page == null && size == null) {
+            return employeeRepository
+                .searchEmployees(departmentId, normalizedDepartment, normalizedStatus, normalizedKeyword, Pageable.unpaged())
+                .getContent().stream().map(hrDtoMapper::toResponse).toList();
+        }
+
+        int pageIndex = page == null || page < 0 ? 0 : page;
+        int pageSize = size == null || size < 1 ? 20 : Math.min(size, 200);
+        Page<Employee> result = employeeRepository.searchEmployees(
+            departmentId, normalizedDepartment, normalizedStatus, normalizedKeyword,
+            PageRequest.of(pageIndex, pageSize, Sort.by("id")));
+
+        return Map.of(
+            "content", result.getContent().stream().map(hrDtoMapper::toResponse).toList(),
+            "page", result.getNumber(),
+            "size", result.getSize(),
+            "totalElements", result.getTotalElements(),
+            "totalPages", result.getTotalPages()
+        );
+    }
+
+    @GetMapping("/{id:\\d+}")
+    public EmployeeResponse getById(@PathVariable long id, HttpServletRequest request) {
+        securityValidator.enforceGatewayAccess(request);
+
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+
+        return hrDtoMapper.toResponse(employee);
     }
 
     @PostMapping

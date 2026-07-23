@@ -10,9 +10,11 @@ import { EmptyState } from '@/components/UI/EmptyState';
 import { Input } from '@/components/UI/Input';
 import { HeroHeader } from '@/components/UI/HeroHeader';
 import { MainLayout } from '@/components/Layout/MainLayout';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Employee } from '@/types/employee';
 import { Project } from '@/types/project';
 import { TaskPriority, TaskRequest, TaskStatus } from '@/types/task';
+import { PERMISSIONS } from '@/utils/permissions';
 
 const statusLabels: Record<TaskStatus, string> = {
   OPEN: 'Mở',
@@ -32,8 +34,12 @@ export const TaskFormPage = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { can } = usePermissions();
   const taskId = id ? Number(id) : null;
   const isEditing = taskId !== null;
+  const canCreateTask = can(PERMISSIONS.TASK_CREATE);
+  const canUpdateTask = can(PERMISSIONS.TASK_UPDATE);
+  const hasPermission = isEditing ? canUpdateTask : canCreateTask;
   const initialProjectId = Number(searchParams.get('projectId')) || 1;
   const [form, setForm] = useState<TaskRequest>({
     title: '',
@@ -50,6 +56,13 @@ export const TaskFormPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [referenceError, setReferenceError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasPermission) {
+      navigate('/tasks', { replace: true });
+      return;
+    }
+  }, [hasPermission, navigate]);
 
   useEffect(() => {
     const loadReferences = async () => {

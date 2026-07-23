@@ -113,6 +113,6 @@ public class TaskController {
 
     @GetMapping("/health")
     public ResponseEntity<String> health() {
-        return ResponseEntity.ok("Task Service is healthy");
+        return ResponseEntity.ok("Dịch vụ Task đang hoạt động tốt");
     }
 }

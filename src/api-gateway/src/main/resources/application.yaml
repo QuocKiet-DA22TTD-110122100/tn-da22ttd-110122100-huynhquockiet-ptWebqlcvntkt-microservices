@@ -68,10 +68,12 @@ spring:
                 value: "${INTERNAL_SECRET}"
             - name: DedupeResponseHeader
               args:
+                name: Access-Control-Allow-Origin
                 strategy: RETAIN_FIRST
-                headers:
-                  - Access-Control-Allow-Origin
-                  - Access-Control-Allow-Credentials
+            - name: DedupeResponseHeader
+              args:
+                name: Access-Control-Allow-Credentials
+                strategy: RETAIN_FIRST
 
           # Routes configuration
           routes:
@@ -115,7 +117,7 @@ spring:
             - id: auth-protected-route
               uri: ${AUTH_SERVICE_URL:lb://auth-service}
               predicates:
-                - Path=/api/xac-thuc/kiem-tra,/api/xac-thuc/doi-mat-khau,/api/xac-thuc/quan-tri/**,/api/xac-thuc/trang-thai-dong-bo/**,/api/xac-thuc/thu-lai-dong-bo/**
+                - Path=/api/xac-thuc/kiem-tra,/api/xac-thuc/doi-mat-khau,/api/xac-thuc/tai-khoan/**,/api/xac-thuc/quan-tri/**,/api/xac-thuc/nhat-ky/**,/api/xac-thuc/trang-thai-dong-bo/**,/api/xac-thuc/thu-lai-dong-bo/**
               filters:
                 - StripPrefix=1
               metadata:
@@ -225,6 +227,28 @@ spring:
                 - Path=/api/cong-viec/**
               filters:
                 - RewritePath=/api/cong-viec/(?<segment>.*), /api/tasks/$\{segment}
+              metadata:
+                requires-jwt: true
+                requires-hmac: false
+
+            # AI Suggestions & Risk Radar - forward to task-service
+            - id: ai-suggestions-route
+              uri: ${TASK_SERVICE_URL:lb://task-service}
+              predicates:
+                - Path=/api/v1/ai/**
+              filters:
+                - StripPrefix=1
+              metadata:
+                requires-jwt: true
+                requires-hmac: false
+
+            # Automation Rules - forward to task-service
+            - id: automation-rules-route
+              uri: ${TASK_SERVICE_URL:lb://task-service}
+              predicates:
+                - Path=/api/v1/automation/**
+              filters:
+                - StripPrefix=1
               metadata:
                 requires-jwt: true
                 requires-hmac: false

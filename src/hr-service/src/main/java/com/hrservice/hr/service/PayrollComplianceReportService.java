@@ -29,10 +29,10 @@ public class PayrollComplianceReportService {
     @Transactional(readOnly = true)
     public PayrollComplianceReport generateTaxReport(LocalDate periodStart, LocalDate periodEnd) {
         if (periodStart == null || periodEnd == null) {
-            throw new IllegalArgumentException("periodStart and periodEnd are required");
+            throw new IllegalArgumentException("periodStart và periodEnd là bắt buộc");
         }
         if (periodStart.isAfter(periodEnd)) {
-            throw new IllegalArgumentException("periodStart must be on or before periodEnd");
+            throw new IllegalArgumentException("periodStart phải bằng hoặc trước periodEnd");
         }
 
         List<PayrollResult> payrolls = payrollResultRepository

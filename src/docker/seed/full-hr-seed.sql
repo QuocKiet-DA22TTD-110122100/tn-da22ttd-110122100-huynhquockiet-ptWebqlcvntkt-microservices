@@ -273,15 +273,15 @@ ON DUPLICATE KEY UPDATE
     start_date = VALUES(start_date), end_date = VALUES(end_date);
 
 -- ── 6. Tax Config (Biểu thuế TNCN Việt Nam 2024) ───────────
-INSERT INTO tax_config (id, year, tax_year, min_bracket, max_bracket, tax_rate, country, description, is_active)
+INSERT INTO tax_config (id, tax_year, min_bracket, max_bracket, tax_rate, country, description, is_active)
 VALUES
-    (1, 2024, 2024,           0.00,   5000000.00,  5.00, 'VN', 'Bậc 1 — Thu nhập đến 5 triệu: thuế 5%',              true),
-    (2, 2024, 2024,     5000000.00,  10000000.00, 10.00, 'VN', 'Bậc 2 — Phần TN từ 5 đến 10 triệu: thuế 10%',        true),
-    (3, 2024, 2024,    10000000.00,  18000000.00, 15.00, 'VN', 'Bậc 3 — Phần TN từ 10 đến 18 triệu: thuế 15%',       true),
-    (4, 2024, 2024,    18000000.00,  32000000.00, 20.00, 'VN', 'Bậc 4 — Phần TN từ 18 đến 32 triệu: thuế 20%',       true),
-    (5, 2024, 2024,    32000000.00,  52000000.00, 25.00, 'VN', 'Bậc 5 — Phần TN từ 32 đến 52 triệu: thuế 25%',       true),
-    (6, 2024, 2024,    52000000.00,  80000000.00, 30.00, 'VN', 'Bậc 6 — Phần TN từ 52 đến 80 triệu: thuế 30%',       true),
-    (7, 2024, 2024,    80000000.00, 999999999.00, 35.00, 'VN', 'Bậc 7 — Phần TN trên 80 triệu: thuế 35%',            true)
+    (1, 2024,           0.00,   5000000.00,  5.00, 'VN', 'Bậc 1 — Thu nhập đến 5 triệu: thuế 5%',              true),
+    (2, 2024,     5000000.00,  10000000.00, 10.00, 'VN', 'Bậc 2 — Phần TN từ 5 đến 10 triệu: thuế 10%',        true),
+    (3, 2024,    10000000.00,  18000000.00, 15.00, 'VN', 'Bậc 3 — Phần TN từ 10 đến 18 triệu: thuế 15%',       true),
+    (4, 2024,    18000000.00,  32000000.00, 20.00, 'VN', 'Bậc 4 — Phần TN từ 18 đến 32 triệu: thuế 20%',       true),
+    (5, 2024,    32000000.00,  52000000.00, 25.00, 'VN', 'Bậc 5 — Phần TN từ 32 đến 52 triệu: thuế 25%',       true),
+    (6, 2024,    52000000.00,  80000000.00, 30.00, 'VN', 'Bậc 6 — Phần TN từ 52 đến 80 triệu: thuế 30%',       true),
+    (7, 2024,    80000000.00, 999999999.00, 35.00, 'VN', 'Bậc 7 — Phần TN trên 80 triệu: thuế 35%',            true)
 ON DUPLICATE KEY UPDATE
     min_bracket = VALUES(min_bracket), max_bracket = VALUES(max_bracket),
     tax_rate = VALUES(tax_rate), description = VALUES(description), is_active = VALUES(is_active);

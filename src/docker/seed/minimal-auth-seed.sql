@@ -14,11 +14,11 @@ ON CONFLICT (name) DO UPDATE SET
 
 INSERT INTO users (id, username, password_hash, role, password_updated_at, created_at, updated_at, locked, two_factor_enabled)
 VALUES
-    ('28759924-7b71-4220-bf8d-06d64ce7cae6', 'admin', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
-    ('3c07be88-39df-4e33-8e20-71ba6ad4af5a', 'hr.manager', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', 'HR_MANAGER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
-    ('f6f8b8a7-7df7-42f4-a3e1-c34daed22755', 'payroll.officer', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', 'PAYROLL_OFFICER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
-    ('49ca806e-2725-4af8-a049-2625ea5bc8ac', 'manager', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', 'MANAGER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
-    ('f9831e0f-9b28-43d9-b3ab-94df70f2e33e', 'employee', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', 'EMPLOYEE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false)
+    ('28759924-7b71-4220-bf8d-06d64ce7cae6', 'admin', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
+    ('3c07be88-39df-4e33-8e20-71ba6ad4af5a', 'hr.manager', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', 'HR_MANAGER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
+    ('f6f8b8a7-7df7-42f4-a3e1-c34daed22755', 'payroll.officer', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', 'PAYROLL_OFFICER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
+    ('49ca806e-2725-4af8-a049-2625ea5bc8ac', 'manager', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', 'MANAGER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false),
+    ('f9831e0f-9b28-43d9-b3ab-94df70f2e33e', 'employee', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', 'EMPLOYEE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, false)
 ON CONFLICT (id) DO UPDATE SET
     username = EXCLUDED.username,
     password_hash = EXCLUDED.password_hash,
@@ -30,11 +30,11 @@ ON CONFLICT (id) DO UPDATE SET
 
 INSERT INTO user_password_history (id, user_id, password_hash, created_at)
 VALUES
-    ('5b6f808e-9cae-4f2d-8a9f-d0f3e25f68cf', '28759924-7b71-4220-bf8d-06d64ce7cae6', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', CURRENT_TIMESTAMP),
-    ('9fffe7be-0d4d-4b79-8d93-7159306123cd', '3c07be88-39df-4e33-8e20-71ba6ad4af5a', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', CURRENT_TIMESTAMP),
-    ('f0974040-ce86-4f2b-a91f-9fe905ce45b0', 'f6f8b8a7-7df7-42f4-a3e1-c34daed22755', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', CURRENT_TIMESTAMP),
-    ('9268f0ac-d193-4baa-aea1-84fe40b437f0', '49ca806e-2725-4af8-a049-2625ea5bc8ac', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', CURRENT_TIMESTAMP),
-    ('c4b2747a-155e-4f37-a93b-fd473f75d514', 'f9831e0f-9b28-43d9-b3ab-94df70f2e33e', '$argon2id$v=19$m=16384,t=2,p=1$tx1aVLo9IlrzWnRAAvNPoA$c657rxfjyeCKx34jfs5YjL9wHOdAvFNCB0I3zLhDZ/k', CURRENT_TIMESTAMP)
+    ('5b6f808e-9cae-4f2d-8a9f-d0f3e25f68cf', '28759924-7b71-4220-bf8d-06d64ce7cae6', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', CURRENT_TIMESTAMP),
+    ('9fffe7be-0d4d-4b79-8d93-7159306123cd', '3c07be88-39df-4e33-8e20-71ba6ad4af5a', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', CURRENT_TIMESTAMP),
+    ('f0974040-ce86-4f2b-a91f-9fe905ce45b0', 'f6f8b8a7-7df7-42f4-a3e1-c34daed22755', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', CURRENT_TIMESTAMP),
+    ('9268f0ac-d193-4baa-aea1-84fe40b437f0', '49ca806e-2725-4af8-a049-2625ea5bc8ac', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', CURRENT_TIMESTAMP),
+    ('c4b2747a-155e-4f37-a93b-fd473f75d514', 'f9831e0f-9b28-43d9-b3ab-94df70f2e33e', '$argon2id$v=19$m=4096,t=1,p=1$eYIyTGcX3sCwymrEEofwJw$4ZdevZuLA4Iqm2yjUfa3ieJehM+/wMBCP0ORTeyXjH8', CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO UPDATE SET
     password_hash = EXCLUDED.password_hash,
     created_at = EXCLUDED.created_at;

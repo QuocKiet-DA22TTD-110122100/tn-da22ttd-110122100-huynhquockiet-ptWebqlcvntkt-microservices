@@ -64,7 +64,7 @@ public class OrganizationUnitController {
         securityValidator.enforceAdminRole(request);
 
         OrganizationUnit organizationUnit = organizationUnitRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization unit not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn vị tổ chức"));
 
         applyUpsertPayload(requestBody, organizationUnit);
         OrganizationUnit savedOrganizationUnit = organizationUnitRepository.save(organizationUnit);
@@ -77,7 +77,7 @@ public class OrganizationUnitController {
         securityValidator.enforceAdminRole(request);
 
         if (!organizationUnitRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization unit not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn vị tổ chức");
         }
 
         organizationUnitRepository.deleteById(id);
@@ -85,7 +85,7 @@ public class OrganizationUnitController {
 
     private void applyUpsertPayload(OrganizationUnitUpsertRequest requestBody, OrganizationUnit organizationUnit) {
         if (requestBody == null || requestBody.name() == null || requestBody.name().isBlank() || requestBody.level() == null || requestBody.level().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name and level are required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tên và cấp độ là bắt buộc");
         }
 
         organizationUnit.setName(requestBody.name().trim());
@@ -94,13 +94,13 @@ public class OrganizationUnitController {
         try {
             organizationUnit.setLevel(OrganizationUnit.OrgLevel.valueOf(requestBody.level().trim().toUpperCase(Locale.ROOT)));
         } catch (IllegalArgumentException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid organization level");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cấp độ tổ chức không hợp lệ");
         }
 
         if (requestBody.parentId() != null) {
             long parentId = requestBody.parentId();
             OrganizationUnit parent = organizationUnitRepository.findById(parentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "parentId does not exist"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "parentId không tồn tại"));
             organizationUnit.setParent(parent);
         } else {
             organizationUnit.setParent(null);

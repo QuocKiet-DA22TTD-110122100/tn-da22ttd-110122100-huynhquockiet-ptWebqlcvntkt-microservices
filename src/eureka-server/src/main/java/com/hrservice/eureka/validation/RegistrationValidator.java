@@ -29,7 +29,7 @@ public class RegistrationValidator {
         ValidationResult result = new ValidationResult();
         
         if (instance == null) {
-            result.addError("Instance information is required");
+            result.addError("Thông tin instance là bắt buộc");
             return result;
         }
         
@@ -50,23 +50,23 @@ public class RegistrationValidator {
     
     private void validateRequiredFields(InstanceInfo instance, ValidationResult result) {
         if (!StringUtils.hasText(instance.getAppName())) {
-            result.addError("Application name is required");
+            result.addError("Tên ứng dụng là bắt buộc");
         }
         
         if (!StringUtils.hasText(instance.getInstanceId())) {
-            result.addError("Instance ID is required");
+            result.addError("Mã instance là bắt buộc");
         }
         
         if (!StringUtils.hasText(instance.getIpAddr())) {
-            result.addError("IP address is required");
+            result.addError("Địa chỉ IP là bắt buộc");
         }
         
         if (instance.getStatus() == null) {
-            result.addError("Instance status is required");
+            result.addError("Trạng thái instance là bắt buộc");
         }
         
         if (instance.getLeaseInfo() == null) {
-            result.addError("Lease information is required");
+            result.addError("Thông tin lease là bắt buộc");
         }
     }
     
@@ -74,32 +74,32 @@ public class RegistrationValidator {
         // Validate IP address format
         if (StringUtils.hasText(instance.getIpAddr()) && 
             !isValidIpAddress(instance.getIpAddr())) {
-            result.addError("Invalid IP address format: " + instance.getIpAddr());
+            result.addError("Định dạng địa chỉ IP không hợp lệ: " + instance.getIpAddr());
         }
         
         // Validate application name format (alphanumeric, hyphens, underscores)
         if (StringUtils.hasText(instance.getAppName()) && 
             !instance.getAppName().matches("^[a-zA-Z0-9_-]+$")) {
-            result.addError("Application name must contain only alphanumeric characters, hyphens, and underscores");
+            result.addError("Tên ứng dụng chỉ được chứa ký tự chữ-số, dấu gạch ngang và gạch dưới");
         }
         
         // Validate instance ID format
         if (StringUtils.hasText(instance.getInstanceId()) && 
             instance.getInstanceId().length() > 255) {
-            result.addError("Instance ID must not exceed 255 characters");
+            result.addError("Mã instance không được vượt quá 255 ký tự");
         }
     }
     
     private void validatePorts(InstanceInfo instance, ValidationResult result) {
         // Validate port range
         if (instance.getPort() < 1 || instance.getPort() > 65535) {
-            result.addError("Port must be between 1 and 65535, got: " + instance.getPort());
+            result.addError("Cổng phải từ 1 đến 65535, nhận: " + instance.getPort());
         }
         
         // Validate secure port range if specified
         if (instance.getSecurePort() > 0 && 
             (instance.getSecurePort() < 1 || instance.getSecurePort() > 65535)) {
-            result.addError("Secure port must be between 1 and 65535, got: " + instance.getSecurePort());
+            result.addError("Cổng bảo mật phải từ 1 đến 65535, nhận: " + instance.getSecurePort());
         }
     }
     
@@ -107,25 +107,25 @@ public class RegistrationValidator {
         // Validate health check URL if provided
         if (StringUtils.hasText(instance.getHealthCheckUrl()) && 
             !isValidUrl(instance.getHealthCheckUrl())) {
-            result.addError("Invalid health check URL format: " + instance.getHealthCheckUrl());
+            result.addError("Định dạng URL kiểm tra sức khỏe không hợp lệ: " + instance.getHealthCheckUrl());
         }
         
         // Validate status page URL if provided
         if (StringUtils.hasText(instance.getStatusPageUrl()) && 
             !isValidUrl(instance.getStatusPageUrl())) {
-            result.addError("Invalid status page URL format: " + instance.getStatusPageUrl());
+            result.addError("Định dạng URL trang trạng thái không hợp lệ: " + instance.getStatusPageUrl());
         }
         
         // Validate home page URL if provided
         if (StringUtils.hasText(instance.getHomePageUrl()) && 
             !isValidUrl(instance.getHomePageUrl())) {
-            result.addError("Invalid home page URL format: " + instance.getHomePageUrl());
+            result.addError("Định dạng URL trang chủ không hợp lệ: " + instance.getHomePageUrl());
         }
         
         // Validate secure health check URL if provided
         if (StringUtils.hasText(instance.getSecureHealthCheckUrl()) && 
             !isValidUrl(instance.getSecureHealthCheckUrl())) {
-            result.addError("Invalid secure health check URL format: " + instance.getSecureHealthCheckUrl());
+            result.addError("Định dạng URL kiểm tra sức khỏe bảo mật không hợp lệ: " + instance.getSecureHealthCheckUrl());
         }
     }
     

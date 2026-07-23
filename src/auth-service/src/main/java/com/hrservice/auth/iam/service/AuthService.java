@@ -80,12 +80,21 @@ public class AuthService {
         @Value("${kms.base-url:http://localhost:8083}") String kmsBaseUrl,
         @Value("${jwt.expiration-seconds:3600}") long jwtExpirationSeconds,
         @Value("${auth.password-policy.expiry-days:90}") int passwordExpiryDays,
-        @Value("${auth.jwks-cache-seconds:300}") long jwksCacheSeconds
+        @Value("${auth.jwks-cache-seconds:300}") long jwksCacheSeconds,
+        @Value("${auth.argon2.salt-length:16}") int argon2SaltLength,
+        @Value("${auth.argon2.hash-length:32}") int argon2HashLength,
+        @Value("${auth.argon2.parallelism:1}") int argon2Parallelism,
+        @Value("${auth.argon2.memory:16384}") int argon2Memory,
+        @Value("${auth.argon2.iterations:2}") int argon2Iterations
     ) {
         this.userRepository = userRepository;
         this.userPasswordHistoryRepository = userPasswordHistoryRepository;
         this.objectMapper = objectMapper;
-        this.passwordEncoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+        // Defaults match Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8() (memory=16384, iterations=2).
+        // Overridable via env (e.g. AUTH_ARGON2_MEMORY/AUTH_ARGON2_ITERATIONS) so local/demo stacks can use
+        // lighter, faster params without weakening the production defaults.
+        this.passwordEncoder = new Argon2PasswordEncoder(
+            argon2SaltLength, argon2HashLength, argon2Parallelism, argon2Memory, argon2Iterations);
         this.loginAttemptService = loginAttemptService;
         this.userSyncService = userSyncService;
         this.totpService = totpService;
@@ -116,7 +125,7 @@ public class AuthService {
         validatePasswordPolicy(password, CREDENTIAL_FIELD_NAME);
 
         if (userRepository.existsByUsernameIgnoreCase(normalizedUsername)) {
-            throw new IllegalArgumentException("username already exists");
+            throw new IllegalArgumentException("tên đăng nhập đã tồn tại");
         }
 
         String normalizedRole = role == null || role.isBlank() ? "USER" : role.trim().toUpperCase();
@@ -137,7 +146,7 @@ public class AuthService {
             userSyncService.enqueueUserCreated(savedUser);
             return savedUser;
         } catch (DataIntegrityViolationException ex) {
-            throw new IllegalArgumentException("username already exists");
+            throw new IllegalArgumentException("tên đăng nhập đã tồn tại");
         }
     }
 
@@ -159,7 +168,7 @@ public class AuthService {
     @Transactional
     public User updateUser(UUID userId, String role, Boolean locked) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
 
         if (role != null && !role.isBlank()) {
             String normalizedRole = role.trim().toUpperCase(Locale.ROOT);
@@ -186,7 +195,7 @@ public class AuthService {
     @Transactional
     public void deleteUser(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found");
+            throw new IllegalArgumentException("Không tìm thấy người dùng");
         }
         userPasswordHistoryRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
@@ -195,24 +204,24 @@ public class AuthService {
     @Transactional
     public void changePassword(String username, String oldPassword, String newPassword) {
         if (username == null || username.isBlank() || oldPassword == null || oldPassword.isBlank() || newPassword == null || newPassword.isBlank()) {
-            throw new IllegalArgumentException("username, oldPassword and newPassword are required");
+            throw new IllegalArgumentException("tên đăng nhập, mật khẩu cũ và mật khẩu mới là bắt buộc");
         }
 
         validatePasswordPolicy(newPassword, "newPassword");
 
         if (oldPassword.equals(newPassword)) {
-            throw new IllegalArgumentException("newPassword must be different from oldPassword");
+            throw new IllegalArgumentException("mật khẩu mới phải khác mật khẩu cũ");
         }
 
         User user = userRepository.findByUsernameIgnoreCase(normalizeUsername(username))
-            .orElseThrow(() -> new SecurityException("Invalid credentials"));
+            .orElseThrow(() -> new SecurityException("Thông tin đăng nhập không hợp lệ"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
-            throw new SecurityException("Invalid credentials");
+            throw new SecurityException("Thông tin đăng nhập không hợp lệ");
         }
 
         if (isReusedPassword(user.getId(), newPassword)) {
-            throw new IllegalArgumentException("newPassword must not match last 3 passwords");
+            throw new IllegalArgumentException("mật khẩu mới không được trùng với 3 mật khẩu gần nhất");
         }
 
         String newPasswordHash = passwordEncoder.encode(newPassword);
@@ -225,7 +234,7 @@ public class AuthService {
     public String login(String username, String password) {
         LoginResult result = login(username, password, null);
         if (result.mfaRequired()) {
-            throw new SecurityException("2FA code required");
+            throw new SecurityException("Yêu cầu mã 2FA");
         }
         return result.accessToken();
     }
@@ -242,7 +251,7 @@ public class AuthService {
                 return LoginResult.mfaRequired("totp");
             }
             if (!totpService.verifyCode(user.getTwoFactorSecret(), otp.trim())) {
-                throw new SecurityException("Invalid 2FA code");
+                throw new SecurityException("Mã 2FA không hợp lệ");
             }
         }
 
@@ -254,7 +263,7 @@ public class AuthService {
     public TwoFactorEnrollment initTwoFactor(String username, String password) {
         User user = authenticatePrimaryCredentials(username, password);
         if (user.isTwoFactorEnabled()) {
-            throw new IllegalStateException("2FA is already enabled");
+            throw new IllegalStateException("2FA đã được bật");
         }
 
         String secret = totpService.generateSecret();
@@ -269,17 +278,17 @@ public class AuthService {
     @Transactional
     public void confirmTwoFactor(String username, String password, String otp) {
         if (otp == null || otp.isBlank()) {
-            throw new IllegalArgumentException("otp is required");
+            throw new IllegalArgumentException("mã OTP là bắt buộc");
         }
 
         User user = authenticatePrimaryCredentials(username, password);
         String secret = user.getTwoFactorSecret();
         if (secret == null || secret.isBlank()) {
-            throw new IllegalStateException("2FA enrollment is not initialized");
+            throw new IllegalStateException("Đăng ký 2FA chưa được khởi tạo");
         }
 
         if (!totpService.verifyCode(secret, otp.trim())) {
-            throw new SecurityException("Invalid 2FA code");
+            throw new SecurityException("Mã 2FA không hợp lệ");
         }
 
         user.setTwoFactorEnabled(true);
@@ -290,16 +299,16 @@ public class AuthService {
     @Transactional
     public void disableTwoFactor(String username, String password, String otp) {
         if (otp == null || otp.isBlank()) {
-            throw new IllegalArgumentException("otp is required");
+            throw new IllegalArgumentException("mã OTP là bắt buộc");
         }
 
         User user = authenticatePrimaryCredentials(username, password);
         if (!user.isTwoFactorEnabled()) {
-            throw new IllegalStateException("2FA is not enabled");
+            throw new IllegalStateException("2FA chưa được bật");
         }
 
         if (!totpService.verifyCode(user.getTwoFactorSecret(), otp.trim())) {
-            throw new SecurityException("Invalid 2FA code");
+            throw new SecurityException("Mã 2FA không hợp lệ");
         }
 
         user.setTwoFactorEnabled(false);
@@ -311,31 +320,31 @@ public class AuthService {
     private User authenticatePrimaryCredentials(String username, String password) {
         String normalizedUsername = normalizeUsername(username);
         if (loginAttemptService.isBlocked(normalizedUsername)) {
-            throw new AccountLockedException("Account is locked due to too many failed attempts. Try again after 30 minutes");
+            throw new AccountLockedException("Tài khoản bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau 30 phút");
         }
 
         User user = userRepository.findByUsernameIgnoreCase(normalizedUsername)
             .orElseGet(() -> {
                 if (loginAttemptService.recordFailure(normalizedUsername)) {
-                    throw new AccountLockedException("Account is locked due to too many failed attempts. Try again after 30 minutes");
+                    throw new AccountLockedException("Tài khoản bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau 30 phút");
                 }
-                throw new SecurityException("Invalid credentials");
+                throw new SecurityException("Thông tin đăng nhập không hợp lệ");
             });
 
         if (user.isLocked()) {
-            throw new AccountLockedException("Account is locked by administrator");
+            throw new AccountLockedException("Tài khoản bị khóa bởi quản trị viên");
         }
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             if (loginAttemptService.recordFailure(normalizedUsername)) {
-                throw new AccountLockedException("Account is locked due to too many failed attempts. Try again after 30 minutes");
+                throw new AccountLockedException("Tài khoản bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau 30 phút");
             }
-            throw new SecurityException("Invalid credentials");
+            throw new SecurityException("Thông tin đăng nhập không hợp lệ");
         }
 
         if (isPasswordExpired(user)) {
             loginAttemptService.resetAttempts(normalizedUsername);
-            throw new PasswordExpiredException("Password expired. Please change your password");
+            throw new PasswordExpiredException("Mật khẩu đã hết hạn. Vui lòng đổi mật khẩu");
         }
 
         loginAttemptService.resetAttempts(normalizedUsername);
@@ -374,12 +383,12 @@ public class AuthService {
 
     public Map<String, Object> verifyToken(String token) {
         if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("token is required");
+            throw new IllegalArgumentException("token là bắt buộc");
         }
 
         String[] parts = token.split("\\.");
         if (parts.length != 3) {
-            throw new SecurityException("Invalid token format");
+            throw new SecurityException("Định dạng token không hợp lệ");
         }
 
         Map<String, Object> header = readJsonMap(decodeBase64Url(parts[0]));
@@ -387,12 +396,12 @@ public class AuthService {
 
         String alg = String.valueOf(header.get("alg"));
         if (!JWT_ALG.equals(alg)) {
-            throw new SecurityException("Unsupported JWT algorithm");
+            throw new SecurityException("Thuật toán JWT không được hỗ trợ");
         }
 
         String kid = header.get("kid") == null ? null : String.valueOf(header.get("kid"));
         if (kid == null || kid.isBlank()) {
-            throw new SecurityException("Missing kid in JWT header");
+            throw new SecurityException("Thiếu kid trong header JWT");
         }
 
         JwkKey jwkKey = loadJwkByKid(kid);
@@ -404,19 +413,19 @@ public class AuthService {
 
     public void revokeToken(String token) {
         if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("token is required");
+            throw new IllegalArgumentException("token là bắt buộc");
         }
 
         String[] parts = token.split("\\.");
         if (parts.length != 3) {
-            throw new IllegalArgumentException("Invalid token format");
+            throw new IllegalArgumentException("Định dạng token không hợp lệ");
         }
 
         Map<String, Object> payload;
         try {
             payload = readJsonMap(decodeBase64Url(parts[1]));
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Invalid token payload");
+            throw new IllegalArgumentException("Token payload không hợp lệ");
         }
 
         String tokenId = resolveTokenId(payload, token);
@@ -442,7 +451,7 @@ public class AuthService {
             .body(KmsSignResponse.class);
 
         if (response == null || response.keyId() == null || response.signature() == null || response.signature().isBlank()) {
-            throw new IllegalStateException("KMS sign response is empty");
+            throw new IllegalStateException("Phản hồi ký KMS trống");
         }
 
         return response;
@@ -452,7 +461,7 @@ public class AuthService {
         try {
             return objectMapper.writeValueAsBytes(value);
         } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Failed to serialize JWT data", ex);
+            throw new IllegalStateException("Không thể tuần tự hóa dữ liệu JWT", ex);
         }
     }
 
@@ -469,7 +478,7 @@ public class AuthService {
             return objectMapper.readValue(bytes, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception ex) {
-            throw new SecurityException("Invalid JWT JSON content", ex);
+            throw new SecurityException("Nội dung JSON JWT không hợp lệ", ex);
         }
     }
 
@@ -479,18 +488,18 @@ public class AuthService {
         return response.keys().stream()
             .filter(key -> kid.equals(key.kid()))
             .findFirst()
-            .orElseThrow(() -> new SecurityException("Signing key not found in JWKS"));
+            .orElseThrow(() -> new SecurityException("Không tìm thấy khóa ký trong JWKS"));
     }
 
     private void verifySignature(String signingInput, String encodedSignature, JwkKey jwkKey) {
         if (!"OKP".equals(jwkKey.kty()) || !ED25519.equals(jwkKey.crv()) || !JWT_ALG.equals(jwkKey.alg())) {
-            throw new SecurityException("Unsupported JWK key type");
+            throw new SecurityException("Loại khóa JWK không được hỗ trợ");
         }
 
         try {
             byte[] x = decodeBase64Url(jwkKey.x());
             if (x.length != 32) {
-                throw new SecurityException("Invalid Ed25519 public key length");
+                throw new SecurityException("Độ dài khóa công khai Ed25519 không hợp lệ");
             }
 
             byte[] spkiPrefix = new byte[] {
@@ -508,17 +517,17 @@ public class AuthService {
 
             byte[] signatureBytes = decodeBase64Url(encodedSignature);
             if (!verifier.verify(signatureBytes)) {
-                throw new SecurityException("Invalid JWT signature");
+                throw new SecurityException("Chữ ký JWT không hợp lệ");
             }
         } catch (GeneralSecurityException ex) {
-            throw new IllegalStateException("Failed to verify JWT signature", ex);
+            throw new IllegalStateException("Không thể xác minh chữ ký JWT", ex);
         }
     }
 
     private void validateExpiration(Map<String, Object> payload) {
         Object expObj = payload.get("exp");
         if (expObj == null) {
-            throw new SecurityException("Missing exp claim");
+            throw new SecurityException("Thiếu trường exp");
         }
 
         long exp;
@@ -530,7 +539,7 @@ public class AuthService {
 
         long now = Instant.now().truncatedTo(ChronoUnit.SECONDS).getEpochSecond();
         if (now >= exp) {
-            throw new SecurityException("Token expired");
+            throw new SecurityException("Token đã hết hạn");
         }
     }
 
@@ -563,7 +572,7 @@ public class AuthService {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);
         } catch (Exception ex) {
-            throw new IllegalStateException("Unable to hash token", ex);
+            throw new IllegalStateException("Không thể băm token", ex);
         }
     }
 
@@ -573,7 +582,7 @@ public class AuthService {
         return response.keys().stream()
             .findFirst()
             .map(JwkKey::kid)
-            .orElseThrow(() -> new IllegalStateException("JWKS response does not contain an active key"));
+            .orElseThrow(() -> new IllegalStateException("Phản hồi JWKS không chứa khóa hoạt động"));
     }
 
     private JwksResponse loadJwks() {
@@ -594,7 +603,7 @@ public class AuthService {
                 .body(JwksResponse.class);
 
             if (response == null || response.keys() == null || response.keys().isEmpty()) {
-                throw new IllegalStateException("JWKS response is empty");
+                throw new IllegalStateException("Phản hồi JWKS trống");
             }
 
             Instant expiresAt = Instant.now().plusSeconds(Math.max(30, jwksCacheSeconds));
@@ -612,7 +621,7 @@ public class AuthService {
     private void validatePasswordPolicy(String password, String fieldName) {
         if (!PASSWORD_POLICY_PATTERN.matcher(password).matches()) {
             throw new IllegalArgumentException(
-                fieldName + " must be at least 8 characters and include uppercase, lowercase, number, special character, and no whitespace"
+                fieldName + " phải có ít nhất 8 ký tự và bao gồm chữ hoa, chữ thường, số, ký tự đặc biệt và không có khoảng trắng"
             );
         }
     }
@@ -646,12 +655,12 @@ public class AuthService {
     @Transactional
     public void lockAccount(String username) {
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("username is required");
+            throw new IllegalArgumentException("tên đăng nhập là bắt buộc");
         }
 
         String normalizedUsername = normalizeUsername(username);
         User user = userRepository.findByUsernameIgnoreCase(normalizedUsername)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
 
         user.setLocked(true);
         user.setLockedAt(Instant.now());
@@ -661,12 +670,12 @@ public class AuthService {
     @Transactional
     public void unlockAccount(String username) {
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("username is required");
+            throw new IllegalArgumentException("tên đăng nhập là bắt buộc");
         }
 
         String normalizedUsername = normalizeUsername(username);
         User user = userRepository.findByUsernameIgnoreCase(normalizedUsername)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
 
         user.setLocked(false);
         user.setLockedAt(null);

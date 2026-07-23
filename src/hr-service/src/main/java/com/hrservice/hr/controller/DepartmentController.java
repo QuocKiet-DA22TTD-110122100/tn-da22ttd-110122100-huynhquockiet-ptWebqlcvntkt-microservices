@@ -52,7 +52,7 @@ public class DepartmentController {
         securityValidator.enforceGatewayAccess(request);
 
         Department department = departmentRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng ban"));
         return toResponse(department);
     }
 
@@ -77,7 +77,7 @@ public class DepartmentController {
         securityValidator.enforceAdminRole(request);
 
         Department department = departmentRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng ban"));
 
         applyUpsertPayload(requestBody, department);
         Department savedDepartment = departmentRepository.save(department);
@@ -90,7 +90,7 @@ public class DepartmentController {
         securityValidator.enforceAdminRole(request);
 
         if (!departmentRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng ban");
         }
 
         departmentRepository.deleteById(id);
@@ -98,7 +98,7 @@ public class DepartmentController {
 
     private void applyUpsertPayload(DepartmentUpsertRequest requestBody, Department department) {
         if (requestBody == null || requestBody.name() == null || requestBody.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tên là bắt buộc");
         }
 
         department.setName(requestBody.name().trim());
@@ -111,7 +111,7 @@ public class DepartmentController {
 
         long organizationUnitId = requestBody.organizationUnitId();
         OrganizationUnit organizationUnit = organizationUnitRepository.findById(organizationUnitId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "organizationUnitId does not exist"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "organizationUnitId không tồn tại"));
         department.setOrganizationUnit(organizationUnit);
     }
 

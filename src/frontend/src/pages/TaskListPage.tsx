@@ -56,63 +56,13 @@ const priorityActiveStyle: Record<'ALL' | TaskPriority, string> = {
 const IDLE_FILTER =
   'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50';
 
-// ─── Mock data (shown when API returns no tasks) ───────────────────────────────
-
-const MOCK_TASKS: Task[] = [
-  {
-    id: -1,
-    title: 'Thiết kế UI/UX trang Approvals',
-    description: 'Xây dựng giao diện và flow phê duyệt cho module HR theo design system hiện tại.',
-    status: 'IN_PROGRESS',
-    priority: 'HIGH',
-    projectId: 1,
-    assigneeId: 1,
-    createdAt: '2026-06-15T08:00:00Z',
-    updatedAt: '2026-06-25T10:00:00Z',
-  },
-  {
-    id: -2,
-    title: 'Kết nối API endpoint submit/review',
-    description: 'Tích hợp các endpoint submit và review vào frontend, xử lý error states.',
-    status: 'OPEN',
-    priority: 'URGENT',
-    projectId: 1,
-    assigneeId: 2,
-    createdAt: '2026-06-20T09:00:00Z',
-    updatedAt: null,
-  },
-  {
-    id: -3,
-    title: 'Kiểm thử ma trận phân quyền hệ thống',
-    description: 'Viết test case và kiểm thử toàn bộ ma trận RBAC cho các role trong hệ thống.',
-    status: 'COMPLETED',
-    priority: 'MEDIUM',
-    projectId: 2,
-    assigneeId: 3,
-    createdAt: '2026-06-10T07:00:00Z',
-    updatedAt: '2026-06-22T16:00:00Z',
-  },
-];
-
-const MOCK_PROJECT_NAMES: Record<number, string> = { 1: 'HRM-01', 2: 'Security-02' };
-const MOCK_ASSIGNEE_NAMES: Record<number, string> = {
-  1: 'Nguyễn Văn A', 2: 'Trần Thị B', 3: 'Lê Hoàng C',
-};
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatDate = (v?: string | null) => v ? new Date(v).toLocaleDateString('vi-VN') : '--';
 const pageSizeOptions = [10, 20, 50];
 
-const getProjectDisplay = (task: Task): string =>
-  task.id < 0
-    ? (MOCK_PROJECT_NAMES[task.projectId] ?? `#${task.projectId}`)
-    : `Dự án #${task.projectId}`;
-
-const getAssigneeDisplay = (task: Task): string =>
-  task.id < 0
-    ? (MOCK_ASSIGNEE_NAMES[task.assigneeId] ?? `#${task.assigneeId}`)
-    : `#${task.assigneeId}`;
+const getProjectDisplay = (task: Task): string => `Dự án #${task.projectId}`;
+const getAssigneeDisplay = (task: Task): string => `#${task.assigneeId}`;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -167,10 +117,6 @@ export const TaskListPage = () => {
   };
 
   const handleStatusUpdate = async (task: Task, newStatus: TaskStatus) => {
-    if (task.id < 0) {
-      addNotification({ type: 'info', message: 'Đây là dữ liệu mẫu — cập nhật trạng thái không áp dụng được.' });
-      return;
-    }
     if (!canUpdateTask) return;
     setUpdatingStatusId(task.id);
     try {
@@ -191,47 +137,36 @@ export const TaskListPage = () => {
     }
   };
 
-  const handleAssign = (task: Task) => {
-    if (task.id < 0) {
-      addNotification({ type: 'info', message: 'Tính năng giao việc sẽ có trong phiên bản tiếp theo.' });
-    } else {
-      addNotification({ type: 'info', message: '[API endpoint: assign task] đang được phát triển.' });
-    }
+  const handleAssign = (_task: Task) => {
+    addNotification({ type: 'info', message: 'Chức năng giao việc đang được phát triển.' });
   };
 
-  // Use mock tasks when API returns empty
-  const allTasks = useMemo(
-    () => (tasks.length > 0 ? tasks : MOCK_TASKS),
-    [tasks]
-  );
-
   const taskStats = useMemo(() => {
-    const useMock = tasks.length === 0;
     return [
       {
         label: 'Task mở',
-        value: useMock ? 12 : tasks.filter((t) => t.status === 'OPEN').length,
+        value: tasks.filter((t) => t.status === 'OPEN').length,
         icon: ListChecks,
         bg: 'bg-indigo-50', text: 'text-indigo-600',
         danger: false,
       },
       {
         label: 'Đang làm',
-        value: useMock ? 5 : tasks.filter((t) => t.status === 'IN_PROGRESS').length,
+        value: tasks.filter((t) => t.status === 'IN_PROGRESS').length,
         icon: Clock3,
         bg: 'bg-amber-50', text: 'text-amber-700',
         danger: false,
       },
       {
         label: 'Hoàn tất',
-        value: useMock ? 48 : tasks.filter((t) => t.status === 'COMPLETED').length,
+        value: tasks.filter((t) => t.status === 'COMPLETED').length,
         icon: CheckCircle2,
         bg: 'bg-emerald-50', text: 'text-emerald-700',
         danger: false,
       },
       {
         label: 'Ưu tiên cao',
-        value: useMock ? 3 : tasks.filter((t) => t.priority === 'URGENT' || t.priority === 'HIGH').length,
+        value: tasks.filter((t) => t.priority === 'URGENT' || t.priority === 'HIGH').length,
         icon: AlertTriangle,
         bg: 'bg-rose-100', text: 'text-rose-700',
         danger: true,
@@ -241,20 +176,16 @@ export const TaskListPage = () => {
 
   const filteredTasks = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return allTasks.filter((t) => {
-      const nameDisplay = getAssigneeDisplay(t).toLowerCase();
-      const projectDisplay = getProjectDisplay(t).toLowerCase();
+    return tasks.filter((t) => {
       const matchSearch = !q
         || t.title.toLowerCase().includes(q)
         || String(t.projectId).includes(q)
-        || String(t.assigneeId).includes(q)
-        || projectDisplay.includes(q)
-        || nameDisplay.includes(q);
+        || String(t.assigneeId).includes(q);
       const matchStatus = statusFilter === 'ALL' || t.status === statusFilter;
       const matchPriority = priorityFilter === 'ALL' || t.priority === priorityFilter;
       return matchSearch && matchStatus && matchPriority;
     });
-  }, [allTasks, search, statusFilter, priorityFilter]);
+  }, [tasks, search, statusFilter, priorityFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / pageSize));
   const pagedTasks = filteredTasks.slice((page - 1) * pageSize, page * pageSize);
@@ -477,15 +408,17 @@ export const TaskListPage = () => {
                             )}
 
                             {/* Assign button */}
-                            <button
-                              type="button"
-                              onClick={() => handleAssign(task)}
-                              className="flex h-8 items-center gap-1 rounded-lg border border-slate-200 px-2.5 text-xs font-medium text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                              title="Giao việc"
-                            >
-                              <UserPlus size={13} />
-                              <span className="hidden lg:inline">Giao việc</span>
-                            </button>
+                            {canUpdateTask && (
+                              <button
+                                type="button"
+                                onClick={() => handleAssign(task)}
+                                className="flex h-8 items-center gap-1 rounded-lg border border-slate-200 px-2.5 text-xs font-medium text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                                title="Giao việc"
+                              >
+                                <UserPlus size={13} />
+                                <span className="hidden lg:inline">Giao việc</span>
+                              </button>
+                            )}
 
                             {/* Delete icon */}
                             {canDeleteTask && (
@@ -563,14 +496,16 @@ export const TaskListPage = () => {
                             ))}
                           </select>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => handleAssign(task)}
-                          className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-medium text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                        >
-                          <UserPlus size={13} />
-                          Giao việc
-                        </button>
+                        {canUpdateTask && (
+                          <button
+                            type="button"
+                            onClick={() => handleAssign(task)}
+                            className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-medium text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                          >
+                            <UserPlus size={13} />
+                            Giao việc
+                          </button>
+                        )}
                         {canUpdateTask && (
                           <Button
                             type="button"

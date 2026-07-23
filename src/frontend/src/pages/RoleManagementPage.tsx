@@ -268,7 +268,7 @@ export const RoleManagementPage = () => {
       setRoleList(
         response.data.map((r) => ({
           ...r,
-          userCount: MOCK_USER_COUNTS[getRoleKey(r.name)] ?? r.userCount,
+          userCount: r.userCount ?? MOCK_USER_COUNTS[getRoleKey(r.name)] ?? 0,
         }))
       );
     } catch (err: unknown) {

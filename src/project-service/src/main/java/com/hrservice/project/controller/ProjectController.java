@@ -143,6 +143,6 @@ public class ProjectController {
 
     @GetMapping("/health")
     public ResponseEntity<String> health() {
-        return ResponseEntity.ok("Project Service is healthy");
+        return ResponseEntity.ok("Dịch vụ Project đang hoạt động tốt");
     }
 }

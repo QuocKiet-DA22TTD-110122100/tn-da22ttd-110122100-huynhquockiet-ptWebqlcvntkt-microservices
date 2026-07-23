@@ -98,7 +98,7 @@ public class EmployeeController {
         securityValidator.enforceGatewayAccess(request);
 
         Employee employee = employeeRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
 
         return hrDtoMapper.toResponse(employee);
     }
@@ -124,7 +124,7 @@ public class EmployeeController {
         securityValidator.enforceAdminRole(request);
 
         if (!employeeRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên");
         }
 
         employeeRepository.deleteById(id);
@@ -137,7 +137,7 @@ public class EmployeeController {
         securityValidator.enforceAdminRole(request);
 
         Employee employee = employeeRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
 
         applyUpsertPayload(requestBody, employee);
         ensureDidUnique(employee.getDid(), employee.getId());
@@ -170,7 +170,7 @@ public class EmployeeController {
         try {
             UUID.fromString(userId);
         } catch (IllegalArgumentException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId must be a valid UUID");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId phải là UUID hợp lệ");
         }
 
         Employee employee = employeeRepository.findByAuthUserId(userId)
@@ -208,7 +208,7 @@ public class EmployeeController {
             processedSyncEventRepository.save(processed);
         } catch (DataIntegrityViolationException ex) {
             ProcessedSyncEvent duplicated = processedSyncEventRepository.findByEventId(eventId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "eventId already processed"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "eventId đã được xử lý"));
 
             return hrDtoMapper.toSyncResponse(
                 duplicated.getEmployeeId(),
@@ -244,7 +244,7 @@ public class EmployeeController {
 
     private void applyUpsertPayload(EmployeeUpsertRequest requestBody, Employee employee) {
         if (requestBody == null || requestBody.name() == null || requestBody.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tên là bắt buộc");
         }
 
         employee.setName(requestBody.name().trim());
@@ -258,25 +258,25 @@ public class EmployeeController {
 
         long departmentId = requestBody.departmentId();
         Department department = departmentRepository.findById(departmentId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "departmentId does not exist"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "departmentId không tồn tại"));
         employee.setDepartment(department);
     }
 
     private void applyCreatePayload(EmployeeCreateRequest requestBody, Employee employee) {
         if (requestBody == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "request body is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "nội dung yêu cầu là bắt buộc");
         }
         if (requestBody.authUserId() == null || requestBody.authUserId().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "authUserId is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "authUserId là bắt buộc");
         }
         if (requestBody.name() == null || requestBody.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tên là bắt buộc");
         }
         if (requestBody.baseSalary() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "baseSalary is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "baseSalary là bắt buộc");
         }
         if (requestBody.hireDate() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "hireDate is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "hireDate là bắt buộc");
         }
 
         employee.setAuthUserId(requestBody.authUserId().trim());
@@ -287,11 +287,11 @@ public class EmployeeController {
         employee.setDid(requestBody.did() == null || requestBody.did().isBlank() ? null : requestBody.did().trim());
 
         if (requestBody.departmentId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "departmentId is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "departmentId là bắt buộc");
         }
 
         Department department = departmentRepository.findById(requestBody.departmentId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "departmentId does not exist"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "departmentId không tồn tại"));
         employee.setDepartment(department);
     }
 
@@ -303,7 +303,7 @@ public class EmployeeController {
         employeeRepository.findByAuthUserId(authUserId)
             .filter(existing -> currentEmployeeId == null || !existing.getId().equals(currentEmployeeId))
             .ifPresent(existing -> {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "authUserId already exists");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "authUserId đã tồn tại");
             });
     }
 
@@ -329,7 +329,7 @@ public class EmployeeController {
         employeeRepository.findByDidIgnoreCase(did)
             .filter(existing -> currentEmployeeId == null || !existing.getId().equals(currentEmployeeId))
             .ifPresent(existing -> {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "did already exists");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "did đã tồn tại");
             });
     }
 

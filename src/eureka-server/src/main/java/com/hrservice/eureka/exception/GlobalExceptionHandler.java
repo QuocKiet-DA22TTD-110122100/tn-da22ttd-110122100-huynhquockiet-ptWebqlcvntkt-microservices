@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.toList());
         log.warn("Validation error at {}: {}", path, errors);
-        ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.BAD_REQUEST, "Validation failed", path, errors);
+        ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.BAD_REQUEST, "Xác thực thất bại", path, errors);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .collect(Collectors.toList());
         log.warn("Constraint violation at {}: {}", path, errors);
-        ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.BAD_REQUEST, "Constraint violation", path, errors);
+        ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.BAD_REQUEST, "Vi phạm ràng buộc", path, errors);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
         log.error("Unhandled exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
         String path = request.getDescription(false);
-        ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", path);
+        ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ", path);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
         log.warn("Type mismatch at {}", request.getDescription(false));
         String path = request.getDescription(false);
-        String message = String.format("Invalid type for parameter '%s': %s", ex.getName(), ex.getRequiredType());
+        String message = String.format("Kiểu không hợp lệ cho tham số '%s': %s", ex.getName(), ex.getRequiredType());
         ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.BAD_REQUEST, message, path);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

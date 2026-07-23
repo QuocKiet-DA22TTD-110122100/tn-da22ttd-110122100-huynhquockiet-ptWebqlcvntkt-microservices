@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
         log.warn("Bad request: path={}, message={}", request.getRequestURI(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage(), request));
+            .body(buildResponse(HttpStatus.BAD_REQUEST, "Yêu cầu không hợp lệ", ex.getMessage(), request));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
         log.warn("Method not allowed: path={}, method={}", request.getRequestURI(), request.getMethod());
 
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-            .body(buildResponse(HttpStatus.METHOD_NOT_ALLOWED, "Method Not Allowed", ex.getMessage(), request));
+            .body(buildResponse(HttpStatus.METHOD_NOT_ALLOWED, "Phương thức không được phép", ex.getMessage(), request));
     }
 
     @ExceptionHandler(Exception.class)
@@ -67,8 +67,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Internal Server Error",
-                "Unexpected server error",
+                "Lỗi máy chủ nội bộ",
+                "Lỗi máy chủ không mong đợi",
                 request
             ));
     }

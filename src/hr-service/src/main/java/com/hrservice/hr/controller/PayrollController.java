@@ -50,7 +50,7 @@ public class PayrollController {
 
         employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Employee not found"));
+                        HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
 
         try {
             YearMonth ym = YearMonth.parse(yearMonth);
@@ -116,7 +116,7 @@ public class PayrollController {
         try {
             String yearMonth = body.get("yearMonth");
             if (yearMonth == null) {
-                throw new IllegalArgumentException("Missing yearMonth in body");
+                throw new IllegalArgumentException("Thiếu yearMonth trong nội dung yêu cầu");
             }
             String requestedBy = body.getOrDefault("requestedBy", "SYSTEM");
             String source = body.getOrDefault("source", "api");

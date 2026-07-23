@@ -55,10 +55,10 @@ public class ProjectAssignmentService {
         Long checkedEmployeeId = Objects.requireNonNull(employeeId, "employeeId must not be null");
 
         Project project = projectRepository.findById(checkedProjectId)
-                .orElseThrow(() -> new NoSuchElementException("Project not found: " + checkedProjectId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy dự án: " + checkedProjectId));
 
         if (projectAssignmentRepository.existsByProject_IdAndEmployeeIdAndActiveTrue(checkedProjectId, checkedEmployeeId)) {
-            throw new IllegalStateException("Employee is already assigned to project");
+            throw new IllegalStateException("Nhân viên đã được gán vào dự án");
         }
 
         ProjectAssignment assignment = projectAssignmentRepository
@@ -82,7 +82,7 @@ public class ProjectAssignmentService {
 
         ProjectAssignment assignment = projectAssignmentRepository
                 .findByProject_IdAndEmployeeId(checkedProjectId, checkedEmployeeId)
-                .orElseThrow(() -> new NoSuchElementException("Project assignment not found"));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy phân công dự án"));
 
         assignment.setActive(false);
         projectAssignmentRepository.save(assignment);

@@ -58,4 +58,19 @@ export const authApi = {
     const response = await apiClient.post('/xac-thuc/kiem-tra', { token });
     return response.data;
   },
+
+  getMyAccount: async (): Promise<MyAccountResponse> => {
+    const response = await apiClient.get('/xac-thuc/tai-khoan/cua-toi');
+    return response.data;
+  },
 };
+
+export interface MyAccountResponse {
+  id: string;
+  username: string;
+  role: string;
+  locked: boolean;
+  twoFactorEnabled: boolean;
+  createdAt: string;
+  passwordUpdatedAt: string;
+}

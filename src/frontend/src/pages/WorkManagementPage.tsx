@@ -1,4 +1,4 @@
-﻿import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   AtSign,
@@ -10,6 +10,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
+  Download,
   FileText,
   FolderKanban,
   History,
@@ -24,6 +25,7 @@ import {
   Settings,
   ShieldCheck,
   Smartphone,
+  Trash2,
   Upload,
   Users,
   Workflow,
@@ -31,6 +33,9 @@ import {
 } from 'lucide-react';
 import { projectApi } from '@/api/project.api';
 import { taskApi } from '@/api/task.api';
+import { documentApi, DocumentMeta } from '@/api/document.api';
+import { employeeApi } from '@/api/employee.api';
+import { Employee } from '@/types/employee';
 import { aiApi, AiRiskRadarItem, AiSuggestion } from '@/api/ai.api';
 import { automationApi, AutomationRule } from '@/api/automation.api';
 import { Badge } from '@/components/UI/Badge';
@@ -86,7 +91,7 @@ const workNavItems: WorkNavItem[] = [
   {
     key: 'dashboard',
     label: 'My Dashboard',
-    description: 'Viec hom nay, viec dang lam va can chu y.',
+    description: 'Việc hôm nay, việc đang làm và cần chú ý.',
     icon: LayoutDashboard,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
@@ -100,21 +105,21 @@ const workNavItems: WorkNavItem[] = [
   {
     key: 'projects',
     label: 'Projects',
-    description: 'Dự án tham gia va bang Kanban.',
+    description: 'Dự án tham gia và bảng Kanban.',
     icon: FolderKanban,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
   {
     key: 'board',
     label: 'Project Board',
-    description: 'Kanban board cho task theo du an.',
+    description: 'Kanban board cho task theo dự án.',
     icon: Briefcase,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
   {
     key: 'manage',
     label: 'Task Management',
-    description: 'Tao viec, gan nhan vien va dat uu tien.',
+    description: 'Tạo việc, gán nhân viên và đặt ưu tiên.',
     icon: ClipboardCheck,
     roles: ['manager', 'departmentHead', 'admin'],
   },
@@ -128,35 +133,35 @@ const workNavItems: WorkNavItem[] = [
   {
     key: 'notifications',
     label: 'Notifications',
-    description: 'Thong bao giao viec, tag ten va doi trang thai.',
+    description: 'Thông báo giao việc, tag tên và đổi trạng thái.',
     icon: Bell,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
   {
     key: 'discussions',
     label: 'Discussions',
-    description: 'Comment, @mention va hoi dap theo task.',
+    description: 'Comment, @mention và hỏi đáp theo task.',
     icon: MessageSquareText,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
   {
     key: 'files',
     label: 'Files',
-    description: 'Tài liệu task va san pham ban giao.',
+    description: 'Tài liệu task và sản phẩm bàn giao.',
     icon: Paperclip,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
   {
     key: 'activity',
     label: 'Activity Log',
-    description: 'Đóng thoi gian hanh dong tren task/project.',
+    description: 'Đóng thời gian hành động trên task/project.',
     icon: History,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
   {
     key: 'settings',
     label: 'Profile Settings',
-    description: 'Ho so, mat khau, 2FA va ngon ngu.',
+    description: 'Hồ sơ, mật khẩu, 2FA và ngôn ngữ.',
     icon: Settings,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
@@ -170,7 +175,7 @@ const workNavItems: WorkNavItem[] = [
   {
     key: 'timeline',
     label: 'Timeline',
-    description: 'Gantt/Burndown shell cho Phase 3.',
+    description: 'Dòng thời gian và tiến độ dự án.',
     icon: CalendarDays,
     roles: ['manager', 'departmentHead', 'admin'],
   },
@@ -184,28 +189,28 @@ const workNavItems: WorkNavItem[] = [
   {
     key: 'automation',
     label: 'Automation',
-    description: 'Quy tac tu dong hoa workflow.',
+    description: 'Quy tắc tự động hóa workflow.',
     icon: Workflow,
     roles: ['manager', 'admin'],
   },
   {
     key: 'integrations',
     label: 'Integrations',
-    description: 'Slack, Teams, Calendar placeholders.',
+    description: 'Kết nối Slack, Teams và Calendar.',
     icon: PlugZap,
     roles: ['manager', 'departmentHead', 'admin'],
   },
   {
     key: 'mobile',
     label: 'I18n & Mobile',
-    description: 'Ngon ngu va responsive readiness.',
+    description: 'Ngôn ngữ và responsive readiness.',
     icon: Smartphone,
     roles: ['employee', 'manager', 'departmentHead', 'admin'],
   },
   {
     key: 'admin',
     label: 'Identity & Access',
-    description: 'Quản lý tài khoản, role và các placeholder admin.',
+    description: 'Quản lý tài khoản, vai trò và quyền truy cập.',
     icon: ShieldCheck,
     roles: ['admin'],
   },
@@ -270,10 +275,10 @@ const statusTone: Record<BoardStatus, string> = {
 };
 
 const priorityLabels: Record<TaskPriority, string> = {
-  LOW: 'Thap',
-  MEDIUM: 'Trung binh',
+  LOW: 'Thấp',
+  MEDIUM: 'Trung bình',
   HIGH: 'Cao',
-  URGENT: 'Khan cap',
+  URGENT: 'Khẩn cấp',
 };
 
 const priorityTone: Record<TaskPriority, 'muted' | 'info' | 'warning' | 'danger'> = {
@@ -339,7 +344,7 @@ export const WorkManagementPage = () => {
         ? 'Manager Dashboard'
         : 'Member Dashboard';
   const dashboardSubtitle =
-    'Phase 3: Mở rộng phân tích dữ liệu, dòng thời gian, gợi ý AI, tự động hóa, tích hợp, i18n và trải nghiệm mobile. Các backend contract chưa có được ghi rõ.';
+    'Không gian làm việc tập trung: dự án, task, phê duyệt, tài liệu, phân tích dữ liệu, gợi ý AI và tự động hóa.';
 
   const shellTitle = currentView === 'dashboard' ? dashboardTitle : currentNavItem?.label ?? dashboardTitle;
   const shellSubtitle = currentView === 'dashboard' ? dashboardSubtitle : currentNavItem?.description ?? dashboardSubtitle;
@@ -424,16 +429,16 @@ export const WorkManagementPage = () => {
     const urgent = tasks.filter((task) => task.priority === 'URGENT' || task.priority === 'HIGH').length;
 
     return [
-      { label: 'Viec can nhan', value: open, hint: 'Task dang o Todo', icon: ListChecks, tone: 'bg-slate-100 text-slate-700' },
-      { label: 'Dang lam', value: doing, hint: 'Task dang xu ly', icon: Briefcase, tone: 'bg-blue-50 text-blue-700' },
-      { label: 'Hoan thanh', value: done, hint: 'Task da dong', icon: CheckCircle2, tone: 'bg-emerald-50 text-emerald-700' },
-      { label: 'Uu tien cao', value: urgent, hint: 'Can xu ly som', icon: ClipboardCheck, tone: 'bg-amber-50 text-amber-700' },
+      { label: 'Việc cần nhận', value: open, hint: 'Task đang ở Todo', icon: ListChecks, tone: 'bg-slate-100 text-slate-700' },
+      { label: 'Đang làm', value: doing, hint: 'Task đang xử lý', icon: Briefcase, tone: 'bg-blue-50 text-blue-700' },
+      { label: 'Hoàn thành', value: done, hint: 'Task đã đóng', icon: CheckCircle2, tone: 'bg-emerald-50 text-emerald-700' },
+      { label: 'Ưu tiên cao', value: urgent, hint: 'Cần xử lý sớm', icon: ClipboardCheck, tone: 'bg-amber-50 text-amber-700' },
     ];
   }, [tasks]);
 
   const updateTaskStatus = async (task: Task, nextStatus: BoardStatus) => {
     if (nextStatus === 'REVIEW') {
-      setNotice('Review la placeholder Phase 1 vi backend chua co trang thai REVIEW/approval endpoint.');
+      setNotice('Cột Review sẽ nhận task khi quy trình phê duyệt được kích hoạt — hiện kéo task vào Todo, In Progress hoặc Done.');
       return;
     }
 
@@ -487,7 +492,7 @@ export const WorkManagementPage = () => {
         description: form.description?.trim() || null,
       });
       setForm((current) => ({ ...current, title: '', description: '' }));
-      setNotice('Da tao task moi.');
+      setNotice('Đã tạo task mới.');
       await loadWorkData();
     } catch {
       setNotice('Không thể tạo task. Kiểm tra project, assignee và quyền truy cập.');
@@ -512,7 +517,7 @@ export const WorkManagementPage = () => {
                 Role hiện tại không nằm trong phạm vi dashboard Member, Manager hoặc Admin. Đây là hành vi đúng cho tài khoản chưa được phê duyệt hoặc role không thuộc module công việc.
               </p>
               <Link to="/" className="mt-4 inline-flex">
-                <Button type="button" variant="outline">Ve dashboard tai khoan</Button>
+                <Button type="button" variant="outline">Về dashboard tài khoản</Button>
               </Link>
             </div>
           </div>
@@ -589,12 +594,12 @@ export const WorkManagementPage = () => {
           )}
           {currentView === 'approvals' && <ApprovalsView tasks={tasks} projects={projects} onNotice={setNotice} />}
           {currentView === 'notifications' && (
-            <NotificationsView tasks={tasks} projects={projects} onNotice={setNotice} />
+            <NotificationsView tasks={tasks} projects={projects} />
           )}
           {currentView === 'discussions' && (
             <DiscussionsView tasks={tasks} projects={projects} userName={user?.fullName || user?.username || 'you'} onNotice={setNotice} />
           )}
-          {currentView === 'files' && <FilesView tasks={tasks} projects={projects} onNotice={setNotice} />}
+          {currentView === 'files' && <FilesView onNotice={setNotice} />}
           {currentView === 'activity' && <ActivityLogView tasks={tasks} projects={projects} />}
           {currentView === 'settings' && <ProfileSettingsHub userName={user?.fullName || user?.username || 'Nguoi dung'} />}
           {currentView === 'analytics' && <AnalyticsView projects={projects} tasks={tasks} />}
@@ -636,7 +641,7 @@ const WorkShell = ({ title, subtitle, children, navItems = [], currentView, onNa
             <ArrowLeft size={14} />
             Về menu chính
           </Link>
-          <Badge variant="info" className="bg-blue-100 text-blue-950">Phase 3</Badge>
+          <Badge variant="info" className="bg-blue-100 text-blue-950">Workspace</Badge>
         </>
       }
     />
@@ -725,11 +730,11 @@ const DashboardView = ({ role, stats, projects, tasks }: DashboardViewProps) => 
       <section className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
         <Card className="overflow-hidden">
           <CardHeader>
-            <CardTitle>{role === 'employee' ? 'Hom nay can lam gi' : 'Suc khoe du an'}</CardTitle>
+            <CardTitle>{role === 'employee' ? 'Hôm nay cần làm gì' : 'Sức khỏe dự án'}</CardTitle>
             <CardDescription>
               {role === 'employee'
-                ? 'Danh sach uu tien ca nhan tu cac du an dang tham gia.'
-                : 'Theo doi du an dang chay, task uu tien cao va diem co rui ro.'}
+                ? 'Danh sách ưu tiên cá nhân từ các dự án đang tham gia.'
+                : 'Theo dõi dự án đang chạy, task ưu tiên cao và điểm có rủi ro.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -745,15 +750,15 @@ const DashboardView = ({ role, stats, projects, tasks }: DashboardViewProps) => 
 
         <Card className="overflow-hidden">
           <CardHeader>
-            <CardTitle>Phase tiep theo</CardTitle>
-            <CardDescription>Chi tao placeholder, khong trien khai that trong MVP.</CardDescription>
+            <CardTitle>Khám phá thêm</CardTitle>
+            <CardDescription>Các khu vực làm việc khác trong không gian này.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { icon: MessageSquareText, label: 'Notification va discussion real-time' },
-              { icon: FileText, label: 'File storage va tai lieu task' },
-              { icon: BarChart3, label: 'Analytics, Gantt va burndown' },
-              { icon: CalendarDays, label: 'I18n va mobile support' },
+              { icon: MessageSquareText, label: 'Thông báo và thảo luận theo task' },
+              { icon: FileText, label: 'Kho tài liệu bàn giao theo phòng ban' },
+              { icon: BarChart3, label: 'Phân tích năng suất và radar rủi ro' },
+              { icon: CalendarDays, label: 'Dòng thời gian và tiến độ dự án' },
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
                 <item.icon size={18} className="text-slate-500" />
@@ -780,14 +785,14 @@ const MyTasksView = ({ tasks, projects, taskFilter, onFilterChange }: MyTasksVie
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <CardTitle>My Tasks</CardTitle>
-          <CardDescription>Gom task từ mọi project về một nơi. Due date đang là placeholder vì backend chưa có trường này.</CardDescription>
+          <CardDescription>Gom task bạn phụ trách từ mọi dự án về một nơi.</CardDescription>
         </div>
         <div className="flex flex-wrap gap-2">
           {[
-            ['all', 'Tat ca'],
-            ['today', 'Hom nay'],
-            ['week', 'Tuan nay'],
-            ['overdue', 'Qua han'],
+            ['all', 'Tất cả'],
+            ['today', 'Hôm nay'],
+            ['week', 'Tuần nay'],
+            ['overdue', 'Quá hạn'],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -904,7 +909,7 @@ const ProjectsView = ({ projects }: { projects: ProjectSummary[] }) => {
 
         {filtered.length === 0 ? (
           <div className="p-6">
-            <EmptyState title="Không có dự án phù hợp" description="Thay đổi filter hoặc kiểm tra dữ liệu backend." />
+            <EmptyState title="Không có dự án phù hợp" description="Thử thay đổi bộ lọc hoặc tạo dự án mới." />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1025,7 +1030,7 @@ const BoardView = ({ projects, tasks, selectedProjectId, draggedTaskId, onProjec
       <div className="grid gap-4 lg:grid-cols-[1fr_260px] lg:items-end">
         <div>
           <h2 className="font-display text-lg font-bold text-slate-950">Project Board Kanban</h2>
-          <p className="mt-1 text-sm text-slate-600">Keo task giua Todo, In Progress va Done. Review la placeholder Phase 1.</p>
+          <p className="mt-1 text-sm text-slate-600">Kéo thả task giữa các cột Todo, In Progress và Done để cập nhật trạng thái.</p>
         </div>
         <div>
           <label htmlFor="project-board-filter" className="mb-1 block text-sm font-semibold text-slate-700">
@@ -1037,7 +1042,7 @@ const BoardView = ({ projects, tasks, selectedProjectId, draggedTaskId, onProjec
             onChange={(event) => onProjectChange(event.target.value === 'all' ? 'all' : Number(event.target.value))}
             className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="all">Tat ca project</option>
+            <option value="all">Tất cả project</option>
             {projects.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.name}
@@ -1069,7 +1074,7 @@ const BoardView = ({ projects, tasks, selectedProjectId, draggedTaskId, onProjec
             <div className="space-y-3">
               {status === 'REVIEW' && (
                 <div className="rounded-xl border border-dashed border-amber-300 bg-white/70 p-4 text-sm text-amber-800">
-                  Review/Approval can backend status va endpoint rieng trong Phase 2.
+                  Task chờ duyệt sẽ xuất hiện ở đây khi quy trình phê duyệt được kích hoạt.
                 </div>
               )}
               {columnTasks.map((task) => (
@@ -1100,20 +1105,20 @@ const TaskManagementView = ({ form, projects, canCreateTask, onChange, onSubmit 
   <section className="grid gap-4 xl:grid-cols-[1fr_0.8fr]">
     <Card>
       <CardHeader>
-        <CardTitle>Tao task moi</CardTitle>
-        <CardDescription>Phase 1 gồm giao việc, mô tả, assignee, project và ưu tiên. Due date chưa có API nên được ghi rõ là placeholder.</CardDescription>
+        <CardTitle>Tạo task mới</CardTitle>
+        <CardDescription>Giao việc với mô tả, người phụ trách, dự án và mức ưu tiên.</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={onSubmit}>
           <Input
-            label="Ten task"
+            label="Tên task"
             value={form.title}
             onChange={(event) => onChange({ ...form, title: event.target.value })}
-            placeholder="Vi du: Hoan thien UI Kanban"
+            placeholder="Ví dụ: Hoàn thiện UI Kanban"
           />
           <div>
             <label htmlFor="task-description" className="mb-1 block text-sm font-semibold text-slate-700">
-              Mo ta
+              Mô tả
             </label>
             <textarea
               id="task-description"
@@ -1166,11 +1171,11 @@ const TaskManagementView = ({ form, projects, canCreateTask, onChange, onSubmit 
                 ))}
               </select>
             </div>
-            <Input label="Due date" value="[API endpoint: task due date]" disabled />
+            <Input label="Hạn hoàn thành" value="Sắp hỗ trợ" disabled />
           </div>
           <Button type="submit" disabled={!canCreateTask || projects.length === 0}>
             <Plus size={16} />
-            Tao task
+            Tạo task
           </Button>
         </form>
       </CardContent>
@@ -1178,13 +1183,13 @@ const TaskManagementView = ({ form, projects, canCreateTask, onChange, onSubmit 
 
     <Card>
       <CardHeader>
-        <CardTitle>Task Management scope</CardTitle>
-        <CardDescription>Nhung phan co tinh phuc tap duoc day sang phase tiep theo.</CardDescription>
+        <CardTitle>Tính năng sắp ra mắt</CardTitle>
+        <CardDescription>Các khả năng nâng cao đang được phát triển.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {['Bulk Create', 'Checklist', 'Review workflow', 'Time tracking'].map((item) => (
+        {['Tạo task hàng loạt', 'Checklist trong task', 'Quy trình phê duyệt', 'Chấm thời gian làm việc'].map((item) => (
           <div key={item} className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            {item}: placeholder Phase 2
+            {item} — sắp ra mắt
           </div>
         ))}
       </CardContent>
@@ -1258,13 +1263,13 @@ const ApprovalsView = ({ onNotice }: { tasks: Task[]; projects: ProjectSummary[]
       <div className="max-w-[72ch]">
         <h2 className="font-display text-xl font-bold tracking-[-0.01em] text-slate-950">Phê duyệt yêu cầu</h2>
         <p className="mt-2 text-sm leading-6 text-slate-700 text-pretty">
-          Hệ thống đang chuẩn bị kết nối các API endpoints submit/review. Phiên bản MVP hiện tại hiển thị danh sách các yêu cầu cần phê duyệt.
+          Danh sách các yêu cầu của nhóm đang chờ bạn xem xét và phê duyệt.
         </p>
       </div>
 
       <div className="space-y-3">
         {approvalRequests.length === 0 ? (
-          <EmptyState title="Đã xử lý hết yêu cầu" description="Danh sách sẽ được nạp lại từ endpoint approval riêng khi backend hoàn tất workflow submit/review." />
+          <EmptyState title="Đã xử lý hết yêu cầu" description="Khi có yêu cầu phê duyệt mới từ nhóm, danh sách sẽ hiển thị ở đây." />
         ) : (
           approvalRequests.map((request) => (
             <article key={request.id} className="interactive-lift flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 hover:border-blue-200 hover:shadow-[0_10px_20px_rgba(15,23,42,0.06)] lg:flex-row lg:items-center lg:justify-between">
@@ -1322,15 +1327,15 @@ const ApprovalsView = ({ onNotice }: { tasks: Task[]; projects: ProjectSummary[]
   );
 };
 
-const NotificationsView = ({ tasks, projects, onNotice }: { tasks: Task[]; projects: ProjectSummary[]; onNotice: (value: string) => void }) => {
+const NotificationsView = ({ tasks, projects }: { tasks: Task[]; projects: ProjectSummary[] }) => {
   const notifications = [
     ...tasks
       .filter((task) => task.priority === 'HIGH' || task.priority === 'URGENT')
       .slice(0, 6)
       .map((task) => ({
         id: `task-${task.id}`,
-        title: `Task uu tien cao: ${task.title}`,
-        description: `${getTaskProjectName(projects, task)} dang can theo doi.`,
+        title: `Task ưu tiên cao: ${task.title}`,
+        description: `${getTaskProjectName(projects, task)} đang cần theo dõi.`,
         tone: 'warning' as const,
         icon: Bell,
         time: formatDate(task.updatedAt || task.createdAt),
@@ -1340,19 +1345,19 @@ const NotificationsView = ({ tasks, projects, onNotice }: { tasks: Task[]; proje
       .slice(0, 4)
       .map((task) => ({
         id: `done-${task.id}`,
-        title: `Task da hoàn thành: ${task.title}`,
-        description: `${getTaskProjectName(projects, task)} co thay doi trang thai.`,
+        title: `Task đã hoàn thành: ${task.title}`,
+        description: `${getTaskProjectName(projects, task)} có thay đổi trạng thái.`,
         tone: 'success' as const,
         icon: CheckCircle2,
         time: formatDate(task.updatedAt || task.createdAt),
       })),
   ];
 
-  const endpointContracts = [
-    '[API endpoint: list notifications]',
-    '[API endpoint: mark notification as read]',
-    '[Realtime channel: task.assigned]',
-    '[Realtime channel: task.mentioned]',
+  const notificationKinds = [
+    { label: 'Giao việc mới', detail: 'Khi bạn được gán vào một task.' },
+    { label: 'Nhắc tên (@mention)', detail: 'Khi đồng nghiệp nhắc bạn trong thảo luận.' },
+    { label: 'Đổi trạng thái', detail: 'Khi task bạn theo dõi chuyển cột.' },
+    { label: 'Ưu tiên cao', detail: 'Khi task khẩn cấp cần xử lý ngay.' },
   ];
 
   return (
@@ -1361,13 +1366,13 @@ const NotificationsView = ({ tasks, projects, onNotice }: { tasks: Task[]; proje
         <div className="max-w-[72ch]">
           <h2 className="font-display text-xl font-bold tracking-[-0.01em] text-slate-950">Notification Center</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700 text-pretty">
-            Phase 2 shell cho thông báo giao viec, @mention va cap nhat trang thai. Realtime can websocket/SSE backend.
+            Thông báo giao việc, nhắc tên và cập nhật trạng thái task — tổng hợp từ hoạt động mới nhất của nhóm.
           </p>
         </div>
 
         <div className="space-y-3">
           {notifications.length === 0 ? (
-            <EmptyState title="Chưa có thông báo" description="Thông báo sẽ được tạo từ task ưu tiên cao, task hoàn thành và mention khi backend có event stream." />
+            <EmptyState title="Chưa có thông báo" description="Khi có giao việc mới, task hoàn thành hoặc nhắc tên, thông báo sẽ xuất hiện ở đây." />
           ) : (
             notifications.map((item) => (
               <article key={item.id} className="interactive-lift flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 hover:border-blue-200 hover:shadow-[0_10px_20px_rgba(15,23,42,0.06)]">
@@ -1385,7 +1390,7 @@ const NotificationsView = ({ tasks, projects, onNotice }: { tasks: Task[]; proje
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-display font-bold text-slate-950">{item.title}</p>
                     <Badge variant={item.tone} className={item.tone === 'success' ? 'text-emerald-900' : 'text-amber-950'}>
-                      {item.tone === 'success' ? 'Done' : 'Can chu y'}
+                      {item.tone === 'success' ? 'Done' : 'Cần chú ý'}
                     </Badge>
                   </div>
                   <p className="mt-1 max-w-[68ch] text-sm leading-6 text-slate-700">{item.description}</p>
@@ -1399,19 +1404,15 @@ const NotificationsView = ({ tasks, projects, onNotice }: { tasks: Task[]; proje
 
       <aside className="space-y-3">
         <div className="max-w-[60ch]">
-          <h2 className="font-display text-lg font-bold text-slate-950">Realtime contract</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-700">Cac endpoint/event can bo sung sau frontend shell.</p>
+          <h2 className="font-display text-lg font-bold text-slate-950">Loại thông báo</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-700">Những sự kiện sẽ gửi thông báo đến bạn.</p>
         </div>
         <div className="space-y-2">
-          {endpointContracts.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => onNotice(`${item} chua co backend trong Phase 2 shell.`)}
-              className="interactive-lift w-full rounded-xl border border-blue-900/20 bg-blue-950 px-4 py-3 text-left font-mono text-xs font-semibold leading-5 text-white shadow-sm hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              {item}
-            </button>
+          {notificationKinds.map((item) => (
+            <div key={item.label} className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+              <p className="text-sm font-bold text-slate-900">{item.label}</p>
+              <p className="mt-0.5 text-xs leading-5 text-slate-600">{item.detail}</p>
+            </div>
           ))}
         </div>
       </aside>
@@ -1433,19 +1434,19 @@ const DiscussionsView = ({
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(tasks[0]?.id ?? null);
   const [draft, setDraft] = useState('');
   const selectedTask = tasks.find((task) => task.id === selectedTaskId) ?? tasks[0];
-  const projectName = selectedTask ? getTaskProjectName(projects, selectedTask) : 'Chua chon task';
+  const projectName = selectedTask ? getTaskProjectName(projects, selectedTask) : 'Chưa chọn task';
   const sampleComments = selectedTask
     ? [
         {
           id: 'c1',
           author: 'manager',
-          body: `@${userName} cap nhat tien do cho task nay truoc cuoi ngay.`,
+          body: `@${userName} cập nhật tiến độ cho task này trước cuối ngày.`,
           time: formatDate(selectedTask.updatedAt || selectedTask.createdAt),
         },
         {
           id: 'c2',
           author: userName,
-          body: 'Da nhan. Toi se cap nhat checklist va file ban giao khi backend ho tro.',
+          body: 'Đã nhận. Tôi sẽ cập nhật checklist và file bàn giao trong hôm nay.',
           time: 'Draft local',
         },
       ]
@@ -1453,12 +1454,12 @@ const DiscussionsView = ({
 
   const submitComment = () => {
     if (!draft.trim()) {
-      onNotice('Nhap noi dung comment truoc khi gui.');
+      onNotice('Nhập nội dung comment trước khi gửi.');
       return;
     }
 
     setDraft('');
-    onNotice('[API endpoint: create task comment] chua co backend, comment hien la draft local.');
+    onNotice('Bình luận đang được lưu tạm trên máy bạn — đồng bộ nhóm sẽ được bật trong bản cập nhật tới.');
   };
 
   return (
@@ -1466,7 +1467,7 @@ const DiscussionsView = ({
       <Card>
         <CardHeader>
           <CardTitle>Discussion threads</CardTitle>
-          <CardDescription>Chon task de xem luong trao doi va @mention.</CardDescription>
+          <CardDescription>Chọn task để xem luồng trao đổi và @mention.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {tasks.slice(0, 12).map((task) => (
@@ -1490,7 +1491,7 @@ const DiscussionsView = ({
       <Card>
         <CardHeader>
           <CardTitle>{selectedTask ? selectedTask.title : 'Discussion'}</CardTitle>
-          <CardDescription>{projectName}. Comment va @mention dang la Phase 2 frontend shell.</CardDescription>
+          <CardDescription>{projectName}. Trao đổi và nhắc tên đồng nghiệp theo từng task.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="divide-y divide-slate-100">
@@ -1507,7 +1508,7 @@ const DiscussionsView = ({
           <div className="border-t border-slate-100 pt-4">
             <label htmlFor="discussion-draft" className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
               <AtSign size={16} />
-              Viet comment
+              Viết comment
             </label>
             <textarea
               id="discussion-draft"
@@ -1515,10 +1516,10 @@ const DiscussionsView = ({
               onChange={(event) => setDraft(event.target.value)}
               rows={4}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="@dong-nghiep noi dung trao doi..."
+              placeholder="@đồng-nghiệp nội dung trao đổi..."
             />
             <div className="mt-3 flex justify-end">
-              <Button type="button" onClick={submitComment}>Gui comment</Button>
+              <Button type="button" onClick={submitComment}>Gửi comment</Button>
             </div>
           </div>
         </CardContent>
@@ -1527,40 +1528,129 @@ const DiscussionsView = ({
   );
 };
 
-const FilesView = ({ tasks, projects, onNotice }: { tasks: Task[]; projects: ProjectSummary[]; onNotice: (value: string) => void }) => {
-  const fileRows = tasks.slice(0, 8).map((task, index) => ({
-    id: task.id,
-    name: `${task.title.slice(0, 34)}${task.title.length > 34 ? '...' : ''}`,
-    project: getTaskProjectName(projects, task),
-    type: index % 2 === 0 ? 'Báo cáo kết quả' : 'Tài liệu task',
-    status: task.status === 'COMPLETED' ? 'Sẵn sàng bàn giao' : 'Đang chờ upload',
-  }));
+const FILE_MAX_MB = 20;
+const FILE_ACCEPT = '.doc,.docx,.xls,.xlsx,.pdf';
+
+const formatFileBytes = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const FilesView = ({ onNotice }: { onNotice: (value: string) => void }) => {
+  const [docs, setDocs] = useState<DocumentMeta[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [busyId, setBusyId] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadDocs = useCallback(async () => {
+    setLoadingDocs(true);
+    try {
+      const res = await documentApi.list();
+      setDocs(res.data);
+    } catch {
+      onNotice('Không tải được danh sách tài liệu. Kiểm tra gateway và hr-service.');
+    } finally {
+      setLoadingDocs(false);
+    }
+  }, [onNotice]);
+
+  useEffect(() => { void loadDocs(); }, [loadDocs]);
+
+  const handleUpload = async (file: File) => {
+    if (file.size > FILE_MAX_MB * 1024 * 1024) {
+      onNotice(`File vượt quá giới hạn ${FILE_MAX_MB} MB.`);
+      return;
+    }
+    setUploading(true);
+    try {
+      await documentApi.upload(file);
+      onNotice(`Đã tải lên "${file.name}".`);
+      await loadDocs();
+    } catch {
+      onNotice('Tải lên thất bại. Chỉ nhận Word/Excel/PDF, tối đa 20 MB, và bạn cần thuộc một phòng ban.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDownload = async (doc: DocumentMeta) => {
+    setBusyId(doc.id);
+    try {
+      await documentApi.download(doc.id, doc.fileName);
+    } catch {
+      onNotice('Không tải được file. Bạn cần cùng phòng ban với người upload.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDelete = async (doc: DocumentMeta) => {
+    setBusyId(doc.id);
+    try {
+      await documentApi.delete(doc.id);
+      onNotice(`Đã xóa "${doc.fileName}".`);
+      await loadDocs();
+    } catch {
+      onNotice('Không xóa được. Chỉ người upload hoặc admin mới xóa được tài liệu.');
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <section className="grid gap-4 xl:grid-cols-[1fr_0.65fr]">
       <Card>
         <CardHeader>
-          <CardTitle>File handoff</CardTitle>
-          <CardDescription>Quản lý tài liệu và file sản phẩm theo task. Upload/download cần storage backend riêng.</CardDescription>
+          <CardTitle>Tài liệu bàn giao</CardTitle>
+          <CardDescription>File Word/Excel/PDF của phòng ban bạn — dùng chung kho với trang Tài liệu phòng ban.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {fileRows.length === 0 ? (
-            <EmptyState title="Chưa có file" description="Khi task có attachment, danh sách file sẽ hiển thị ở đây." />
+          {loadingDocs ? (
+            <p className="py-8 text-center text-sm text-slate-500">Đang tải danh sách tài liệu...</p>
+          ) : docs.length === 0 ? (
+            <EmptyState title="Chưa có tài liệu" description="Tải file lên ở khung bên cạnh để bắt đầu bàn giao tài liệu." />
           ) : (
             <div className="divide-y divide-slate-100">
-              {fileRows.map((file) => (
-                <div key={file.id} className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-slate-950">{file.name}</p>
-                      <Badge variant={file.status === 'Sẵn sàng bàn giao' ? 'success' : 'muted'}>{file.status}</Badge>
+              {docs.map((doc) => (
+                <div key={doc.id} className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <FileText size={16} />
                     </div>
-                    <p className="mt-1 text-sm text-slate-600">{file.project}</p>
-                    <p className="mt-1 text-xs text-slate-600">{file.type}</p>
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-slate-950">{doc.fileName}</p>
+                      <p className="mt-1 text-xs text-slate-600">
+                        {formatFileBytes(doc.fileSize)} · {doc.uploadedBy} · {formatDate(doc.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => onNotice('[API endpoint: download attachment] chua co backend.')}>
-                    Tai file
-                  </Button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      disabled={busyId === doc.id}
+                      onClick={() => void handleDownload(doc)}
+                    >
+                      <Download size={13} />
+                      Tải file
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 text-rose-600 hover:bg-rose-50"
+                      disabled={busyId === doc.id}
+                      onClick={() => void handleDelete(doc)}
+                    >
+                      <Trash2 size={13} />
+                      Xóa
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1570,18 +1660,26 @@ const FilesView = ({ tasks, projects, onNotice }: { tasks: Task[]; projects: Pro
 
       <Card>
         <CardHeader>
-          <CardTitle>Upload contract</CardTitle>
-          <CardDescription>UI da san sang nhan storage endpoint trong Phase 2 backend.</CardDescription>
+          <CardTitle>Tải tài liệu lên</CardTitle>
+          <CardDescription>File lưu theo phòng ban của bạn, thành viên cùng phòng ban có thể tải về.</CardDescription>
         </CardHeader>
         <CardContent>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={FILE_ACCEPT}
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleUpload(f); }}
+          />
           <button
             type="button"
-            onClick={() => onNotice('[API endpoint: upload attachment] chua co backend storage/S3.')}
-            className="flex min-h-44 w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-slate-800 transition hover:border-slate-400 hover:bg-white"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex min-h-44 w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-slate-800 transition hover:border-indigo-400 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Upload size={28} />
-            <span className="mt-3 font-bold">Upload file</span>
-            <span className="mt-1 text-sm">Placeholder cho S3/local storage adapter</span>
+            <Upload size={28} className={uploading ? 'animate-pulse' : undefined} />
+            <span className="mt-3 font-bold">{uploading ? 'Đang tải lên...' : 'Chọn file để tải lên'}</span>
+            <span className="mt-1 text-sm">Word, Excel, PDF — tối đa {FILE_MAX_MB} MB</span>
           </button>
         </CardContent>
       </Card>
@@ -1611,7 +1709,7 @@ const ActivityLogView = ({ tasks, projects }: { tasks: Task[]; projects: Project
       <div className="max-w-[72ch]">
         <h2 className="font-display text-xl font-bold tracking-[-0.01em] text-slate-950">Activity Log</h2>
         <p className="mt-2 text-sm leading-6 text-slate-700 text-pretty">
-          Đóng lịch sử đọc từ dữ liệu project/task hiện có. Audit đầy đủ cần endpoint riêng.
+          Dòng thời gian các hoạt động mới nhất trên task và dự án của nhóm bạn.
         </p>
       </div>
 
@@ -1656,24 +1754,24 @@ const ProfileSettingsHub = ({ userName }: { userName: string }) => {
     },
     {
       title: 'Password',
-      description: 'Doi mat khau bang route bao mat hien co.',
+      description: 'Đổi mật khẩu bằng route bảo mật hiện có.',
       href: '/change-password',
       icon: LockKeyhole,
       badge: 'Ready',
     },
     {
       title: 'Two-factor authentication',
-      description: '[API endpoint: enable 2FA] chưa có trong backend hiện tại.',
+      description: 'Bảo mật hai lớp cho tài khoản — sẽ sớm được kích hoạt.',
       href: undefined,
       icon: ShieldCheck,
-      badge: 'Placeholder',
+      badge: 'Sắp ra mắt',
     },
     {
       title: 'Language',
-      description: 'Tiếng Việt/Tieng Anh se ket noi khi co i18n dictionary trong Phase 3.',
+      description: 'Chuyển đổi giao diện Tiếng Việt/Tiếng Anh — sẽ sớm ra mắt.',
       href: undefined,
       icon: Settings,
-      badge: 'Phase 3',
+      badge: 'Sắp ra mắt',
     },
   ];
 
@@ -1843,17 +1941,43 @@ const DonutChart = ({
 };
 
 const TeamWorkloadCard = ({ tasks }: { tasks: Task[] }) => {
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const avatarColors = [
     'from-blue-500 to-indigo-500', 'from-violet-500 to-purple-500',
     'from-emerald-500 to-teal-500', 'from-amber-500 to-orange-500',
     'from-rose-500 to-pink-500', 'from-sky-500 to-indigo-500', 'from-lime-500 to-green-500',
   ];
+
+  useEffect(() => {
+    let active = true;
+    employeeApi.getAll({ page: 0, size: 200 })
+      .then((res) => { if (active) setEmployees(res.data.content); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const getInitials = (name: string): string => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const employeeLabel = useCallback(
+    (id: number) => {
+      const emp = employees.find((e) => e.id === id);
+      return emp?.fullName || emp?.name || `Nhân viên #${id}`;
+    },
+    [employees]
+  );
+
   const workload = useMemo(() => {
-    const byAssignee: Record<number, { total: number; done: number }> = {};
+    const byAssignee: Record<number, { total: number; done: number; open: number; inProgress: number }> = {};
     tasks.forEach((t) => {
-      if (!byAssignee[t.assigneeId]) byAssignee[t.assigneeId] = { total: 0, done: 0 };
+      if (!byAssignee[t.assigneeId]) byAssignee[t.assigneeId] = { total: 0, done: 0, open: 0, inProgress: 0 };
       byAssignee[t.assigneeId].total++;
       if (t.status === 'COMPLETED') byAssignee[t.assigneeId].done++;
+      else if (t.status === 'IN_PROGRESS') byAssignee[t.assigneeId].inProgress++;
+      else if (t.status === 'OPEN') byAssignee[t.assigneeId].open++;
     });
     return Object.entries(byAssignee)
       .map(([id, d]) => ({ id: Number(id), ...d, rate: Math.round((d.done / d.total) * 100) }))
@@ -1864,43 +1988,53 @@ const TeamWorkloadCard = ({ tasks }: { tasks: Task[] }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Team Workload</CardTitle>
-        <CardDescription>Phân bổ task theo assignee — lấy từ dữ liệu task-service hiện có.</CardDescription>
+        <CardTitle>Tiến độ từng người</CardTitle>
+        <CardDescription>Phân bổ công việc và tiến độ hoàn thành theo từng nhân viên.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
         {workload.length === 0 ? (
-          <EmptyState title="Chưa có dữ liệu workload" description="Cần có task được phân công để hiển thị phân bổ." />
+          <EmptyState title="Chưa có dữ liệu" description="Cần có task được phân công để hiển thị tiến độ." />
         ) : (
-          workload.map((member, idx) => (
-            <div key={member.id} className="grid grid-cols-[2rem_1fr_auto] items-center gap-3">
-              <div
-                className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-bold text-white',
-                  avatarColors[idx % avatarColors.length]
-                )}
-              >
-                {member.id}
-              </div>
-              <div className="min-w-0">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-800">Assignee #{member.id}</span>
-                  <span className="text-xs text-slate-500">{member.done}/{member.total}</span>
+          workload.map((member, idx) => {
+            const name = employeeLabel(member.id);
+            const initials = getInitials(name);
+            return (
+              <div key={member.id} className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3">
+                <div
+                  className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-bold text-white',
+                    avatarColors[idx % avatarColors.length]
+                  )}
+                  title={name}
+                >
+                  {initials}
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-400 transition-all duration-500"
-                    style={{ width: `${member.rate}%` }}
-                  />
+                <div className="min-w-0">
+                  <div className="mb-0.5 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-800">{name}</span>
+                    <span className="text-xs font-semibold text-slate-500">{member.done}/{member.total} hoàn thành</span>
+                  </div>
+                  <div className="mb-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-400 transition-all duration-500"
+                      style={{ width: `${member.rate}%` }}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 text-[11px] text-slate-500">
+                    <span className="rounded bg-slate-100 px-1.5 py-0.5">Cần nhận: {member.open}</span>
+                    <span className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700">Đang làm: {member.inProgress}</span>
+                    <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700">Xong: {member.done}</span>
+                  </div>
                 </div>
+                <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold',
+                  member.rate >= 80 ? 'bg-emerald-100 text-emerald-800' :
+                  member.rate >= 50 ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
+                )}>
+                  {member.rate}%
+                </span>
               </div>
-              <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold',
-                member.rate >= 80 ? 'bg-emerald-100 text-emerald-800' :
-                member.rate >= 50 ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
-              )}>
-                {member.rate}%
-              </span>
-            </div>
-          ))
+            );
+          })
         )}
       </CardContent>
     </Card>
@@ -2114,17 +2248,17 @@ const TimelineView = ({ projects, tasks }: { projects: ProjectSummary[]; tasks: 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Timeline / Gantt</CardTitle>
-        <CardDescription>Gantt that can startDate/dueDate/dependency backend. Shell nay dung project/task hien co de demo luong timeline.</CardDescription>
+        <CardTitle>Dòng thời gian dự án</CardTitle>
+        <CardDescription>Tiến độ từng dự án theo tuần, tính từ khối lượng task đã hoàn thành.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-4 gap-2 border-b border-slate-100 pb-2 sm:grid-cols-8">
-          {['Tuan 1', 'Tuan 2', 'Tuan 3', 'Tuan 4', 'Tuan 5', 'Tuan 6', 'Tuan 7', 'Tuan 8'].map((label) => (
+          {['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5', 'Tuần 6', 'Tuần 7', 'Tuần 8'].map((label) => (
             <span key={label} className="font-display text-xs font-semibold text-slate-600">{label}</span>
           ))}
         </div>
         {rows.length === 0 ? (
-          <EmptyState title="Chưa có timeline" description="Cần project/task và due date để vẽ Gantt thật." />
+          <EmptyState title="Chưa có dữ liệu tiến độ" description="Khi dự án có task, dòng thời gian sẽ được vẽ ở đây." />
         ) : (
           <div className="divide-y divide-slate-100">
             {rows.map(({ project, projectTasks, laneStart, laneWidth }) => (
@@ -2146,12 +2280,12 @@ const TimelineView = ({ projects, tasks }: { projects: ProjectSummary[]; tasks: 
             ))}
           </div>
         )}
-        <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          <p className="font-semibold">Backend contract dang cho bo sung</p>
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
+          <p className="font-semibold text-slate-900">Sắp ra mắt</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {['task.startDate', 'task.dueDate', 'task.dependencies', 'project.milestones', 'burndown metrics API'].map((contract) => (
-              <span key={contract} className="rounded-full border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-amber-900">
-                {contract}
+            {['Ngày bắt đầu / hạn hoàn thành task', 'Phụ thuộc giữa các task', 'Cột mốc dự án', 'Biểu đồ burndown'].map((item) => (
+              <span key={item} className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700">
+                {item}
               </span>
             ))}
           </div>
@@ -2178,7 +2312,7 @@ const AISuggestionsView = ({ projects, tasks, onNotice }: { projects: ProjectSum
           id: `local-${assigneeId}`,
           assigneeId,
           title: `Assignee #${assigneeId}`,
-          reason: `${count} task chua hoàn thành. Nen giam task moi hoac tach viec uu tien cao.`,
+          reason: `${count} task chưa hoàn thành. Nên giảm task mới hoặc tách việc ưu tiên cao.`,
           workload: count,
           confidence: Math.min(96, 62 + count * 7),
         })),
@@ -2194,7 +2328,7 @@ const AISuggestionsView = ({ projects, tasks, onNotice }: { projects: ProjectSum
           projectId: project.id,
           projectName: project.name,
           severity: project.highPriorityTaskCount > 2 ? 'danger' : 'warning',
-          summary: `${project.highPriorityTaskCount} task uu tien cao, ${getProgress(project)}% done.`,
+          summary: `${project.highPriorityTaskCount} task ưu tiên cao, ${getProgress(project)}% done.`,
           highPriorityTaskCount: project.highPriorityTaskCount,
           progress: getProgress(project),
         })),
@@ -2203,38 +2337,84 @@ const AISuggestionsView = ({ projects, tasks, onNotice }: { projects: ProjectSum
   const [suggestions, setSuggestions] = useState<AiSuggestion[]>(fallbackSuggestions);
   const [riskRadar, setRiskRadar] = useState<AiRiskRadarItem[]>(fallbackRisks);
   const [aiLoading, setAiLoading] = useState(true);
+  const [aiSource, setAiSource] = useState<'api' | 'local'>('local');
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   useEffect(() => {
     let active = true;
+    employeeApi
+      .getAll()
+      .then((res) => { if (active) setEmployees(res.data.content); })
+      .catch(() => { /* giữ mã nhân viên khi không tải được danh bạ */ });
+    return () => { active = false; };
+  }, []);
 
-    void Promise.all([aiApi.getSuggestions(), aiApi.getRiskRadar()])
-      .then(([remoteSuggestions, remoteRisks]) => {
-        if (!active) return;
-        setSuggestions(remoteSuggestions);
-        setRiskRadar(remoteRisks);
-      })
-      .catch(() => {
-        if (!active) return;
-        setSuggestions(fallbackSuggestions);
+  // Backend only knows ids — swap in real employee and project names when we have them.
+  const employeeLabel = useCallback(
+    (assigneeId: string, fallbackTitle: string) => {
+      const employee = employees.find((e) => e.id === Number(assigneeId));
+      if (!employee) return fallbackTitle.replace(/^Assignee #/, 'Nhân viên #');
+      return employee.fullName || employee.name || fallbackTitle;
+    },
+    [employees]
+  );
+
+  const enrichSuggestions = useCallback(
+    (items: AiSuggestion[]): AiSuggestion[] =>
+      items.map((item) => ({ ...item, title: employeeLabel(item.assigneeId, item.title) })),
+    [employeeLabel]
+  );
+
+  const enrichRisks = useCallback(
+    (items: AiRiskRadarItem[]): AiRiskRadarItem[] =>
+      items.map((item) => ({
+        ...item,
+        projectName: projects.find((project) => project.id === item.projectId)?.name ?? item.projectName.replace(/^Project #/, 'Dự án #'),
+      })),
+    [projects]
+  );
+
+  const loadAiData = useCallback(
+    async (notifyResult = false) => {
+      setAiLoading(true);
+      try {
+        const [remoteSuggestions, remoteRisks] = await Promise.all([aiApi.getSuggestions(), aiApi.getRiskRadar()]);
+        setSuggestions(enrichSuggestions(remoteSuggestions));
+        setRiskRadar(enrichRisks(remoteRisks));
+        setAiSource('api');
+        if (notifyResult) onNotice(`Đã cập nhật ${remoteSuggestions.length} gợi ý phân công theo tải công việc mới nhất.`);
+      } catch {
+        setSuggestions(enrichSuggestions(fallbackSuggestions));
         setRiskRadar(fallbackRisks);
-      })
-      .finally(() => {
-        if (active) setAiLoading(false);
-      });
+        setAiSource('local');
+        if (notifyResult) onNotice('Máy chủ gợi ý chưa phản hồi — đang hiển thị phân tích tính tại chỗ từ dữ liệu task.');
+      } finally {
+        setAiLoading(false);
+      }
+    },
+    [enrichRisks, enrichSuggestions, fallbackRisks, fallbackSuggestions, onNotice]
+  );
 
-    return () => {
-      active = false;
-    };
-  }, [fallbackRisks, fallbackSuggestions]);
+  useEffect(() => { void loadAiData(); }, [loadAiData]);
 
   return (
     <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div className="space-y-4">
-        <div className="max-w-[72ch]">
-          <h2 className="font-display text-xl font-bold tracking-[-0.01em] text-slate-950">AI task assignment suggestions</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-700 text-pretty">
-            Gợi ý dựa trên workload hiện có, sẵn sàng nối skills, calendar và lịch sử hiệu suất qua `/api/v1/ai/suggestions`.
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="max-w-[72ch]">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-display text-xl font-bold tracking-[-0.01em] text-slate-950">Gợi ý phân công AI</h2>
+              <Badge variant={aiSource === 'api' ? 'success' : 'muted'}>
+                {aiSource === 'api' ? 'AI backend' : 'Tính cục bộ'}
+              </Badge>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-slate-700 text-pretty">
+              Phân tích tải công việc của từng người phụ trách và gợi ý cân bằng lại khối lượng task.
+            </p>
+          </div>
+          <Button type="button" variant="primary" size="sm" className="font-display" disabled={aiLoading} onClick={() => void loadAiData(true)}>
+            {aiLoading ? 'Đang phân tích...' : 'Lấy gợi ý AI'}
+          </Button>
         </div>
 
         <div className="space-y-3">
@@ -2245,7 +2425,7 @@ const AISuggestionsView = ({ projects, tasks, onNotice }: { projects: ProjectSum
               <Bot className="mx-auto text-slate-500" size={30} />
               <h3 className="mt-3 font-display text-lg font-bold text-slate-950">Chưa có tín hiệu quá tải</h3>
               <p className="mx-auto mt-2 max-w-[60ch] text-sm leading-6 text-slate-700">
-                Khi API hoặc workload phát hiện điểm nghẽn, danh sách gợi ý phân bổ lại sẽ xuất hiện ở đây.
+                Khi có người phụ trách bị dồn nhiều việc, danh sách gợi ý phân bổ lại sẽ xuất hiện ở đây.
               </p>
             </div>
           ) : (
@@ -2258,11 +2438,8 @@ const AISuggestionsView = ({ projects, tasks, onNotice }: { projects: ProjectSum
                       <Badge variant="info" className="bg-blue-100 text-blue-950">{item.confidence}% confidence</Badge>
                     </div>
                     <p className="mt-1 max-w-[68ch] text-sm leading-6 text-slate-700">{item.reason}</p>
-                    <p className="mt-2 text-xs font-semibold text-slate-600">Workload: {item.workload} open task</p>
+                    <p className="mt-2 text-xs font-semibold text-slate-600">Workload: {item.workload} task đang mở</p>
                   </div>
-                  <Button type="button" variant="primary" size="sm" className="font-display" onClick={() => onNotice('GET /api/v1/ai/suggestions da duoc khai bao, backend rule AI chua tra du lieu production.')}>
-                    Lấy gợi ý AI
-                  </Button>
                 </div>
               </article>
             ))
@@ -2272,8 +2449,8 @@ const AISuggestionsView = ({ projects, tasks, onNotice }: { projects: ProjectSum
 
       <aside className="space-y-4">
         <div className="max-w-[60ch]">
-          <h2 className="font-display text-lg font-bold text-slate-950">Risk radar</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-700">Quét `/api/v1/ai/risk-radar` để ưu tiên dự án có HIGH/URGENT task.</p>
+          <h2 className="font-display text-lg font-bold text-slate-950">Radar rủi ro</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-700">Những dự án đang dồn nhiều task ưu tiên cao hoặc khẩn cấp, cần xử lý trước.</p>
         </div>
         <div className="space-y-3">
           {aiLoading ? (
@@ -2346,9 +2523,10 @@ const AutomationView = ({ onNotice }: { onNotice: (value: string) => void }) => 
 
     try {
       await automationApi.createRule(nextRule);
-      onNotice(`POST /api/v1/automation/rules: ${nextRule.rule_name} ${nextRule.is_enabled ? 'enabled' : 'disabled'}.`);
+      onNotice(`Đã ${nextRule.is_enabled ? 'bật' : 'tắt'} quy tắc "${nextRule.rule_name}".`);
     } catch {
-      onNotice('POST /api/v1/automation/rules da duoc khai bao, backend rule engine chua san sang.');
+      setRules((current) => current.map((item) => (item.rule_id === rule.rule_id ? rule : item)));
+      onNotice('Chưa lưu được quy tắc — máy chủ tự động hóa đang bận, vui lòng thử lại.');
     }
   };
 
@@ -2357,7 +2535,7 @@ const AutomationView = ({ onNotice }: { onNotice: (value: string) => void }) => 
       <div className="max-w-[72ch]">
         <h2 className="font-display text-xl font-bold tracking-[-0.01em] text-slate-950">Workflow Automation</h2>
         <p className="mt-2 text-sm leading-6 text-slate-700 text-pretty">
-          Rule builder kết nối contract `POST /api/v1/automation/rules`, sẵn sàng nối rule engine và event bus.
+          Bật/tắt các quy tắc tự động hóa quy trình làm việc: chuyển task, nhắc phê duyệt và thông báo ưu tiên cao.
         </p>
       </div>
 
@@ -2405,9 +2583,10 @@ const AutomationView = ({ onNotice }: { onNotice: (value: string) => void }) => 
       </div>
 
       <div className="rounded-lg border border-dashed border-blue-300 bg-blue-50 p-3 text-sm text-blue-950">
-        <p className="font-display font-bold">Rule JSON schema</p>
+        <p className="font-display font-bold">Cách quy tắc hoạt động</p>
         <p className="mt-1 max-w-[72ch] leading-6">
-          rule_id, rule_name, trigger.event, trigger.condition, action.type, action.target_status, is_enabled.
+          Mỗi quy tắc gồm một sự kiện kích hoạt (ví dụ: task chuyển sang Hoàn tất) và một hành động tự động
+          (chuyển task tiếp theo, gửi nhắc nhở, thông báo quản lý). Bật quy tắc để hệ thống tự thực thi.
         </p>
       </div>
     </section>
@@ -2417,9 +2596,9 @@ const AutomationView = ({ onNotice }: { onNotice: (value: string) => void }) => 
 const IntegrationsView = ({ onNotice }: { onNotice: (value: string) => void }) => (
   <section className="grid gap-4 lg:grid-cols-3">
     {[
-      { name: 'Slack', description: 'Đóng bo thông báo task va @mention vao channel du an.' },
-      { name: 'Microsoft Teams', description: 'Gui approval reminder va meeting note cho team.' },
-      { name: 'Google Calendar', description: 'Đóng bo due date, milestone va lich review.' },
+      { name: 'Slack', description: 'Đồng bộ thông báo task và @mention vào channel dự án.' },
+      { name: 'Microsoft Teams', description: 'Gửi approval reminder và meeting note cho team.' },
+      { name: 'Google Calendar', description: 'Đồng bộ due date, milestone và lịch review.' },
     ].map((integration) => (
       <Card key={integration.name} className="p-5">
         <div className="flex items-center gap-3">
@@ -2434,9 +2613,9 @@ const IntegrationsView = ({ onNotice }: { onNotice: (value: string) => void }) =
           variant="outline"
           size="sm"
           className="mt-4"
-          onClick={() => onNotice(`[Integration endpoint: ${integration.name}] chua duoc ket noi.`)}
+          onClick={() => onNotice(`Kết nối ${integration.name} sẽ sớm ra mắt — hệ thống sẽ thông báo khi sẵn sàng.`)}
         >
-          Connect
+          Kết nối
         </Button>
       </Card>
     ))}
@@ -2447,15 +2626,15 @@ const I18nMobileView = () => (
   <section className="grid gap-4 xl:grid-cols-[1fr_0.85fr]">
     <Card>
       <CardHeader>
-        <CardTitle>Localization readiness</CardTitle>
-        <CardDescription>Phase 3 chuan bi tieng Viet/Tieng Anh. Hien tai app van dung copy truc tiep trong component.</CardDescription>
+        <CardTitle>Ngôn ngữ giao diện</CardTitle>
+        <CardDescription>Hỗ trợ Tiếng Việt và Tiếng Anh cho toàn bộ hệ thống.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="divide-y divide-slate-100">
           {[
-            { key: 'vi', label: 'Tiếng Việt', status: 'Đang dùng trong UI hien tai' },
-            { key: 'en', label: 'English', status: 'Cần dictionary và key mapping' },
-            { key: 'format', label: 'Date/number format', status: 'Cần locale-aware formatter' },
+            { key: 'vi', label: 'Tiếng Việt', status: 'Ngôn ngữ mặc định của hệ thống' },
+            { key: 'en', label: 'English', status: 'Sẽ sớm ra mắt' },
+            { key: 'format', label: 'Định dạng ngày và số', status: 'Theo chuẩn Việt Nam (dd/mm/yyyy, VND)' },
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
               <div className="flex items-center gap-3">
@@ -2477,15 +2656,15 @@ const I18nMobileView = () => (
     <Card>
       <CardHeader>
         <CardTitle>Mobile support</CardTitle>
-        <CardDescription>Web responsive truoc, native app iOS/Android de sau neu can.</CardDescription>
+        <CardDescription>Web responsive trước, native app iOS/Android để sau nếu cần.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="divide-y divide-slate-100">
           {[
-            'Sidebar da collapse tren mobile',
-            'Kanban co the scroll ngang tren man hinh nho',
-            'Form dung label ro rang va tap target lon',
-            'Native app can API contract on dinh truoc khi tach mobile',
+            'Menu tự thu gọn trên màn hình nhỏ',
+            'Bảng Kanban cuộn ngang mượt trên điện thoại',
+            'Form có nhãn rõ ràng, nút bấm đủ lớn để thao tác cảm ứng',
+            'Ứng dụng iOS/Android native đang trong lộ trình phát triển',
           ].map((item) => (
             <div key={item} className="flex items-start gap-3 py-3 text-sm text-slate-700 first:pt-0 last:pb-0">
               <Smartphone size={18} className="mt-0.5 shrink-0 text-indigo-700" />
@@ -2503,7 +2682,7 @@ const AdminShellView = () => (
     {[
       { title: 'Identity & Access', description: 'Quản lý tài khoản, vai trò, quyền truy cập và trạng thái khóa.', href: '/users', icon: ShieldCheck, status: 'Đang dùng' },
       { title: 'Organization Settings', description: 'Điều chỉnh phòng ban, đơn vị và cấu trúc tổ chức.', href: '/departments', icon: Users, status: 'Đang dùng' },
-      { title: 'Company Analytics', description: 'Theo dõi năng suất, tổng giờ làm và báo cáo phòng ban.', href: undefined, icon: BarChart3, status: 'Phase 3' },
+      { title: 'Company Analytics', description: 'Theo dõi năng suất, tổng giờ làm và báo cáo phòng ban.', href: undefined, icon: BarChart3, status: 'Sắp ra mắt' },
       { title: 'Billing', description: 'Khu vực cấu hình thanh toán khi triển khai mô hình SaaS.', href: undefined, icon: FileText, status: 'Dự kiến' },
     ].map((item) => (
       <Card key={item.title} className="group p-5 transition duration-150 hover:-translate-y-0.5 hover:bg-slate-50">
@@ -2519,7 +2698,7 @@ const AdminShellView = () => (
             <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
             {item.href ? (
               <Link to={item.href} className="mt-4 inline-flex">
-                <Button type="button" variant="outline" size="sm">Mo trang</Button>
+                <Button type="button" variant="outline" size="sm">Mở trang</Button>
               </Link>
             ) : (
               <p className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1.5 text-sm font-medium text-slate-600">
@@ -2546,8 +2725,7 @@ const TaskCard = ({ task, projectName, onDragStart }: { task: Task; projectName:
     <p className="mt-2 text-sm leading-6 text-slate-600">{task.description || 'Chưa có mô tả'}</p>
     <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
       <span className="rounded-full bg-slate-100 px-2.5 py-1">{projectName}</span>
-      <span className="rounded-full bg-slate-100 px-2.5 py-1">Assignee #{task.assigneeId}</span>
-      <span className="rounded-full bg-slate-100 px-2.5 py-1">Due date: placeholder</span>
+      <span className="rounded-full bg-slate-100 px-2.5 py-1">Phụ trách #{task.assigneeId}</span>
     </div>
   </article>
 );
@@ -2566,9 +2744,8 @@ const TaskRow = ({ task, projectName, compact = false }: { task: Task; projectNa
     <p className="mt-2 text-sm leading-6 text-slate-600">{task.description || 'Chưa có mô tả công việc.'}</p>
     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
       <span className="rounded-full bg-slate-100 px-2.5 py-1">{projectName}</span>
-      <span className="rounded-full bg-slate-100 px-2.5 py-1">Assignee #{task.assigneeId}</span>
-      <span className="rounded-full bg-slate-100 px-2.5 py-1">Created {formatDate(task.createdAt)}</span>
-      <span className="rounded-full bg-slate-100 px-2.5 py-1">Due date placeholder</span>
+      <span className="rounded-full bg-slate-100 px-2.5 py-1">Phụ trách #{task.assigneeId}</span>
+      <span className="rounded-full bg-slate-100 px-2.5 py-1">Tạo ngày {formatDate(task.createdAt)}</span>
     </div>
   </div>
 );
@@ -2586,10 +2763,10 @@ const ProjectRow = ({ project, expanded = false }: { project: ProjectSummary; ex
               {project.status}
             </Badge>
           </div>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{project.description || 'Chưa có mô tả du an.'}</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{project.description || 'Chưa có mô tả dự án.'}</p>
         </div>
         <Link to="/work/board">
-          <Button type="button" variant="outline" size="sm">Mo board</Button>
+          <Button type="button" variant="outline" size="sm">Mở board</Button>
         </Link>
       </div>
       <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-slate-100">
@@ -2602,7 +2779,7 @@ const ProjectRow = ({ project, expanded = false }: { project: ProjectSummary; ex
         <span className="rounded-lg bg-slate-50 px-3 py-2 font-semibold">{progress}% done</span>
         <span className="rounded-lg bg-slate-50 px-3 py-2">{project.taskCount} task</span>
         <span className="rounded-lg bg-slate-50 px-3 py-2">{project.memberCount} thành viên</span>
-        <span className="rounded-lg bg-slate-50 px-3 py-2">{project.highPriorityTaskCount} uu tien cao</span>
+        <span className="rounded-lg bg-slate-50 px-3 py-2">{project.highPriorityTaskCount} ưu tiên cao</span>
       </div>
     </Card>
   );

@@ -26,16 +26,16 @@ public class SnsNotificationAdapter implements NotificationAdapter {
             return;
         }
 
-        String body = "Task " + event.getTaskId() + " reassigned from " + previousAssignee + " to " + event.getAssigneeId() + ". " + event.getMessage();
+        String body = "Công việc " + event.getTaskId() + " đã được gán lại từ " + previousAssignee + " cho " + event.getAssigneeId() + ". " + event.getMessage();
         try {
             snsClient.publish(PublishRequest.builder()
                     .topicArn(topicArn)
-                    .subject("Task reassignment")
+                    .subject("Gán lại công việc")
                     .message(body)
                     .build());
-            log.info("[NOTIFICATION][SNS] Published reassignment for taskId={}", event.getTaskId());
+            log.info("[NOTIFICATION][SNS] Đã công bố gán lại cho taskId={}", event.getTaskId());
         } catch (Exception ex) {
-            log.warn("[NOTIFICATION][SNS] Failed publishing for taskId={}", event.getTaskId(), ex);
+            log.warn("[NOTIFICATION][SNS] Công bố thất bại cho taskId={}", event.getTaskId(), ex);
         }
     }
 }

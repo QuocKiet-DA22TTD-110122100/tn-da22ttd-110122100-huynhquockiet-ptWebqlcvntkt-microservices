@@ -54,10 +54,10 @@ public class PayrollService {
      */
     public PayrollResult calculatePayroll(Long employeeId, YearMonth yearMonth) throws Exception {
         Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found: " + employeeId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên: " + employeeId));
 
         if (employee.getBaseSalary() == null) {
-            throw new IllegalArgumentException("Employee has no base salary configured");
+            throw new IllegalArgumentException("Nhân viên chưa được cấu hình lương cơ bản");
         }
 
         LocalDate periodStart = yearMonth.atDay(1);
@@ -199,9 +199,9 @@ public class PayrollService {
      */
         public PayrollResult approvePayroll(Long payrollId, String approvedBy) throws Exception {
         PayrollResult payroll = payrollResultRepository.findById(payrollId)
-                .orElseThrow(() -> new IllegalArgumentException("Payroll not found: " + payrollId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bảng lương: " + payrollId));
 
-        ensurePayrollStatus(payroll, "DRAFT", "Payroll not in DRAFT status");
+        ensurePayrollStatus(payroll, "DRAFT", "Bảng lương không ở trạng thái DRAFT");
 
         validatePayrollCompliance(payroll);
 
@@ -210,7 +210,7 @@ public class PayrollService {
         payroll.setApprovedAt(LocalDateTime.now());
         PayrollResult updated = payrollResultRepository.save(payroll);
 
-        recordPayrollHistory(updated, "APPROVED", approvedBy, "Payroll approved for processing");
+        recordPayrollHistory(updated, "APPROVED", approvedBy, "Bảng lương đã được phê duyệt để xử lý");
         payrollWorkflowEventPublisher.publishApproved(new PayrollApprovedEvent(
             updated.getId(),
             normalizeActor(approvedBy),
@@ -226,9 +226,9 @@ public class PayrollService {
          */
         public PayrollResult rejectPayroll(Long payrollId, String reason, String rejectorEmail) {
         PayrollResult payroll = payrollResultRepository.findById(payrollId)
-            .orElseThrow(() -> new IllegalArgumentException("Payroll not found: " + payrollId));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bảng lương: " + payrollId));
 
-        ensurePayrollStatus(payroll, "APPROVED", "Payroll not in APPROVED status");
+        ensurePayrollStatus(payroll, "APPROVED", "Bảng lương không ở trạng thái APPROVED");
 
         String normalizedReason = normalizeReason(reason);
         payroll.setStatus("DRAFT");
@@ -250,16 +250,16 @@ public class PayrollService {
          */
         public PayrollResult processPayroll(Long payrollId, String processorEmail) {
         PayrollResult payroll = payrollResultRepository.findById(payrollId)
-            .orElseThrow(() -> new IllegalArgumentException("Payroll not found: " + payrollId));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bảng lương: " + payrollId));
 
-        ensurePayrollStatus(payroll, "APPROVED", "Payroll not in APPROVED status");
+        ensurePayrollStatus(payroll, "APPROVED", "Bảng lương không ở trạng thái APPROVED");
 
         payroll.setStatus("PROCESSED");
         payroll.setProcessedBy(normalizeActor(processorEmail));
         payroll.setProcessedAt(LocalDateTime.now());
 
         PayrollResult updated = payrollResultRepository.save(payroll);
-        recordPayrollHistory(updated, "PROCESSED", processorEmail, "Payroll finalized and locked");
+        recordPayrollHistory(updated, "PROCESSED", processorEmail, "Bảng lương đã hoàn tất và khóa");
         payrollWorkflowEventPublisher.publishProcessed(new PayrollProcessedEvent(
             updated.getId(),
             updated.getEmployee().getId(),
@@ -277,31 +277,31 @@ public class PayrollService {
      * Validate payroll compliance
      */
     public void validatePayrollCompliance(PayrollResult payroll) throws Exception {
-        Objects.requireNonNull(payroll, "payroll is required");
+        Objects.requireNonNull(payroll, "bảng lương là bắt buộc");
         BigDecimal netPay = payroll.getNetPay();
         BigDecimal grossPay = payroll.getGrossPay();
 
         if (netPay == null || grossPay == null) {
-            throw new IllegalArgumentException("Gross and net pay must be present for compliance checks");
+            throw new IllegalArgumentException("Lương gross và net phải có để kiểm tra tuân thủ");
         }
 
         if (netPay.compareTo(grossPay) > 0) {
-            throw new IllegalArgumentException("Net pay cannot exceed gross pay");
+            throw new IllegalArgumentException("Lương net không được vượt quá lương gross");
         }
 
         BigDecimal minNetPay = grossPay.multiply(new BigDecimal("0.50"));
         if (netPay.compareTo(minNetPay) < 0) {
-            logger.warn("Warning: Net pay < 50% of gross. Payroll ID: {}", payroll.getId());
+            logger.warn("Cảnh báo: Lương net < 50% lương gross. Mã bảng lương: {}", payroll.getId());
         }
 
         BigDecimal taxDeduction = payroll.getTaxDeduction() == null ? BigDecimal.ZERO : payroll.getTaxDeduction();
         if (taxDeduction.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Tax deduction cannot be negative");
+            throw new IllegalArgumentException("Khấu trừ thuế không được âm");
         }
 
         BigDecimal maxTax = grossPay.multiply(new BigDecimal("0.40"));
         if (taxDeduction.compareTo(maxTax) > 0) {
-            logger.warn("Warning: Tax > 40% of gross. Payroll ID: {}", payroll.getId());
+            logger.warn("Cảnh báo: Thuế > 40% lương gross. Mã bảng lương: {}", payroll.getId());
         }
 
         logger.info("Payroll {} passed compliance validation", payroll.getId());
@@ -326,7 +326,7 @@ public class PayrollService {
 
     private void ensurePayrollStatus(PayrollResult payroll, String expectedStatus, String errorMessage) {
         if (!expectedStatus.equals(payroll.getStatus())) {
-            throw new IllegalStateException(errorMessage + ": current status is " + payroll.getStatus());
+            throw new IllegalStateException(errorMessage + ": trạng thái hiện tại là " + payroll.getStatus());
         }
     }
 
@@ -339,11 +339,11 @@ public class PayrollService {
 
     private String normalizeReason(String reason) {
         if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException("reason is required");
+            throw new IllegalArgumentException("lý do là bắt buộc");
         }
         String normalized = reason.trim();
         if (normalized.length() > 500) {
-            throw new IllegalArgumentException("reason must be 500 characters or less");
+            throw new IllegalArgumentException("lý do phải từ 500 ký tự trở xuống");
         }
         return normalized;
     }

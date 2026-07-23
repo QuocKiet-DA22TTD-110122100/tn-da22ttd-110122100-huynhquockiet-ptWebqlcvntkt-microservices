@@ -62,7 +62,7 @@ public class DiscoveryController {
                 generateHashCode(applications)
             );
             
-            logger.debug("Tra ve {} ung dung voi tong {} instance", 
+            logger.debug("Trả về {} ứng dụng với tổng {} instance", 
                         applications.size(), 
                         applications.stream().mapToInt(Application::size).sum());
             
@@ -84,7 +84,7 @@ public class DiscoveryController {
         
         if (!serviceRegistry.hasApplication(appName) || serviceRegistry.getInstances(appName).isEmpty()) {
             logger.debug("ứng dụng không tìm thấy: {}", appName);
-            throw new ResourceNotFoundException("Ung dung " + appName + " khong tim thay hoac khong co instance nao dang hoat dong");
+            throw new ResourceNotFoundException("Ứng dụng " + appName + " không tìm thấy hoặc không có instance nào đang hoạt động");
         }
         
         List<InstanceInfo> instances = serviceRegistry.getInstances(appName);
@@ -94,7 +94,7 @@ public class DiscoveryController {
         
         ApplicationResponse response = new ApplicationResponse(application);
         
-        logger.debug("Tra ve ung dung {} voi {} instance", appName, instances.size());
+        logger.debug("Trả về ứng dụng {} với {} instance", appName, instances.size());
         
         return ResponseEntity.ok(response);
     }
@@ -134,14 +134,14 @@ public class DiscoveryController {
                 generateHashCode(deltaApplications)
             );
             
-            logger.debug("Tra ve delta voi {} ung dung va tong {} instance", 
+            logger.debug("Trả về delta với {} ứng dụng và tổng {} instance", 
                         deltaApplications.size(),
                         deltaApplications.stream().mapToInt(Application::size).sum());
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            logger.error("Loi khi lay delta ung dung: {}", e.getMessage(), e);
+            logger.error("Lỗi khi lấy delta ứng dụng: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -154,18 +154,18 @@ public class DiscoveryController {
             @PathVariable String appName,
             @PathVariable String instanceId) {
         
-        logger.debug("Nhan yeu cau lay instance {}/{}", appName, instanceId);
+        logger.debug("Nhận yêu cầu lấy instance {}/{}", appName, instanceId);
         
         InstanceInfo instance = serviceRegistry.getInstance(appName, instanceId);
         
         if (instance == null) {
-            logger.debug("Khong tim thay instance: {}/{}", appName, instanceId);
-            throw new ResourceNotFoundException("Khong tim thay instance " + instanceId + " cho ung dung " + appName);
+            logger.debug("Không tìm thấy instance: {}/{}", appName, instanceId);
+            throw new ResourceNotFoundException("Không tìm thấy instance " + instanceId + " cho ứng dụng " + appName);
         }
         
         InstanceResponse response = new InstanceResponse(instance);
         
-        logger.debug("Tra ve instance {}/{}", appName, instanceId);
+        logger.debug("Trả về instance {}/{}", appName, instanceId);
         
         return ResponseEntity.ok(response);
     }
@@ -177,13 +177,13 @@ public class DiscoveryController {
     public ResponseEntity<ApplicationsResponse> getApplicationsByStatus(
             @RequestParam("status") String status) {
         
-        logger.debug("Nhan yeu cau lay ung dung theo trang thai: {}", status);
+        logger.debug("Nhận yêu cầu lấy ứng dụng theo trạng thái: {}", status);
         
         InstanceStatus instanceStatus;
         try {
             instanceStatus = InstanceStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            logger.warn("Tham so status khong hop le: {}", status);
+            logger.warn("Tham số status không hợp lệ: {}", status);
             throw e;
         }
         
@@ -209,7 +209,7 @@ public class DiscoveryController {
             generateHashCode(filteredApplications)
         );
         
-        logger.debug("Tra ve {} ung dung voi trang thai {} gom tong {} instance", 
+        logger.debug("Trả về {} ứng dụng với trạng thái {} gồm tổng {} instance", 
                     filteredApplications.size(), status,
                     filteredApplications.stream().mapToInt(Application::size).sum());
         

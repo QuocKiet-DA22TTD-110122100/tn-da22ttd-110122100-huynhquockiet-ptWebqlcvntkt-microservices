@@ -1,4 +1,5 @@
 import { ReactNode, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -37,7 +38,10 @@ export const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
   if (!isOpen) return null;
 
-  return (
+  // Portal to <body>: ancestors with transform/will-change (page-enter,
+  // animate-fade-up) create containing blocks that trap position:fixed,
+  // pushing tall modals partly off-screen.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
         type="button"
@@ -69,6 +73,7 @@ export const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         </div>
         <div className="overflow-y-auto p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

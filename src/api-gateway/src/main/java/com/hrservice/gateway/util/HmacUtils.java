@@ -58,7 +58,7 @@ public final class HmacUtils {
             return HexFormat.of().formatHex(encodedHash);
 
         } catch (NoSuchAlgorithmException e) {
-            throw new HmacOperationException("Error hashing content", e);
+            throw new HmacOperationException("Lỗi băm nội dung", e);
         }
     }
 

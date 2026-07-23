@@ -191,12 +191,12 @@ public class CustomRateLimitFilter implements GlobalFilter, Ordered {
         Map<String, Object> errorBody = new HashMap<>();
         errorBody.put("timestamp", LocalDateTime.now().toString());
         errorBody.put("status", 429);
-        errorBody.put("error", "Too Many Requests");
+        errorBody.put("error", "Quá nhiều yêu cầu");
         errorBody.put("message", "Bạn đang gửi request quá nhanh. Giới hạn: " + policy.limit() + " request/" + policy.window().getSeconds() + "s cho " + policy.name());
         errorBody.put("path", exchange.getRequest().getPath().value());
         errorBody.put("ip", ip);
         errorBody.put("currentRequests", currentCount);
-        errorBody.put("retryAfter", policy.window().toSeconds() + " seconds");
+        errorBody.put("retryAfter", policy.window().toSeconds() + " giây");
         errorBody.put("policy", policy.name());
         errorBody.put("limit", policy.limit());
         errorBody.put("windowSeconds", policy.window().toSeconds());
@@ -208,8 +208,8 @@ public class CustomRateLimitFilter implements GlobalFilter, Ordered {
             try {
                 return objectMapper.writeValueAsBytes(errorBody);
             } catch (Exception e) {
-                log.error("Error writing rate limit response", e);
-                return "{\"error\":\"Rate limit exceeded\"}".getBytes();
+                log.error("Lỗi ghi phản hồi giới hạn tốc độ", e);
+                return "{\"error\":\"Vượt quá giới hạn tốc độ\"}".getBytes();
             }
     }
 

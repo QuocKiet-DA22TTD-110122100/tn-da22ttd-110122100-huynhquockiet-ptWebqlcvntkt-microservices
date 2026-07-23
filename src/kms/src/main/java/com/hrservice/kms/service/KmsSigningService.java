@@ -36,7 +36,7 @@ public class KmsSigningService {
         try {
             return generateNewKeyPair();
         } catch (Exception e) {
-            throw new KmsSigningException("Failed to initialize KMS keys", e);
+            throw new KmsSigningException("Không thể khởi tạo khóa KMS", e);
         }
     }
 
@@ -61,7 +61,7 @@ public class KmsSigningService {
             this.currentKeyId = keyId;
             return keyId;
         } catch (Exception e) {
-            throw new KmsSigningException("Failed to generate key pair", e);
+            throw new KmsSigningException("Không thể tạo cặp khóa", e);
         }
     }
 
@@ -72,7 +72,7 @@ public class KmsSigningService {
         try {
             KeyPair keyPair = keyStore.get(currentKeyId);
             if (keyPair == null) {
-                throw new IllegalStateException("Current key not found");
+                throw new IllegalStateException("Không tìm thấy khóa hiện tại");
             }
 
             Signature signer = Signature.getInstance(ED25519);
@@ -84,7 +84,7 @@ public class KmsSigningService {
 
             return new SigningResult(currentKeyId, "EdDSA", signatureBase64);
         } catch (Exception e) {
-            throw new KmsSigningException("Failed to sign message", e);
+            throw new KmsSigningException("Không thể ký thông điệp", e);
         }
     }
 
@@ -96,7 +96,7 @@ public class KmsSigningService {
         try {
             KeyPair keyPair = keyStore.get(keyId);
             if (keyPair == null) {
-                throw new IllegalArgumentException("Key not found: " + keyId);
+                throw new IllegalArgumentException("Không tìm thấy khóa: " + keyId);
             }
 
             PublicKey publicKey = keyPair.getPublic();
@@ -116,7 +116,7 @@ public class KmsSigningService {
 
             return jwk;
         } catch (Exception e) {
-            throw new KmsSigningException("Failed to get JWK", e);
+            throw new KmsSigningException("Không thể lấy JWK", e);
         }
     }
 
@@ -134,7 +134,7 @@ public class KmsSigningService {
             jwks.put("keys", keys);
             return jwks;
         } catch (Exception e) {
-            throw new KmsSigningException("Failed to get JWKS", e);
+            throw new KmsSigningException("Không thể lấy JWKS", e);
         }
     }
 

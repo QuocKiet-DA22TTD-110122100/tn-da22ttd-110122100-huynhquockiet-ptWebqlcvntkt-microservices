@@ -78,7 +78,7 @@ public class UserSyncService {
     @Transactional
     public SyncStatusView retrySync(UUID userId) {
         UserSyncOutbox outbox = outboxRepository.findTopByUserIdOrderByCreatedAtDesc(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Sync state not found for userId=" + userId));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy trạng thái đồng bộ cho userId=" + userId));
 
         outbox.setStatus(UserSyncStatus.PENDING);
         outbox.setRetryCount(0);
@@ -165,7 +165,7 @@ public class UserSyncService {
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (JsonProcessingException ex) {
-            return "{\"error\":\"payload serialization failed\"}";
+            return "{\"error\":\"tuần tự hóa payload thất bại\"}";
         }
     }
 

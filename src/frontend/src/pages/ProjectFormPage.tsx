@@ -84,11 +84,11 @@ export const ProjectFormPage = () => {
     const normalizedLeadId = Number(form.leadId);
 
     if (!normalizedName) {
-      nextFieldErrors.name = 'Ten du an la bat buoc.';
+      nextFieldErrors.name = 'Tên dự án là bắt buộc.';
     }
 
     if (!Number.isFinite(normalizedLeadId) || normalizedLeadId < 1) {
-      nextFieldErrors.leadId = 'Vui long chon truong du an hop le.';
+      nextFieldErrors.leadId = 'Vui lòng chọn trưởng dự án hợp lệ.';
     }
 
     setFieldErrors(nextFieldErrors);

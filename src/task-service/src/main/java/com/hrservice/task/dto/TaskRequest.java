@@ -6,20 +6,20 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record TaskRequest(
-        @NotBlank(message = "title is required")
-        @Size(max = 255, message = "title must not exceed 255 characters")
+        @NotBlank(message = "tiêu đề là bắt buộc")
+        @Size(max = 255, message = "tiêu đề không được vượt quá 255 ký tự")
         String title,
 
-        @Size(max = 2000, message = "description must not exceed 2000 characters")
+        @Size(max = 2000, message = "mô tả không được vượt quá 2000 ký tự")
         String description,
 
         Task.TaskStatus status,
 
         Task.TaskPriority priority,
 
-        @NotNull(message = "assigneeId is required")
+        @NotNull(message = "assigneeId là bắt buộc")
         Long assigneeId,
 
-        @NotNull(message = "projectId is required")
+        @NotNull(message = "projectId là bắt buộc")
         Long projectId
 ) {}

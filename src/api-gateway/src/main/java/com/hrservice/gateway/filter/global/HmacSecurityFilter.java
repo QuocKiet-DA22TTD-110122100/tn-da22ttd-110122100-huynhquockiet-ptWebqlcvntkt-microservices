@@ -56,7 +56,7 @@ public class HmacSecurityFilter implements GlobalFilter, Ordered {
 
         if (hmac.isInvalid()) {
             log.debug("HMAC headers are missing or invalid. Received header names: {}", request.getHeaders().keySet());
-            return onError(exchange, "Missing security headers", HttpStatus.UNAUTHORIZED);
+            return onError(exchange, "Thiếu header bảo mật", HttpStatus.UNAUTHORIZED);
         }
 
         return validateNonce(hmac.nonce())
@@ -124,7 +124,7 @@ public class HmacSecurityFilter implements GlobalFilter, Ordered {
 
     private Mono<Void> verifyHmacStep(ServerWebExchange exchange, HmacHeaders hmac, String bodyHash) {
         return keyProvider.getSecretKey(hmac.accessKeyId())
-                .switchIfEmpty(Mono.error(new HmacAuthenticationException("Access key ID does not exist")))
+                .switchIfEmpty(Mono.error(new HmacAuthenticationException("Access key ID không tồn tại")))
                 .flatMap(secretKey -> {
                     String dataToSign = HmacUtils.buildCanonicalString(
                             Objects.requireNonNullElse(exchange.getRequest().getMethod(), HttpMethod.GET).name(),
@@ -137,7 +137,7 @@ public class HmacSecurityFilter implements GlobalFilter, Ordered {
                     if (HmacUtils.verifySignature(dataToSign, secretKey, hmac.signature())) {
                         return Mono.empty();
                     }
-                    return Mono.error(new HmacAuthenticationException("Invalid signature"));
+                    return Mono.error(new HmacAuthenticationException("Chữ ký không hợp lệ"));
                 });
     }
 
@@ -147,7 +147,7 @@ public class HmacSecurityFilter implements GlobalFilter, Ordered {
                 .setIfAbsent(nonceKey, "1", NONCE_TTL)
                 .flatMap(isNew -> Boolean.TRUE.equals(isNew)
                         ? Mono.empty()
-                        : Mono.error(new HmacAuthenticationException("Duplicate request")));
+                        : Mono.error(new HmacAuthenticationException("Yêu cầu trùng lặp")));
     }
 
     private Mono<Void> validateTimestamp(String timestamp) {
@@ -156,11 +156,11 @@ public class HmacSecurityFilter implements GlobalFilter, Ordered {
             long currentTime = System.currentTimeMillis() / 1000;
 
             if (Math.abs(currentTime - requestTime) > MAX_CLOCK_SKEW_SECONDS) {
-                return Mono.error(new HmacAuthenticationException("Request expired"));
+                return Mono.error(new HmacAuthenticationException("Yêu cầu đã hết hạn"));
             }
             return Mono.empty();
         } catch (NumberFormatException ex) {
-            return Mono.error(new HmacAuthenticationException("Invalid timestamp format", ex));
+            return Mono.error(new HmacAuthenticationException("Định dạng timestamp không hợp lệ", ex));
         }
     }
 

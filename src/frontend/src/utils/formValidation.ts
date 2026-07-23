@@ -127,7 +127,7 @@ export const validateMinLength = (min: number, fieldName: string) => (value?: st
  */
 export const validateMaxLength = (max: number, fieldName: string) => (value?: string): string | true => {
   if (value && value.length > max) {
-    return `${fieldName} không được vĐặt quá ${max} kỳ từ`;
+    return `${fieldName} không được vượt quá ${max} ký tự`;
   }
   return true;
 };

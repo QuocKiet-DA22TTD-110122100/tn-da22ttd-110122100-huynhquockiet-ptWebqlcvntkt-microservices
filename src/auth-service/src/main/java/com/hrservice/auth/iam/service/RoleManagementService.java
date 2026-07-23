@@ -64,7 +64,7 @@ public class RoleManagementService {
     public RoleView createRole(String name, String description, List<String> permissions) {
         String normalizedName = normalizeRoleName(name);
         if (roleDefinitionRepository.existsById(normalizedName)) {
-            throw new IllegalArgumentException("Role already exists");
+            throw new IllegalArgumentException("Vai trò đã tồn tại");
         }
 
         RoleDefinition role = new RoleDefinition();
@@ -80,7 +80,7 @@ public class RoleManagementService {
     public RoleView updateRole(String name, String description, List<String> permissions) {
         String normalizedName = normalizeRoleName(name);
         RoleDefinition role = roleDefinitionRepository.findById(normalizedName)
-            .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
 
         role.setDescription(validateDescription(description));
         role.setPermissions(String.join(",", validatePermissions(permissions)));
@@ -92,15 +92,15 @@ public class RoleManagementService {
     public void deleteRole(String name) {
         String normalizedName = normalizeRoleName(name);
         RoleDefinition role = roleDefinitionRepository.findById(normalizedName)
-            .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
 
         if (role.isSystemRole()) {
-            throw new IllegalArgumentException("System role cannot be deleted");
+            throw new IllegalArgumentException("Không thể xóa vai trò hệ thống");
         }
 
         long userCount = userRepository.countByRoleIgnoreCase(normalizedName);
         if (userCount > 0) {
-            throw new IllegalArgumentException("Role is still assigned to users");
+            throw new IllegalArgumentException("Vai trò vẫn đang được gán cho người dùng");
         }
 
         roleDefinitionRepository.delete(role);
@@ -117,12 +117,12 @@ public class RoleManagementService {
 
     private String normalizeRoleName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Role name is required");
+            throw new IllegalArgumentException("Tên vai trò là bắt buộc");
         }
 
         String normalized = name.trim().toUpperCase(Locale.ROOT).replaceAll("\\s+", "_");
         if (!ROLE_NAME_PATTERN.matcher(normalized).matches()) {
-            throw new IllegalArgumentException("Role name must be 2-50 characters and contain only A-Z, 0-9, underscore");
+            throw new IllegalArgumentException("Tên vai trò phải từ 2-50 ký tự và chỉ bao gồm A-Z, 0-9, gạch dưới");
         }
 
         return normalized;
@@ -130,12 +130,12 @@ public class RoleManagementService {
 
     private String validateDescription(String description) {
         if (description == null || description.isBlank()) {
-            throw new IllegalArgumentException("Role description is required");
+            throw new IllegalArgumentException("Mô tả vai trò là bắt buộc");
         }
 
         String normalized = description.trim();
         if (normalized.length() < 10 || normalized.length() > 500) {
-            throw new IllegalArgumentException("Role description must be 10-500 characters");
+            throw new IllegalArgumentException("Mô tả vai trò phải từ 10-500 ký tự");
         }
 
         return normalized;
@@ -143,7 +143,7 @@ public class RoleManagementService {
 
     private List<String> validatePermissions(List<String> permissions) {
         if (permissions == null || permissions.isEmpty()) {
-            throw new IllegalArgumentException("At least one permission is required");
+            throw new IllegalArgumentException("Cần ít nhất một quyền");
         }
 
         LinkedHashSet<String> normalized = new LinkedHashSet<>();
@@ -154,13 +154,13 @@ public class RoleManagementService {
 
             String value = permission.trim().toUpperCase(Locale.ROOT);
             if (!KNOWN_PERMISSIONS.contains(value)) {
-                throw new IllegalArgumentException("Unknown permission: " + value);
+                throw new IllegalArgumentException("Quyền không xác định: " + value);
             }
             normalized.add(value);
         }
 
         if (normalized.isEmpty()) {
-            throw new IllegalArgumentException("At least one permission is required");
+            throw new IllegalArgumentException("Cần ít nhất một quyền");
         }
 
         return List.copyOf(normalized);

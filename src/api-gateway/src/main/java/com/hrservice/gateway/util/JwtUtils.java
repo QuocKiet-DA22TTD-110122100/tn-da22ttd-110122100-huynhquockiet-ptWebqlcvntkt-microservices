@@ -52,12 +52,12 @@ public class JwtUtils {
 
     public Mono<Map<String, Object>> validateAndExtract(String token) {
         if (token == null || token.isBlank()) {
-            return Mono.error(new IllegalArgumentException("Token is required"));
+            return Mono.error(new IllegalArgumentException("Token là bắt buộc"));
         }
 
         String[] parts = token.split("\\.");
         if (parts.length != 3) {
-            return Mono.error(new SecurityException("Invalid token format"));
+            return Mono.error(new SecurityException("Định dạng token không hợp lệ"));
         }
 
         Map<String, Object> header;
@@ -67,17 +67,17 @@ public class JwtUtils {
             header = readJsonMap(decodeBase64Url(parts[0]));
             payload = readJsonMap(decodeBase64Url(parts[1]));
         } catch (RuntimeException ex) {
-            return Mono.error(new SecurityException("Invalid token payload", ex));
+            return Mono.error(new SecurityException("Token payload không hợp lệ", ex));
         }
 
         String alg = stringClaim(header, "alg");
         if (!JWT_ALG.equals(alg)) {
-            return Mono.error(new SecurityException("Unsupported JWT algorithm"));
+            return Mono.error(new SecurityException("Thuật toán JWT không được hỗ trợ"));
         }
 
         String kid = stringClaim(header, "kid");
         if (kid == null || kid.isBlank()) {
-            return Mono.error(new SecurityException("Missing kid in JWT header"));
+            return Mono.error(new SecurityException("Thiếu kid trong header JWT"));
         }
 
         String signingInput = parts[0] + "." + parts[1];
@@ -108,14 +108,14 @@ public class JwtUtils {
             .uri(Objects.requireNonNull(jwksUri, "jwksUri must not be null"))
                 .retrieve()
                 .bodyToMono(JwksResponse.class)
-                .switchIfEmpty(Mono.error(new SecurityException("JWKS response is empty")))
+                .switchIfEmpty(Mono.error(new SecurityException("Phản hồi JWKS trống")))
                 .map(response -> cacheAndFindKey(kid, response))
-                .doOnError(ex -> log.warn("Failed to load JWKS from {}: {}", jwksUri, ex.getMessage()));
+                .doOnError(ex -> log.warn("Không thể tải JWKS từ {}: {}", jwksUri, ex.getMessage()));
     }
 
     private PublicKey cacheAndFindKey(String kid, JwksResponse response) {
         if (response.keys() == null || response.keys().isEmpty()) {
-            throw new SecurityException("JWKS has no keys");
+            throw new SecurityException("JWKS không có khóa");
         }
 
         Instant expiresAt = Instant.now().plusSeconds(Math.max(30, jwksCacheSeconds));
@@ -135,7 +135,7 @@ public class JwtUtils {
         }
 
         if (requestedKey == null) {
-            throw new SecurityException("Unknown key id in JWT header");
+            throw new SecurityException("Key id không xác định trong header JWT");
         }
 
         return requestedKey;
@@ -155,7 +155,7 @@ public class JwtUtils {
         try {
             byte[] rawPublicKey = decodeBase64Url(x);
             if (rawPublicKey.length != 32) {
-                throw new SecurityException("Invalid Ed25519 public key length");
+                throw new SecurityException("Độ dài khóa công khai Ed25519 không hợp lệ");
             }
 
             byte[] spkiPrefix = new byte[] {
@@ -167,7 +167,7 @@ public class JwtUtils {
             KeyFactory keyFactory = KeyFactory.getInstance(JWK_CURVE);
             return keyFactory.generatePublic(new X509EncodedKeySpec(spki));
         } catch (GeneralSecurityException ex) {
-            throw new IllegalStateException("Failed to create Ed25519 public key", ex);
+            throw new IllegalStateException("Không thể tạo khóa công khai Ed25519", ex);
         }
     }
 
@@ -179,17 +179,17 @@ public class JwtUtils {
 
             byte[] signatureBytes = decodeBase64Url(encodedSignature);
             if (!verifier.verify(signatureBytes)) {
-                throw new SecurityException("Invalid JWT signature");
+                throw new SecurityException("Chữ ký JWT không hợp lệ");
             }
         } catch (GeneralSecurityException ex) {
-            throw new IllegalStateException("Failed to verify JWT signature", ex);
+            throw new IllegalStateException("Không thể xác minh chữ ký JWT", ex);
         }
     }
 
     private void validateExpiration(Map<String, Object> payload) {
         Object expObj = payload.get("exp");
         if (expObj == null) {
-            throw new SecurityException("Missing exp claim");
+            throw new SecurityException("Thiếu trường exp");
         }
 
         long exp;
@@ -201,7 +201,7 @@ public class JwtUtils {
 
         long now = Instant.now().getEpochSecond();
         if (now >= exp) {
-            throw new SecurityException("Token expired");
+            throw new SecurityException("Token đã hết hạn");
         }
     }
 
@@ -210,7 +210,7 @@ public class JwtUtils {
             return objectMapper.readValue(bytes, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Invalid JSON payload", ex);
+            throw new IllegalArgumentException("JSON payload không hợp lệ", ex);
         }
     }
 

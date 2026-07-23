@@ -25,6 +25,8 @@ import { WorkspaceStatusList } from '@/components/Workspace/WorkspaceStatusList'
 import { WorkspaceDefinition, WorkspaceItem, WorkspaceMetric } from '@/components/Workspace/types';
 import { LeaveCalendarModal } from '@/components/Workspace/LeaveCalendarModal';
 import { resolveWorkspaceRole } from '@/config/roleExperience';
+import { auditApi, AuditLogEntry } from '@/api/audit.api';
+import { authApi, MyAccountResponse } from '@/api/auth.api';
 import { roleApi } from '@/api/role.api';
 import { userApi } from '@/api/user.api';
 import { useAuthStore } from '@/store/authStore';
@@ -648,11 +650,114 @@ const workspaceDefinitions: Record<string, WorkspaceDefinition> = {
   },
 };
 
+const buildAccountSecurityFromUser = (
+  account: MyAccountResponse,
+): { metrics: WorkspaceMetric[]; items: WorkspaceItem[] } => {
+  const passwordAge = account.passwordUpdatedAt
+    ? Math.floor((Date.now() - new Date(account.passwordUpdatedAt).getTime()) / 86_400_000)
+    : 0;
+  const passwordStatus = passwordAge > 80 ? 'Cần đổi' : passwordAge > 60 ? 'Sắp hết hạn' : 'Ổn định';
+
+  const metrics: WorkspaceMetric[] = [
+    { label: 'Trạng thái', value: account.locked ? 'Bị khóa' : 'Hoạt động', hint: account.locked ? 'Liên hệ admin để mở khóa' : 'Tài khoản có thể đăng nhập' },
+    { label: 'Mật khẩu', value: passwordStatus, hint: `Đã dùng ${passwordAge} ngày` },
+    { label: 'Quyền', value: account.role, hint: 'Menu được lọc theo quyền hiện tại' },
+  ];
+
+  const items: WorkspaceItem[] = [
+    {
+      title: 'Thông tin tài khoản',
+      description: `Tên đăng nhập: ${account.username}. Vai trò: ${account.role}. Trạng thái: ${account.locked ? 'Bị khóa' : 'Hoạt động'}.`,
+      owner: 'Tôi',
+      meta: 'Hồ sơ',
+      status: account.locked ? 'blocked' as const : 'approved' as const,
+      priority: 'normal' as const,
+      due: 'Luôn bật',
+      nextStep: 'Mở hồ sơ để kiểm tra thông tin liên hệ.',
+    },
+    {
+      title: 'Mật khẩu đăng nhập',
+      description: `Đã dùng ${passwordAge} ngày. Xác thực hai yếu tố: ${account.twoFactorEnabled ? 'Đã bật' : 'Chưa bật'}.`,
+      owner: 'Tôi',
+      meta: 'Bảo mật',
+      status: passwordAge > 80 ? 'blocked' as const : passwordAge > 60 ? 'inProgress' as const : 'approved' as const,
+      priority: passwordAge > 80 ? 'high' as const : 'medium' as const,
+      due: passwordAge > 80 ? 'Khẩn cấp' : 'Theo chính sách',
+      nextStep: passwordAge > 80
+        ? 'Đổi mật khẩu ngay để tránh bị khóa tài khoản.'
+        : passwordAge > 60
+          ? 'Đổi mật khẩu định kỳ để giảm rủi ro truy cập trái phép.'
+          : 'Mật khẩu còn hạn, kiểm tra khi có thông báo.',
+    },
+    {
+      title: 'Quyền truy cập hiện tại',
+      description: `Vai trò ${account.role} — phạm vi truy cập phụ thuộc vào role được cấp.`,
+      owner: 'Hệ thống',
+      meta: 'RBAC',
+      status: 'inProgress' as const,
+      priority: 'normal' as const,
+      due: 'Khi role thay đổi',
+      nextStep: 'Liên hệ admin nếu thiếu quyền cần thiết cho công việc.',
+    },
+  ];
+
+  return { metrics, items };
+};
+
 const PRIVILEGED_ROLES = new Set(['ADMIN', 'HR_MANAGER']);
 
-// Audit chưa có bảng log lịch sử ở backend; ở đây tổng hợp trạng thái THẬT
-// hiện tại từ auth-service (tài khoản khóa, quyền cao, role) thành các mục
-// cần rà soát — thay cho số liệu mẫu viết cứng trước đây.
+const EVENT_LABELS: Record<string, { meta: string; status: WorkspaceItem['status']; priority: WorkspaceItem['priority'] }> = {
+  LOGIN_SUCCESS: { meta: 'Auth', status: 'approved', priority: 'normal' },
+  LOGIN_MFA_REQUIRED: { meta: 'Auth', status: 'inProgress', priority: 'medium' },
+  USER_CREATE: { meta: 'User', status: 'approved', priority: 'normal' },
+  USER_UPDATE: { meta: 'User', status: 'inProgress', priority: 'normal' },
+  USER_DELETE: { meta: 'User', status: 'approved', priority: 'high' },
+  ACCOUNT_LOCK: { meta: 'Security', status: 'blocked', priority: 'high' },
+  ACCOUNT_UNLOCK: { meta: 'Security', status: 'approved', priority: 'medium' },
+  PASSWORD_CHANGE: { meta: 'Security', status: 'approved', priority: 'normal' },
+  ROLE_CREATE: { meta: 'Role', status: 'approved', priority: 'normal' },
+  ROLE_UPDATE: { meta: 'Role', status: 'inProgress', priority: 'medium' },
+  ROLE_DELETE: { meta: 'Role', status: 'approved', priority: 'high' },
+};
+
+const formatEventTime = (iso: string): string => {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' phút trước';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + ' giờ trước';
+  return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+};
+
+const buildAuditFromLogs = (logs: AuditLogEntry[]): { metrics: WorkspaceMetric[]; items: WorkspaceItem[] } => {
+  const counts: Record<string, number> = {};
+  for (const log of logs) {
+    counts[log.eventType] = (counts[log.eventType] || 0) + 1;
+  }
+
+  const metrics: WorkspaceMetric[] = [
+    { label: 'Sự kiện gần đây', value: String(logs.length), hint: 'Bao gồm auth, user, role, security' },
+    { label: 'Đăng nhập', value: String(counts['LOGIN_SUCCESS'] || 0), hint: 'Lần đăng nhập thành công' },
+    { label: 'Thay đổi quyền', value: String((counts['ROLE_CREATE'] || 0) + (counts['ROLE_UPDATE'] || 0) + (counts['ROLE_DELETE'] || 0)), hint: 'Tạo/sửa/xóa vai trò' },
+  ];
+
+  const items: WorkspaceItem[] = logs.map((log) => {
+    const mapped = EVENT_LABELS[log.eventType] ?? { meta: 'Khác', status: 'inProgress' as const, priority: 'normal' as const };
+    return {
+      title: log.description ?? log.eventType,
+      description: `${log.actorUsername ?? 'Hệ thống'} — IP: ${log.ipAddress ?? 'N/A'}`,
+      owner: log.actorUsername ?? 'Hệ thống',
+      meta: mapped.meta,
+      status: mapped.status,
+      priority: mapped.priority,
+      due: formatEventTime(log.createdAt),
+      nextStep: '',
+    };
+  });
+
+  return { metrics, items };
+};
+
 const buildAuditFromUsers = (
   users: Array<{ locked: boolean; role: string }>,
   roleCount: number | null,
@@ -749,12 +854,44 @@ export const RoleWorkspacePage = () => {
     setAuditMetrics(null);
   }, [slug]);
 
-  // Nạp dữ liệu Audit thật; lỗi/thiếu quyền → giữ số tĩnh của định nghĩa (không làm vỡ trang).
+  // Nạp dữ liệu tài khoản thật cho account-security; lỗi → giữ mock.
+  useEffect(() => {
+    if (slug !== 'account-security') return;
+    let cancelled = false;
+
+    void (async () => {
+      const account = await authApi.getMyAccount().catch(() => null);
+      if (cancelled || !account) return;
+
+      const { metrics, items } = buildAccountSecurityFromUser(account);
+      setAuditMetrics(metrics); // reuse auditMetrics slot for account-security
+      if (items.length > 0) setItems(items);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  // Nạp dữ liệu Audit từ audit_log API; fallback về user/role nếu API chưa có dữ liệu.
   useEffect(() => {
     if (slug !== 'audit') return;
     let cancelled = false;
 
     void (async () => {
+      const page = await auditApi.getLogs({ size: 50 }).catch(() => null);
+      if (cancelled) return;
+
+      if (page && page.content.length > 0) {
+        const { metrics, items: auditItems } = buildAuditFromLogs(page.content);
+        if (!cancelled) {
+          setAuditMetrics(metrics);
+          if (auditItems.length > 0) setItems(auditItems);
+        }
+        return;
+      }
+
+      // Fallback: tổng hợp từ user/role API
       const [users, roleCount] = await Promise.all([
         userApi.getAll().then((r) => r.data).catch(() => null),
         roleApi.getAll().then((r) => r.data.length).catch(() => null),

@@ -15,7 +15,7 @@ public class SecurityValidator {
     public void enforceGatewayAccess(HttpServletRequest request) {
         String incomingSecret = request.getHeader("X-Internal-Secret");
         if (incomingSecret == null || !incomingSecret.equals(internalSecret)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid credentials or missing X-Internal-Secret header");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Thông tin xác thực không hợp lệ hoặc thiếu header X-Internal-Secret");
         }
     }
 
@@ -28,7 +28,7 @@ public class SecurityValidator {
             || containsRole(roles, "ROLE_ADMIN");
 
         if (!isAdmin) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin role is required");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Yêu cầu vai trò quản trị viên");
         }
     }
 
@@ -53,7 +53,7 @@ public class SecurityValidator {
             || containsRole(roles, "ROLE_ADMIN");
 
         if (!allowed) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "HR admin, HR manager, payroll officer, or admin role is required");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Yêu cầu vai trò HR admin, HR manager, payroll officer hoặc admin");
         }
     }
 
@@ -70,7 +70,7 @@ public class SecurityValidator {
             || containsRole(roles, "ROLE_ADMIN");
 
         if (!allowed) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Payroll officer or admin role is required");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Yêu cầu vai trò payroll officer hoặc admin");
         }
     }
 
@@ -87,7 +87,7 @@ public class SecurityValidator {
             || containsRole(roles, "ROLE_ADMIN");
 
         if (!allowed) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Compliance officer or admin role is required");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Yêu cầu vai trò compliance officer hoặc admin");
         }
     }
 

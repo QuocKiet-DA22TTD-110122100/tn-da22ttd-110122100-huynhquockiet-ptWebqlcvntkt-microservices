@@ -26,26 +26,26 @@ public class PayrollWorkflowEventPublisher {
     public void publishApproved(PayrollApprovedEvent event) {
         try {
             if (rabbitTemplate == null) {
-                logger.debug("RabbitTemplate is not available; skipping payroll.approved event publish");
+                logger.debug("RabbitTemplate không khả dụng; bỏ qua việc công bố sự kiện payroll.approved");
                 return;
             }
 
             rabbitTemplate.convertAndSend("payroll.workflow", "payroll.approved", event);
         } catch (Exception ex) {
-            logger.warn("Failed to publish payroll.approved event", ex);
+            logger.warn("Không thể công bố sự kiện payroll.approved", ex);
         }
     }
 
     public void publishProcessed(PayrollProcessedEvent event) {
         try {
             if (rabbitTemplate == null) {
-                logger.debug("RabbitTemplate is not available; skipping payroll.processed event publish");
+                logger.debug("RabbitTemplate không khả dụng; bỏ qua việc công bố sự kiện payroll.processed");
                 return;
             }
 
             rabbitTemplate.convertAndSend("payroll.workflow", "payroll.processed", event);
         } catch (Exception ex) {
-            logger.warn("Failed to publish payroll.processed event", ex);
+            logger.warn("Không thể công bố sự kiện payroll.processed", ex);
         }
     }
 }

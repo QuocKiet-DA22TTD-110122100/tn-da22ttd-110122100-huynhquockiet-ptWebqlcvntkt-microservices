@@ -117,8 +117,13 @@ services:
       HR_SYNC_ENABLED: "true"
       HR_SYNC_BASE_URL: http://hr-service:8082
       HR_SYNC_INTERNAL_SECRET: ${INTERNAL_SECRET}
+      # Lighter Argon2 params for local/demo only (faster login on a RAM-capped box).
+      # Production keeps the strong defaults baked into AuthService (m=16384, t=2).
+      AUTH_ARGON2_MEMORY: "4096"
+      AUTH_ARGON2_ITERATIONS: "1"
       LOGGING_LEVEL_ROOT: INFO
-      JAVA_OPTS: "-Xmx256m -Xms128m"
+      # Argon2 is memory-hard; give the auth JVM extra heap so verify() doesn't GC-thrash and time out.
+      JAVA_OPTS: "-Xmx512m -Xms256m"
     depends_on:
       auth-postgres:
         condition: service_healthy

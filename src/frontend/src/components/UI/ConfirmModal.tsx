@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from './Button';
 
@@ -32,7 +33,9 @@ export const ConfirmModal = ({
     ? 'from-rose-500 via-rose-400 to-transparent'
     : 'from-amber-500 via-amber-400 to-transparent';
 
-  return (
+  // Portal to <body>: ancestors with transform/will-change (page-enter,
+  // animate-fade-up) create containing blocks that trap position:fixed.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
         type="button"
@@ -88,6 +91,7 @@ export const ConfirmModal = ({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

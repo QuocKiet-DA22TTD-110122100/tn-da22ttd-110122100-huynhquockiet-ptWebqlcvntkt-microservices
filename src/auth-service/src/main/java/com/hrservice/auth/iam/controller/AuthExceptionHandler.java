@@ -32,12 +32,12 @@ public class AuthExceptionHandler {
 
     private String resolveDefaultMessage(HttpStatusCode statusCode) {
         HttpStatus status = HttpStatus.resolve(statusCode.value());
-        return status == null ? "Request failed" : status.getReasonPhrase();
+        return status == null ? "Yêu cầu thất bại" : status.getReasonPhrase();
     }
 
     private String resolveError(HttpStatusCode statusCode) {
         HttpStatus status = HttpStatus.resolve(statusCode.value());
-        return status == null ? "Error" : status.getReasonPhrase();
+        return status == null ? "Lỗi" : status.getReasonPhrase();
     }
 
     private String resolveCode(HttpStatusCode statusCode, String message) {

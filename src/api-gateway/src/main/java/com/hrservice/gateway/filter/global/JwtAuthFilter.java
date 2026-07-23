@@ -59,7 +59,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("[GW][AUTH] ip={}, method={}, path={}, result=missing_authorization", ip, method, path);
-            return onError(exchange, "Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED);
+            return onError(exchange, "Thiếu hoặc không hợp lệ header Authorization", HttpStatus.UNAUTHORIZED);
         }
 
         String token = authHeader.substring(7);
@@ -144,7 +144,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);
         } catch (Exception ex) {
-            throw new IllegalStateException("Unable to hash token", ex);
+            throw new IllegalStateException("Không thể băm token", ex);
         }
     }
 

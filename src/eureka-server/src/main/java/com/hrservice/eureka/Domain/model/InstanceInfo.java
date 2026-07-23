@@ -13,21 +13,21 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InstanceInfo {
     
-    @NotBlank(message = "Bat buoc nhap Instance ID")
+    @NotBlank(message = "Bắt buộc nhập Instance ID")
     private String instanceId;
     
-    @NotBlank(message = "Bat buoc nhap ten ung dung")
+    @NotBlank(message = "Bắt buộc nhập tên ứng dụng")
     private String appName;
     
-    @NotBlank(message = "Bat buoc nhap dia chi IP")
+    @NotBlank(message = "Bắt buộc nhập địa chỉ IP")
     private String ipAddr;
     
-    @Min(value = 1, message = "Port phai nam trong khoang tu 1 den 65535")
-    @Max(value = 65535, message = "Port phai nam trong khoang tu 1 den 65535")
+    @Min(value = 1, message = "Port phải nằm trong khoảng từ 1 đến 65535")
+    @Max(value = 65535, message = "Port phải nằm trong khoảng từ 1 đến 65535")
     private int port;
     
-    @Min(value = 1, message = "Secure port phai nam trong khoang tu 1 den 65535")
-    @Max(value = 65535, message = "Secure port phai nam trong khoang tu 1 den 65535")
+    @Min(value = 1, message = "Secure port phải nằm trong khoảng từ 1 đến 65535")
+    @Max(value = 65535, message = "Secure port phải nằm trong khoảng từ 1 đến 65535")
     private int securePort;
     
     private String homePageUrl;
@@ -35,12 +35,12 @@ public class InstanceInfo {
     private String healthCheckUrl;
     private String secureHealthCheckUrl;
     
-    @NotNull(message = "Bat buoc nhap trang thai instance")
+    @NotNull(message = "Bắt buộc nhập trạng thái instance")
     private InstanceStatus status = InstanceStatus.UP;
     
     private Map<String, String> metadata = new HashMap<>();
     
-    @NotNull(message = "Bat buoc nhap thong tin lease")
+    @NotNull(message = "Bắt buộc nhập thông tin lease")
     private LeaseInfo leaseInfo = new LeaseInfo();
     
     private DataCenterInfo dataCenterInfo = new DataCenterInfo();

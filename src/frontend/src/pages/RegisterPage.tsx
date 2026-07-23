@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { authApi } from '@/api/auth.api';
@@ -21,10 +21,18 @@ const passwordRuleClass = (passed: boolean) =>
 
 export const RegisterPage = () => {
   const { addNotification } = useUIStore();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => navigate('/login'), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, navigate]);
 
   const {
     register,
@@ -80,13 +88,9 @@ export const RegisterPage = () => {
         <div className="space-y-4">
           <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
             Bạn có thể đăng nhập ngay để vào khu vực tài khoản người dùng.
+            <br />
+            <span className="text-emerald-600">Đang chuyển đến trang đăng nhập...</span>
           </div>
-          <Link to="/login" className="block">
-            <Button className="w-full">
-              Đăng nhập ngay
-              <ArrowRight size={16} />
-            </Button>
-          </Link>
         </div>
       </AuthShell>
     );

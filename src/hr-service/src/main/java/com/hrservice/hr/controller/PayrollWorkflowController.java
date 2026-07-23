@@ -58,7 +58,7 @@ public class PayrollWorkflowController {
         try {
             String reason = body == null ? null : body.get("reason");
             if (reason == null || reason.isBlank()) {
-                reason = "No reason provided";
+                reason = "Không có lý do được cung cấp";
             }
             String actor = resolveActor(request);
             PayrollResult result = payrollService.rejectPayroll(payrollId, reason, actor);
@@ -68,7 +68,7 @@ public class PayrollWorkflowController {
                     "rejectedBy", actor,
                     "rejectedAt", LocalDateTime.now().toString(),
                     "reason", result.getRemarks(),
-                    "message", "Payroll returned to DRAFT status. Recalculate if needed."
+                    "message", "Bảng lương đã trở về trạng thái DRAFT. Tính toán lại nếu cần."
             ));
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -94,7 +94,7 @@ public class PayrollWorkflowController {
                     "status", result.getStatus(),
                     "processedBy", actor,
                     "processedAt", processedAt,
-                    "message", "Payroll finalized. Immutable. Event published to downstream systems."
+                    "message", "Bảng lương đã được hoàn tất. Không thể thay đổi. Sự kiện đã được công bố đến các hệ thống."
             ));
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -110,7 +110,7 @@ public class PayrollWorkflowController {
             "status", result.getStatus(),
             "approvedBy", result.getApprovedBy(),
             "approvedAt", approvedAt,
-            "message", "Payroll approved. Cannot be edited. Ready for processing."
+            "message", "Bảng lương đã được phê duyệt. Không thể chỉnh sửa. Sẵn sàng xử lý."
         );
     }
 

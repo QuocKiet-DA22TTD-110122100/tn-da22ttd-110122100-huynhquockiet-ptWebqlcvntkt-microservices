@@ -58,16 +58,17 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
         errorDetails.put("exception", ex.getClass().getSimpleName());
 
         if (statusCode.value() == HttpStatus.TOO_MANY_REQUESTS.value()) {
-            errorDetails.put(KEY_ERROR, "Too Many Requests");
+            errorDetails.put(KEY_ERROR, "Quá nhiều yêu cầu");
             errorDetails.put(KEY_MESSAGE, "Hệ thống đang bận do có quá nhiều yêu cầu. Vui lòng thử lại sau vài giây.");
         } else if (statusCode.value() == HttpStatus.SERVICE_UNAVAILABLE.value() && ex.getMessage() != null
+                // Chuỗi này do Spring Cloud LoadBalancer sinh ra bằng tiếng Anh — KHÔNG dịch, nếu không nhánh sẽ không bao giờ khớp.
                 && ex.getMessage().contains("Unable to find instance for")) {
-            errorDetails.put(KEY_ERROR, "Service Unavailable");
+            errorDetails.put(KEY_ERROR, "Dịch vụ không khả dụng");
             errorDetails.put(KEY_MESSAGE, "Không tìm thấy instance của service đích trên Eureka. Kiểm tra service đã đăng ký và đang healthy.");
             errorDetails.put("debugMessage", ex.getMessage());
         } else {
             HttpStatus resolvedStatus = HttpStatus.resolve(statusCode.value());
-            errorDetails.put(KEY_ERROR, resolvedStatus != null ? resolvedStatus.getReasonPhrase() : "Gateway Error");
+            errorDetails.put(KEY_ERROR, resolvedStatus != null ? resolvedStatus.getReasonPhrase() : "Lỗi cổng");
             errorDetails.put(KEY_MESSAGE, ex.getMessage());
         }
 
@@ -76,8 +77,8 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
                 byte[] bytes = objectMapper.writeValueAsBytes(errorDetails);
                 return response.bufferFactory().wrap(bytes);
             } catch (JsonProcessingException e) {
-                log.error("Error writing JSON response", e);
-                return response.bufferFactory().wrap("{\"error\":\"Internal Server Error\"}".getBytes());
+                log.error("Lỗi ghi phản hồi JSON", e);
+                return response.bufferFactory().wrap("{\"error\":\"Lỗi máy chủ nội bộ\"}".getBytes());
             }
         }));
     }

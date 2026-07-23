@@ -26,7 +26,7 @@ public class PayrollRunService {
 
     public PayrollRun createPayrollRun(YearMonth yearMonth, String requestedBy, String sourceSystem) {
         if (yearMonth == null) {
-            throw new IllegalArgumentException("yearMonth is required");
+            throw new IllegalArgumentException("yearMonth là bắt buộc");
         }
 
         LocalDate periodStart = yearMonth.atDay(1);
@@ -34,7 +34,7 @@ public class PayrollRunService {
 
         payrollRunRepository.findByPeriodStartDateAndPeriodEndDate(periodStart, periodEnd)
             .ifPresent(existing -> {
-                throw new IllegalStateException("Payroll run already exists for period " + yearMonth);
+                throw new IllegalStateException("Đã tồn tại lần chạy bảng lương cho kỳ " + yearMonth);
             });
 
         PayrollRun payrollRun = new PayrollRun();

@@ -10,7 +10,13 @@ Usage:
 param(
     [switch]$Build,
     [switch]$SkipSeed,
-    [int]$TimeoutSeconds = 900
+    [int]$TimeoutSeconds = 900,
+    # .env lives at the repo root (one level above src/), not next to this compose file.
+    # Docker Compose only auto-loads .env from the working dir, so it must be passed explicitly.
+    [string]$EnvFile = '..\.env',
+    # Must match the project name existing images/containers were built under, otherwise
+    # `up` builds new image tags and starts stale containers.
+    [string]$ProjectName = 'agents-learning-ecc-codegraph-integration'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -54,9 +60,10 @@ function Invoke-Seed {
     docker exec minimal-business-mysql sh -c 'mysql -uroot -p$MYSQL_ROOT_PASSWORD < /tmp/minimal-business-seed.sql'
 }
 
-$composeArgs = @('-f', 'compose.minimal.yml', 'up', '-d', '--wait', '--wait-timeout', $TimeoutSeconds.ToString())
+$baseArgs = @('-p', $ProjectName, '--env-file', $EnvFile, '-f', 'compose.minimal.yml')
+$composeArgs = $baseArgs + @('up', '-d', '--wait', '--wait-timeout', $TimeoutSeconds.ToString())
 if ($Build) {
-    $composeArgs = @('-f', 'compose.minimal.yml', 'up', '-d', '--build', '--wait', '--wait-timeout', $TimeoutSeconds.ToString())
+    $composeArgs = $baseArgs + @('up', '-d', '--build', '--wait', '--wait-timeout', $TimeoutSeconds.ToString())
 }
 
 Write-Host "[START] docker compose $($composeArgs -join ' ')"

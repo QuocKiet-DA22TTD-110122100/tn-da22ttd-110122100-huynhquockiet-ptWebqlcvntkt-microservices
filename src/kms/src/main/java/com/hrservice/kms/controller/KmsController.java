@@ -37,7 +37,7 @@ public class KmsController {
         response.put("port", serverPort);
         response.put("status", "UP");
         response.put(TIMESTAMP, Instant.now().toString());
-        response.put("message", "khóa quản lý Các dịch vụ có thể sử dụng để ký JWT Service!");
+        response.put("message", "Khóa quản lý các dịch vụ có thể sử dụng để ký JWT Service!");
         return response;
     }
 
@@ -55,7 +55,7 @@ public class KmsController {
         Map<String, Object> response = new HashMap<>();
         response.put("app", applicationName);
         response.put("version", "1.0.0");
-        response.put("description", "Khóa quản lý Các dịch vụ có thể sử dụng để ký JWT Service");
+        response.put("description", "Khóa quản lý các dịch vụ có thể sử dụng để ký JWT Service");
         response.put("port", serverPort);
         return response;
     }
@@ -63,7 +63,7 @@ public class KmsController {
     @GetMapping("/keys")
     public Map<String, Object> getKeys() {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "KMS Keys endpoint");
+        response.put("message", "Điểm cuối khóa KMS");
         response.put("keys", new String[]{"key1", "key2", "key3"});
         response.put(TIMESTAMP, Instant.now().toString());
         return response;
@@ -85,7 +85,7 @@ public class KmsController {
     @PostMapping("/ky-so")
     public SigningResponseDto sign(@RequestBody SigningRequestDto request) {
         if (request == null || request.payload() == null || request.payload().isBlank()) {
-            throw new IllegalArgumentException("payload is required");
+            throw new IllegalArgumentException("payload là bắt buộc");
         }
 
         KmsSigningService.SigningResult result = kmsSigningService.sign(request.payload());
@@ -99,7 +99,7 @@ public class KmsController {
     @PostMapping("/internal/sign")
     public SigningResponseDto signInternal(@RequestBody SigningRequestDto request) {
         if (request == null || request.payload() == null || request.payload().isBlank()) {
-            throw new IllegalArgumentException("payload is required");
+            throw new IllegalArgumentException("payload là bắt buộc");
         }
 
         KmsSigningService.SigningResult result = kmsSigningService.sign(request.payload());

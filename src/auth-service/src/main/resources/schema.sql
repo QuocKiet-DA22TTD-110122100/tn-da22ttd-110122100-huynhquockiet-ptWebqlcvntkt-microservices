@@ -96,3 +96,22 @@ CREATE TABLE IF NOT EXISTS user_sync_dlq (
 
 CREATE INDEX IF NOT EXISTS idx_user_sync_dlq_user_failed
     ON user_sync_dlq (user_id, failed_at DESC);
+
+CREATE TABLE IF NOT EXISTS audit_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_type VARCHAR(50) NOT NULL,
+    actor_id VARCHAR(36),
+    actor_username VARCHAR(100),
+    target_type VARCHAR(50),
+    target_id VARCHAR(36),
+    description VARCHAR(1000),
+    old_value TEXT,
+    new_value TEXT,
+    ip_address VARCHAR(45),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_event_type ON audit_log (event_type);
+CREATE INDEX IF NOT EXISTS idx_audit_log_actor_id ON audit_log (actor_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log (created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_log_target ON audit_log (target_type, target_id);

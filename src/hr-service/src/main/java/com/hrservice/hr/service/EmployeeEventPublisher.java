@@ -24,7 +24,7 @@ public class EmployeeEventPublisher {
 
     public void publish(EmployeeHiredEvent event) {
         if (rabbitTemplate == null) {
-            logger.debug("RabbitTemplate is not available; skipping EmployeeHiredEvent publish");
+            logger.debug("RabbitTemplate không khả dụng; bỏ qua việc công bố EmployeeHiredEvent");
             return;
         }
 

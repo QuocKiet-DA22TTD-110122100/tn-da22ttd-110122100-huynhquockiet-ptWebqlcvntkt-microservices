@@ -47,7 +47,7 @@ public class PayrollComplianceController {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (DateTimeParseException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "periodStart and periodEnd must use ISO date format yyyy-MM-dd");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "periodStart và periodEnd phải sử dụng định dạng ngày ISO yyyy-MM-dd");
         }
     }
 }

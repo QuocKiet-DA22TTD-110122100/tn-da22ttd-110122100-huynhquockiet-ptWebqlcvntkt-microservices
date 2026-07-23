@@ -26,13 +26,13 @@ public class PayrollEventPublisher {
         // Exchange and routing key chosen to match existing convention
         try {
             if (rabbitTemplate == null) {
-                logger.debug("RabbitTemplate is not available; skipping PayrollRunRequestedEvent publish");
+                logger.debug("RabbitTemplate không khả dụng; bỏ qua việc công bố PayrollRunRequestedEvent");
                 return;
             }
 
             rabbitTemplate.convertAndSend("payroll.run", "payroll.run.requested", event);
         } catch (Exception ex) {
-            logger.warn("Failed to publish PayrollRunRequestedEvent, continuing", ex);
+            logger.warn("Không thể công bố PayrollRunRequestedEvent, tiếp tục", ex);
         }
     }
 }

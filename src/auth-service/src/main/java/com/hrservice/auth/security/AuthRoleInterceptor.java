@@ -42,7 +42,7 @@ public class AuthRoleInterceptor implements HandlerInterceptor {
 
         String authorization = request.getHeader(AUTHORIZATION_HEADER);
         if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
-            return deny(response, HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
+            return deny(response, HttpStatus.UNAUTHORIZED, "Thiếu hoặc không hợp lệ header Authorization");
         }
 
         String token = authorization.substring(BEARER_PREFIX.length());
@@ -51,7 +51,7 @@ public class AuthRoleInterceptor implements HandlerInterceptor {
         try {
             claims = authService.verifyToken(token);
         } catch (RuntimeException ex) {
-            return deny(response, HttpStatus.UNAUTHORIZED, "Invalid token");
+            return deny(response, HttpStatus.UNAUTHORIZED, "Token không hợp lệ");
         }
 
         List<String> userRoles = extractRoles(claims);
@@ -59,9 +59,10 @@ public class AuthRoleInterceptor implements HandlerInterceptor {
             .anyMatch(required -> userRoles.stream().anyMatch(role -> role.equalsIgnoreCase(required)));
 
         if (!allowed) {
-            return deny(response, HttpStatus.FORBIDDEN, "Access denied");
+            return deny(response, HttpStatus.FORBIDDEN, "Từ chối truy cập");
         }
 
+        request.setAttribute("currentUserClaims", claims);
         return true;
     }
 
